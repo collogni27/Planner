@@ -52,7 +52,7 @@ Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, bot
 ## Barra do mascote (topo, todas as abas)
 - Fica acima do conteúdo em todas as abas. Pode ser **recolhida** (sobe e some, com animação curta) e reaberta por um botão pequeno e baixo ("Mostrar", com o mascote em miniatura; visual de ~34px de altura dentro de uma área de toque de 44px). O estado (aberta ou recolhida) é lembrado.
 - **Folga ao redor do mascote** (área de ~64×64px e padding generoso), reservada para animações futuras. Não encher esse espaço com outros elementos.
-- Conteúdo: mascote animado, saudação (DotGothic16), a **data** (o único lugar da tela Início onde a data aparece) e dois botões lado a lado: **"Notas anteriores"** e **"Editar nota atual"** (ver `modulos/notas.md`), com o texto sempre em **uma linha** em todos os modos.
+- Conteúdo: mascote animado, saudação (DotGothic16), a **data** (o único lugar da tela Início onde a data aparece; dias da semana sem "-feira", ex.: "quarta, 18 de novembro", para caber numa linha) e dois botões lado a lado: **"Notas anteriores"** e **"Editar nota atual"** (ver `modulos/notas.md`), com o texto sempre em **uma linha** em todos os modos.
 - O visual da barra acompanha a aba atual (o mascote pode mudar de variação por aba).
 
 ## Navegação inferior (abas ainda indefinidas)
