@@ -373,3 +373,96 @@ button:disabled {
     transition: none;
   }
 }
+
+/* ---------- Login e formulários ---------- */
+
+.login {
+  min-height: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: var(--espaco-5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--espaco-5);
+}
+
+.login-marca {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--espaco-3);
+}
+
+.login-nome {
+  margin: 0;
+  font-family: var(--fonte-pixel);
+  font-size: 32px;
+  font-weight: 400;
+}
+
+.login-form {
+  gap: var(--espaco-3);
+  padding: var(--espaco-5);
+}
+
+.login-erro {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-rotulo {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-secundario);
+}
+
+.campo-entrada {
+  min-height: var(--toque-minimo);
+  padding: 0 10px;
+  border-radius: var(--raio-interno);
+  border: var(--borda) solid var(--botao-borda);
+  background: var(--botao-fundo);
+  color: var(--texto);
+  font: inherit;
+  font-size: 16px; /* 16px evita o zoom automático no celular */
+}
+
+.campo-entrada:focus {
+  outline: none;
+  border-color: var(--acao);
+}
+
+.botao-principal {
+  min-height: var(--toque-minimo);
+  border: none;
+  border-radius: var(--raio-interno);
+  background: var(--acao);
+  color: var(--texto-sobre-acao);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.botao-principal:disabled {
+  opacity: 0.7;
+}
+
+.botao-largo {
+  justify-content: center;
+}
+
+.texto-curto {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-left: var(--espaco-2);
+}

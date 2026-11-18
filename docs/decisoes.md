@@ -31,3 +31,4 @@
 - 2026-11-18 — Estados da rotina livre: 2 ou mais encaixes = "Descanso possível", 1 = "Tem que ser hoje", 0 = "Semana não fecha"; o estado "recomendado" deixa de existir. "Posterior Day" (rotina restrita) é o nome da sessão do dia.
 - 2026-11-18 — Hora de dormir sempre antes da meia-noite.
 - 2026-11-18 — Se o plugin padrão não cobrir algo das notificações (ex.: tela cheia), escrever plugin Android próprio, sem trabalho extra para o usuário.
+- 2026-11-18 — Sincronização: fila local em ordem + baixa por `updated_at`; alteração local pendente vence; senão vence a mais recente — simples e suficiente para um único usuário.

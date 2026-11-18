@@ -10,6 +10,9 @@ export default defineConfig({
   define: {
     __VERSAO__: JSON.stringify(pacote.version),
   },
+  build: {
+    chunkSizeWarningLimit: 1000, // o Supabase é grande; no app instalado isso não pesa
+  },
   test: {
     environment: 'jsdom',
   },
