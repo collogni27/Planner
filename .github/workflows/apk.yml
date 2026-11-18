@@ -1,0 +1,114 @@
+# Gera o APK do Planner.
+# - Em pedidos de aprovação (PR): testa e compila (sem assinar, sem publicar).
+# - No main: se a versão do package.json ainda não tem Release, gera o APK
+#   assinado e publica como Release "vX.Y.Z" (o app usa isso para se atualizar).
+name: APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Testes automáticos
+        run: npm test
+
+      - name: Versão e decisão de publicar
+        id: versao
+        run: |
+          V=$(node -p "require('./package.json').version")
+          echo "versao=$V" >> "$GITHUB_OUTPUT"
+          PUBLICAR=false
+          if [ "${{ github.event_name }}" != "pull_request" ] && [ "${{ github.ref }}" = "refs/heads/main" ]; then
+            if gh release view "v$V" >/dev/null 2>&1; then
+              echo "Release v$V já existe: nada a publicar."
+            else
+              PUBLICAR=true
+            fi
+          fi
+          echo "publicar=$PUBLICAR" >> "$GITHUB_OUTPUT"
+
+      - name: Conferir configuração para publicar
+        if: steps.versao.outputs.publicar == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.PLANNER_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then echo "::error::Falta o segredo PLANNER_KEYSTORE_BASE64 (ver docs/guias/apk.md)"; exit 1; fi
+          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]; then echo "::error::Faltam as variáveis VITE_SUPABASE_* (ver docs/guias/apk.md)"; exit 1; fi
+
+      - name: Compilar o site
+        run: npm run build
+
+      - name: Copiar o site para o projeto Android
+        run: npx cap sync android
+
+      - name: Preparar a chave de assinatura
+        if: steps.versao.outputs.publicar == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.PLANNER_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/planner.jks"
+          echo "PLANNER_KEYSTORE_FILE=$RUNNER_TEMP/planner.jks" >> "$GITHUB_ENV"
+
+      - name: Gerar o APK
+        working-directory: android
+        env:
+          PLANNER_KEYSTORE_PASSWORD: ${{ secrets.PLANNER_KEYSTORE_PASSWORD }}
+          PLANNER_KEY_ALIAS: planner
+          PLANNER_KEY_PASSWORD: ${{ secrets.PLANNER_KEYSTORE_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Conferir que a chave é SEMPRE a mesma
+        if: steps.versao.outputs.publicar == 'true'
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          OBTIDA=$("$APKSIGNER" verify --print-certs "$APK" | grep 'certificate SHA-256 digest' | head -1 | awk '{print $NF}')
+          ESPERADA=$(tr -d '[:space:]' < android/assinatura-esperada.txt)
+          echo "Assinatura obtida:  $OBTIDA"
+          echo "Assinatura esperada: $ESPERADA"
+          if [ "$OBTIDA" != "$ESPERADA" ]; then echo "::error::APK assinado com chave diferente! Não publicar."; exit 1; fi
+
+      - name: Publicar Release
+        if: steps.versao.outputs.publicar == 'true'
+        run: |
+          V=${{ steps.versao.outputs.versao }}
+          cp android/app/build/outputs/apk/release/app-release.apk "planner-$V.apk"
+          gh release create "v$V" "planner-$V.apk" --title "Planner $V" \
+            --notes "Para instalar ou atualizar: baixe o arquivo planner-$V.apk no celular e toque nele."
+
+      - name: Apagar a chave do servidor
+        if: always()
+        run: rm -f "$RUNNER_TEMP/planner.jks"

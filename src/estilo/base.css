@@ -466,3 +466,40 @@ button:disabled {
   white-space: nowrap;
   padding-left: var(--espaco-2);
 }
+
+/* ---------- Aviso discreto (ex.: nova versão) ---------- */
+
+.aviso {
+  background: var(--superficie);
+  border: var(--borda) solid var(--acao);
+  border-radius: var(--raio-card);
+  padding: var(--espaco-2) var(--espaco-2) var(--espaco-2) var(--espaco-3);
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.aviso-texto {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.aviso-botao {
+  min-height: var(--toque-minimo);
+  padding: 0 var(--espaco-3);
+  border: none;
+  border-radius: var(--raio-interno);
+  background: var(--acao);
+  color: var(--texto-sobre-acao);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.aviso-botao.secundario {
+  background: transparent;
+  color: var(--texto-secundario);
+  padding: 0 var(--espaco-2);
+}

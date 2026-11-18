@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks'
 import { useEffect } from 'react'
+import { AvisoAtualizacao } from '../atualizacao/AvisoAtualizacao'
 import { banco } from '../dados/banco'
 import { useSincronizacaoAutomatica } from '../dados/useSincronizacao'
 import { useEstadoSalvo, type Modo } from '../estado/preferencias'
@@ -94,7 +95,10 @@ function AppConectado({ userId, email, modo, setModo }: PropsConectado) {
   return (
     <div className="app">
       <BarraMascote modo={modo} aberta={barraAberta} onAlternar={() => setBarraAberta((a) => !a)} />
-      <main className="conteudo">{conteudo}</main>
+      <main className="conteudo">
+        <AvisoAtualizacao />
+        {conteudo}
+      </main>
       <NavInferior
         atual={nav.aba}
         onEscolher={(aba) =>

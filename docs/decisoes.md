@@ -32,3 +32,7 @@
 - 2026-11-18 — Hora de dormir sempre antes da meia-noite.
 - 2026-11-18 — Se o plugin padrão não cobrir algo das notificações (ex.: tela cheia), escrever plugin Android próprio, sem trabalho extra para o usuário.
 - 2026-11-18 — Sincronização: fila local em ordem + baixa por `updated_at`; alteração local pendente vence; senão vence a mais recente — simples e suficiente para um único usuário.
+- 2026-11-18 — Manter o Netlify mesmo com o selo "Powered by Netlify" (não removível no plano gratuito); layouts de PC deixam o canto inferior direito livre — o selo não aparece no APK, que é o uso principal.
+- 2026-11-18 — `applicationId` = `io.github.collogni27.planner` (permanente); versionCode calculado da versão do `package.json`; APK publicado por GitHub Actions como Release quando a versão muda no `main`; impressão digital da chave conferida a cada build.
+- 2026-11-18 — Chave de assinatura gerada pelo Claude Code e entregue ao usuário para backup no Google Drive; no GitHub fica como segredo.
+- 2026-11-18 — Atualização: o botão "Atualizar" abre o download do APK no navegador (o Android pede confirmação). Instalador dentro do app pode vir depois, se o usuário quiser menos toques.
