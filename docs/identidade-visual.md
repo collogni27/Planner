@@ -50,7 +50,7 @@ Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, bot
 - Logo e ícone do app: o **mascote padrão** (paleta clara) centralizado sobre um quadrado com o fundo do modo claro (`#F1FAFA`). Referência: `docs/mascote/logo-planner.svg`. Os ícones do Android (incluindo o adaptativo) são gerados a partir dele.
 
 ## Barra do mascote (topo, todas as abas)
-- Fica acima do conteúdo em todas as abas. Pode ser **recolhida** (sobe e some, com animação curta) e reaberta por um botão pequeno e baixo ("Mostrar", com o mascote em miniatura; visual de ~34px de altura dentro de uma área de toque de 44px). O estado (aberta ou recolhida) é lembrado.
+- Fica acima do conteúdo em todas as abas. Pode ser **recolhida** (sobe e some, com animação curta e **suave**, desacelerando no fim; nada de degraus aqui, que deixam parecer travado. Degraus são só para o mascote) e reaberta por um botão pequeno e baixo ("Mostrar", com o mascote em miniatura; visual de ~34px de altura dentro de uma área de toque de 44px). O estado (aberta ou recolhida) é lembrado.
 - **Folga ao redor do mascote** (área de ~64×64px e padding generoso), reservada para animações futuras. Não encher esse espaço com outros elementos.
 - Conteúdo: mascote animado, saudação (DotGothic16), a **data** (o único lugar da tela Início onde a data aparece; dias da semana sem "-feira", ex.: "quarta, 18 de novembro", para caber numa linha) e dois botões lado a lado: **"Notas anteriores"** e **"Editar nota atual"** (ver `modulos/notas.md`), com o texto sempre em **uma linha** em todos os modos.
 - O visual da barra acompanha a aba atual (o mascote pode mudar de variação por aba).
