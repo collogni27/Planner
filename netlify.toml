@@ -1,0 +1,13 @@
+# Configuração do Netlify (versão web do Planner).
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# App de uma página só: qualquer endereço abre o index.html.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

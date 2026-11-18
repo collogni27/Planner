@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="pt-BR" data-modo="claro">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#F1FAFA" />
+    <title>Planner</title>
+    <script>
+      // Aplica o modo de cor salvo antes de desenhar, para não piscar ao abrir.
+      try {
+        var m = JSON.parse(localStorage.getItem('planner:v1:modo'))
+        if (m) document.documentElement.dataset.modo = m
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
