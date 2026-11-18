@@ -27,6 +27,7 @@
 - 2026-11-18 — Módulo de Tarefas (horário ou gatilho, prioridade, realizadas, não planejadas); a tarefa não planejada sai da Rotina — o bloco "Tarefas" da tela Início precisava de origem.
 - 2026-11-18 — Tela diária na manhã pede peso, tempo de sono e qualidade; edição depois nas abas Sono e Treino.
 - 2026-11-18 — Nota diária automática por dia, editável o dia todo, calendário de notas anteriores; dia sem texto = "sem nota".
-- 2026-11-18 — Treino com dois modos: rotina restrita (dias fixos) e rotina livre (encaixes); estados por número de encaixes: ≥3 descanso possível, 2 recomendado, 1 tem que ser hoje, 0 semana não fecha.
+- 2026-11-18 — Treino com dois modos: rotina restrita (dias fixos) e rotina livre (encaixes); ~~estados por número de encaixes: ≥3 descanso possível, 2 recomendado, 1 tem que ser hoje, 0 semana não fecha~~ (corrigido abaixo).
+- 2026-11-18 — Estados da rotina livre: 2 ou mais encaixes = "Descanso possível", 1 = "Tem que ser hoje", 0 = "Semana não fecha"; o estado "recomendado" deixa de existir. "Posterior Day" (rotina restrita) é o nome da sessão do dia.
 - 2026-11-18 — Hora de dormir sempre antes da meia-noite.
 - 2026-11-18 — Se o plugin padrão não cobrir algo das notificações (ex.: tela cheia), escrever plugin Android próprio, sem trabalho extra para o usuário.

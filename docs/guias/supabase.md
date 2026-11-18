@@ -14,8 +14,8 @@ Para cada arquivo novo em `supabase/migrations/` (em ordem de nome):
 1. **SQL Editor → New query**.
 2. Cole o conteúdo do arquivo → **Run**. Deve aparecer *Success*.
 
-Migrações já aplicadas: anote aqui (o Claude Code avisa quando houver uma nova).
-- `20261118000001_configuracoes.sql`
+Migrações já aplicadas (o Claude Code atualiza esta lista):
+- `20261118000001_configuracoes.sql` — aplicada em 2026-11-18
 
 ## Se o projeto for pausado
 O plano gratuito pausa após ~7 dias sem uso. No painel do Supabase, abra o projeto e clique em **Restore/Resume**. O app continua funcionando no celular enquanto isso.

@@ -35,11 +35,10 @@ Sistema **genérico e totalmente editável**: não assume nenhuma divisão espec
 - **Dias disponíveis:** marcar dias em que não posso treinar (fixos ou só nesta semana). O planejador não usa esses dias.
 - **Não há dia fixo de treino**: o app distribui as sessões restantes respeitando as regras.
 - **Planejador automático:** com base no que já foi feito na semana, nos dias restantes e nos espaçamentos, calcula as distribuições válidas das sessões que faltam. São poucos dias e poucas sessões: testar todas as combinações (força bruta). Considerar também os treinos do fim da semana anterior para o espaçamento.
-- **Encaixes:** quantas opções de encaixe ainda existem para os treinos da semana. O estado de cada dia vem do número de encaixes, conforme o exemplo do usuário:
-  - **3 ou mais → "Descanso possível"**: dá para não treinar hoje sem comprometer a semana. (Se há 3 e não treino hoje, amanhã serão 2.)
-  - **2 → "Recomendado hoje"**: treinar hoje mantém mais opções abertas.
+- **Encaixes:** quantas opções de encaixe ainda existem para os treinos da semana. O estado do dia vem do número de encaixes (confirmado em 2026-11-18; não existe estado "recomendado"):
+  - **2 ou mais → "Descanso possível"**: dá para não treinar hoje sem comprometer a semana.
   - **1 → "Tem que ser hoje"**: sem treinar hoje, a semana não fecha. Caixa amarela.
-  - **0 → "Semana já não fecha"**: não existe distribuição válida. Tom neutro, sugerindo o melhor possível (ex.: quais sessões ainda cabem).
+  - **0 → "Semana não fecha"**: não existe distribuição válida. Tom neutro, sugerindo o melhor possível (ex.: quais sessões ainda cabem).
   - A fórmula exata da contagem de encaixes será fechada com o usuário no passo do treino, com exemplos que viram testes automatizados.
 - Mostrar na tela de treino uma sugestão de distribuição para o resto da semana, recalculada a cada check.
 - **Essa lógica tem testes automatizados**, porque é onde bugs são mais prováveis.

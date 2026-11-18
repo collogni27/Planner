@@ -13,7 +13,7 @@ No Android, as notificações são **locais**: o próprio app as agenda no siste
 | **"Bom dia"** ⚑ | horário-alvo de acordar do dia | sempre (se ativo); **insistente** |
 | **Tomar sol** | ao acordar, +30 min e +60 min | só se "tomei sol" ainda não foi marcado hoje |
 | **Hora de dormir** | horário-alvo de dormir do dia (opcional: aviso prévio X min antes) | sempre (se ativo) |
-| **Treino** | horário configurável (ex.: manhã) | quando o planejador indicar "tem que ser hoje" ou "recomendado hoje" (rotina livre) ou houver treino no dia (rotina restrita), com texto diferente para cada |
+| **Treino** | horário configurável (ex.: manhã) | quando o planejador indicar "tem que ser hoje" (rotina livre) ou houver treino no dia (rotina restrita), com texto diferente para cada |
 | **Lembrete de agenda** | X min antes do compromisso | se o compromisso tiver lembrete |
 | **Revisar cards** (opcional) | horário configurável | se houver cards pendentes |
 
