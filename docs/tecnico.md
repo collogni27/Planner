@@ -45,6 +45,14 @@ Escolhida por ser a mais simples de manter e com mais documentação:
   4. mudanças no formato dos dados locais usam **migrações versionadas**, que convertem em vez de apagar.
 - A versão web no Netlify é atualizada a cada publicação.
 - O número da versão instalada aparece em Configurações.
+- **Detalhes da implementação (2026-11-18):**
+  - `applicationId`: **`io.github.collogni27.planner`** (em `capacitor.config.ts` e `android/app/build.gradle`). Nunca mudar.
+  - A versão vem só do `package.json`; `versionCode = maior×1.000.000 + menor×1.000 + correção` (0.2.0 → 2000). Para lançar versão nova: aumentar a versão no `package.json`.
+  - Workflow `.github/workflows/apk.yml`: em PR, testa e compila; no `main`, se não existe Release `vX.Y.Z`, gera o APK assinado e publica a Release com `planner-X.Y.Z.apk`.
+  - O build compara a impressão digital da assinatura com `android/assinatura-esperada.txt` e não publica se for diferente.
+  - O app consulta `api.github.com/repos/collogni27/Planner/releases/latest` ao abrir e ao voltar para a frente; o botão "Atualizar" abre o download do APK no navegador.
+  - Ícones e abertura do Android gerados do `mascote.json` por `scripts/gerar-assets.py` + `npx @capacitor/assets generate --android`.
+  - Guia do usuário: `docs/guias/apk.md`.
 
 ## Segurança e login
 - **Um único usuário**, login por e-mail e senha no Supabase Auth. **Novos cadastros desativados** depois de criar a conta.
