@@ -1,0 +1,32 @@
+# Registro de decisões
+<!-- formato: AAAA-MM-DD — decisão — motivo. Decisões substituídas ficam marcadas, não apagadas. -->
+
+- 2026-11-13 — Supabase como banco e autenticação; Netlify para a versão web — gratuito e suficiente para uso pessoal; usuário já usa Netlify.
+- 2026-11-13 — FSRS (`ts-fsrs`) para repetição espaçada — mais preciso que SM-2 e já pronto em biblioteca.
+- 2026-11-13 — Login único com cadastro desativado + RLS — sem login, os dados ficariam expostos a quem tivesse a URL.
+- 2026-11-13 — Histórico completo, sem expiração — volume estimado de poucos MB por ano.
+- 2026-11-13 — Treino genérico: 1 a 6 sessões com nomes livres e regras de intervalo por par de sessões; meta de cardio editável — a divisão de treino muda com o tempo.
+- 2026-11-13 — Semana de domingo a sábado.
+- 2026-11-13 — Tela "Bom dia" com animação, resumo e nota, aberta pela notificação — ajudar a despertar e começar o dia com direção.
+- 2026-11-17 — App Android nativo com Capacitor (APK instalado direto) + versão web no Netlify, mesmo código — o PWA era descartado pelo Chrome com frequência e reiniciava; o nativo também dá notificações locais mais confiáveis.
+- 2026-11-17 — Notificações locais agendadas pelo app (sem servidor de push na v1); insistência simulada com repetições pré-agendadas; opção de tela cheia para o "Bom dia".
+- 2026-11-17 — Estado salvo continuamente para o app reabrir onde parou — o fechamento pelo sistema é inevitável, o reinício deve ser invisível.
+- 2026-11-17 — Qualidade do sono (00 a 99) digitada pelo usuário, vinda do smartband.
+- 2026-11-17 — APK gerado pelo GitHub Actions e publicado em Releases; atualização verificada dentro do app; mesmo applicationId e keystore para sempre — atualizar sem perder dados.
+- 2026-11-17 — ~~Base visual: DotGothic16 nos destaques + Atkinson Hyperlegible no texto~~ (fontes substituídas em 2026-11-18); modos claro, escuro (petróleo) e foco (cinza) com as mesmas formas; mascote azul definido como matriz de pixels — legibilidade com estilo próprio, sem estética genérica.
+- 2026-11-17 — Nome "Planner"; logo = mascote padrão sobre `#F1FAFA`; mascote definido em `docs/mascote/mascote.json`.
+- 2026-11-17 — A aba Treino inclui rotinas completas (exercícios, séries, cargas), registro na academia e histórico de peso, substituindo o PWA de treino antigo.
+- 2026-11-18 — Fontes: só DotGothic16 (texto grande) e JetBrains Mono (resto, negrito para destaque), sem itálico. Tela inicial sem hábitos e sem rolagem; peso passa para o bloco de treino.
+- 2026-11-18 — Tela inicial chamada "Início"; tarefas sem contadores e "Ver todas" abaixo; blocos com altura natural; abas principais ainda indefinidas ("(XXXXX)").
+- 2026-11-18 — ~~Princípio de não exibir contagens~~ — removido: foi incluído por acidente.
+- 2026-11-18 — Treino construído do zero, sem importar o PWA antigo.
+- 2026-11-18 — CONTEXTO.md dividido em `CLAUDE.md` (curto) + `docs/` por assunto; arquivos movidos para a raiz do repositório — o Claude Code só lê o CLAUDE.md da raiz, e arquivos menores são mais fáceis de manter.
+- 2026-11-18 — **Local primeiro** desde o passo 1 (IndexedDB/Dexie + fila de sincronização com o Supabase) — reabrir onde parou e nunca perder registro na academia exigem gravar no aparelho primeiro; fazer depois seria muito mais trabalhoso.
+- 2026-11-18 — Repositório público — o app precisa baixar as Releases sem senha; nenhum segredo fica no código.
+- 2026-11-18 — Fontes empacotadas no app (`@fontsource`) — o app abre offline.
+- 2026-11-18 — Módulo de Tarefas (horário ou gatilho, prioridade, realizadas, não planejadas); a tarefa não planejada sai da Rotina — o bloco "Tarefas" da tela Início precisava de origem.
+- 2026-11-18 — Tela diária na manhã pede peso, tempo de sono e qualidade; edição depois nas abas Sono e Treino.
+- 2026-11-18 — Nota diária automática por dia, editável o dia todo, calendário de notas anteriores; dia sem texto = "sem nota".
+- 2026-11-18 — Treino com dois modos: rotina restrita (dias fixos) e rotina livre (encaixes); estados por número de encaixes: ≥3 descanso possível, 2 recomendado, 1 tem que ser hoje, 0 semana não fecha.
+- 2026-11-18 — Hora de dormir sempre antes da meia-noite.
+- 2026-11-18 — Se o plugin padrão não cobrir algo das notificações (ex.: tela cheia), escrever plugin Android próprio, sem trabalho extra para o usuário.
