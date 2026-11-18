@@ -1,0 +1,130 @@
+{
+  "nome": "Mascote do Planner",
+  "versao": 1,
+  "grade": {
+    "largura": 25,
+    "altura": 19
+  },
+  "legenda": {
+    ".": "transparente",
+    "B": "corpo",
+    "E": "olhos"
+  },
+  "paletas": {
+    "claro": {
+      "B": "#0A7A73",
+      "E": "#5FE9DE"
+    },
+    "escuro": {
+      "B": "#13958C",
+      "E": "#5FE9DE"
+    },
+    "foco": {
+      "B": "#13958C",
+      "E": "#5FE9DE"
+    }
+  },
+  "quadros": {
+    "padrao": [
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBEEBBBBBBBEEBB.....",
+      ".....BBEEBBBBBBBEEBB.....",
+      ".....BBEEBBBBBBBEEBB.....",
+      ".....BBEEBBBBBBBEEBB.....",
+      "..BBBBBBBBBBBBBBBBBBBBB..",
+      "..BBBBBBBBBBBBBBBBBBBBB..",
+      "BBBBBBBBBBBBBBBBBBBBBBBBB",
+      "BBBB.BBBBBBBBBBBBBBB.BBBB",
+      "BBBB.BBBBBBBBBBBBBBB.BBBB",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB....."
+    ],
+    "piscar": [
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBEEBBBBBBBEEBB.....",
+      "..BBBBBBBBBBBBBBBBBBBBB..",
+      "..BBBBBBBBBBBBBBBBBBBBB..",
+      "BBBBBBBBBBBBBBBBBBBBBBBBB",
+      "BBBB.BBBBBBBBBBBBBBB.BBBB",
+      "BBBB.BBBBBBBBBBBBBBB.BBBB",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB....."
+    ],
+    "oi": [
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBEEBBBBBBBBBBB.....",
+      ".....BBEEBBBBBBBBBBB.....",
+      ".....BBEEBBBBBBBBBBB.BBBB",
+      ".....BBEEBBBBBBBEEBB.BBBB",
+      "..BBBBBBBBBBBBBBBBBBBBBBB",
+      "..BBBBBBBBBBBBBBBBBBBBB..",
+      "BBBBBBBBBBBBBBBBBBBBBBB..",
+      "BBBB.BBBBBBBBBBBBBBB.....",
+      "BBBB.BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBBBBBBBBBBBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB.....",
+      ".....BBBB.......BBBB....."
+    ]
+  },
+  "animacoes": {
+    "ocioso_piscar": {
+      "quadros": [
+        "padrao",
+        "piscar"
+      ],
+      "duracoes_ms": [
+        4000,
+        160
+      ],
+      "repetir": true
+    },
+    "aceno": {
+      "quadros": [
+        "padrao",
+        "oi",
+        "padrao",
+        "oi",
+        "padrao"
+      ],
+      "duracoes_ms": [
+        200,
+        350,
+        250,
+        350,
+        200
+      ],
+      "repetir": false
+    }
+  },
+  "regras": [
+    "Esta grade é a fonte de verdade do mascote. Não desenhar o mascote de outra forma.",
+    "Novas poses são novos quadros com a mesma grade 25x19 e as mesmas letras/cores.",
+    "Renderizar como SVG com shape-rendering=crispEdges: primeiro o corpo inteiro (células B e E, sem buracos), depois os olhos (E) por cima.",
+    "Piscar = trocar para o quadro piscar (olho com 1 linha, na base). Nunca esconder ou escalar o olho de forma que o fundo apareça: atrás do olho existe sempre corpo.",
+    "Animações trocam quadros em degraus, sem interpolação. Respeitar prefers-reduced-motion (mostrar só o quadro padrao).",
+    "Novas variações precisam de aprovação do usuário antes de entrar no app."
+  ]
+}
