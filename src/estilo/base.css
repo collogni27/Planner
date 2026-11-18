@@ -1,0 +1,375 @@
+/* Estilos de base. Cores SEMPRE via tokens (tokens.css). Nunca itálico. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-texto);
+  font-size: 13px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+em,
+i {
+  font-style: normal;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--acao);
+  outline-offset: 2px;
+}
+
+/* ---------- Estrutura ---------- */
+
+.app {
+  height: 100%;
+  max-width: 560px; /* no PC, coluna centralizada */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  padding-top: env(safe-area-inset-top);
+}
+
+.conteudo {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--espaco-3) var(--espaco-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+/* ---------- Barra do mascote ---------- */
+
+.barra-area {
+  flex: none;
+}
+
+/* Recolher/mostrar: anima a altura com grid (0fr ↔ 1fr). */
+.barra-recolhivel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 180ms steps(4);
+}
+
+.barra-recolhivel.aberta {
+  grid-template-rows: 1fr;
+}
+
+.barra-recolhivel-interno {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.barra {
+  margin: var(--espaco-4) var(--espaco-4) 0;
+  padding: var(--espaco-5);
+  border-radius: var(--raio-card);
+  background: var(--barra-fundo);
+  border: var(--borda) solid var(--barra-borda);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-4);
+}
+
+.barra-topo {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-4);
+}
+
+/* Folga reservada para animações futuras do mascote: não colocar nada aqui. */
+.barra-mascote {
+  width: 64px;
+  height: 64px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barra-textos {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-1);
+}
+
+.barra-saudacao {
+  font-family: var(--fonte-pixel);
+  font-size: 20px;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra-data {
+  font-size: 12px;
+  color: var(--barra-data);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.barra-acoes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espaco-2);
+}
+
+.barra-botao {
+  min-height: var(--toque-minimo);
+  padding: var(--espaco-1);
+  border: none;
+  border-radius: var(--raio-interno);
+  background: var(--barra-botao-fundo);
+  color: var(--barra-botao-texto);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.barra-recolher {
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  flex: none;
+}
+
+.barra-mostrar-area {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--espaco-2);
+}
+
+.barra-mostrar {
+  height: var(--toque-minimo);
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+}
+
+.barra-mostrar-pilula {
+  height: 34px;
+  padding: 0 12px 0 8px;
+  border: var(--borda) solid var(--barra-borda);
+  border-radius: var(--raio-interno);
+  background: var(--barra-fundo);
+  color: var(--texto);
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ---------- Cards ---------- */
+
+.card {
+  background: var(--superficie);
+  border: var(--borda) solid var(--borda-card);
+  border-radius: var(--raio-card);
+  padding: var(--espaco-3) var(--espaco-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.card-titulo {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.texto-secundario {
+  margin: 0;
+  color: var(--texto-secundario);
+  line-height: 1.5;
+}
+
+.nota-rodape {
+  font-size: 12px;
+  padding: 0 2px;
+}
+
+.numero-destaque {
+  font-family: var(--fonte-pixel);
+  font-size: 18px;
+}
+
+.linha-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  min-height: 32px;
+}
+
+/* ---------- Listas ---------- */
+
+.card.lista {
+  padding: 2px var(--espaco-4);
+  gap: 0;
+}
+
+.lista-item {
+  min-height: var(--toque-minimo);
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  font-size: 13px;
+}
+
+.lista-item + .lista-item {
+  border-top: var(--borda) solid var(--borda-card);
+}
+
+/* ---------- Cabeçalho de tela ---------- */
+
+.cabecalho-tela {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.titulo-tela {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.botao-voltar {
+  min-height: var(--toque-minimo);
+  padding: 0 var(--espaco-2) 0 0;
+  border: none;
+  background: transparent;
+  color: var(--acao);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- Botões marcáveis e checkboxes ---------- */
+
+.opcoes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espaco-2);
+}
+
+.botao-marcavel {
+  min-height: var(--toque-minimo);
+  padding: 0 10px;
+  border-radius: var(--raio-interno);
+  border: var(--borda) solid var(--botao-borda);
+  background: var(--botao-fundo);
+  color: var(--texto);
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.botao-marcavel[aria-checked='true'],
+.botao-marcavel[aria-pressed='true'] {
+  border-color: var(--botao-marcado-borda);
+  background: var(--botao-marcado-fundo);
+}
+
+.checkbox {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: var(--raio-checkbox);
+  border: var(--borda) solid var(--checkbox-borda);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--texto-sobre-acao);
+}
+
+[aria-checked='true'] > .checkbox,
+[aria-pressed='true'] > .checkbox {
+  border-color: var(--acao);
+  background: var(--acao);
+}
+
+/* ---------- Navegação inferior ---------- */
+
+.nav {
+  flex: none;
+  display: flex;
+  justify-content: space-around;
+  padding: var(--espaco-2) 2px calc(var(--espaco-4) + env(safe-area-inset-bottom));
+  background: var(--nav-fundo);
+  border-top: var(--borda) solid var(--nav-borda);
+}
+
+.nav-item {
+  min-width: 54px;
+  min-height: 52px;
+  border: none;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--nav-inativo);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.nav-item[aria-current='page'] {
+  color: var(--acao);
+  font-weight: 700;
+}
+
+/* ---------- Movimento reduzido ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .barra-recolhivel {
+    transition: none;
+  }
+}

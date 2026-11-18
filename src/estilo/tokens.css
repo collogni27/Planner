@@ -1,0 +1,130 @@
+/*
+ * Design tokens do Planner — fonte de verdade das cores no código.
+ * Tokens principais: docs/identidade-visual.md.
+ * Secundários: extraídos de docs/design/referencia-tela-inicio.html.
+ * O modo vem do atributo data-modo no <html>: claro | escuro | foco.
+ */
+
+:root {
+  /* Fontes: só estas duas. Nunca itálico. */
+  --fonte-pixel: 'DotGothic16', monospace;
+  --fonte-texto: 'JetBrains Mono', monospace;
+
+  /* Formas (iguais nos três modos) */
+  --raio-card: 8px;
+  --raio-interno: 6px;
+  --raio-checkbox: 3px;
+  --borda: 2px;
+  --toque-minimo: 44px;
+
+  /* Espaçamentos */
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 14px;
+  --espaco-5: 16px;
+
+  /* Amarelo reservado: sol e urgente ("tem que ser hoje"). Igual nos três modos. */
+  --urgente: #FEF156;
+  --texto-sobre-urgente: #102A2F;
+}
+
+:root,
+[data-modo='claro'] {
+  --fundo: #F1FAFA;
+  --superficie: #FFFFFF;
+  --borda-card: #D3E7E6;
+  --texto: #102A2F;
+  --texto-secundario: #4A6669;
+  --acao: #0A7A73;
+  --texto-sobre-acao: #FFFFFF;
+
+  --barra-fundo: #DDF1EE;
+  --barra-borda: #DDF1EE;
+  --barra-data: #3F5F62;
+  --barra-botao-fundo: #FFFFFF;
+  --barra-botao-texto: #102A2F;
+
+  --checkbox-borda: #6F8E91;
+  --medidor-vazio: #D3E7E6;
+
+  --botao-fundo: #F6FBFB;
+  --botao-borda: #D3E7E6;
+  --botao-marcado-fundo: #E1F3F1;
+  --botao-marcado-borda: #0A7A73;
+
+  --caixa-neutra: #E6F4F3;
+
+  --nav-fundo: #FFFFFF;
+  --nav-borda: #D3E7E6;
+  --nav-inativo: #5E7B7E;
+
+  --mascote-corpo: #0A7A73;
+  --mascote-olhos: #5FE9DE;
+}
+
+[data-modo='escuro'] {
+  --fundo: #102A2F;
+  --superficie: #173840;
+  --borda-card: #22474E;
+  --texto: #F1FAFA;
+  --texto-secundario: #9DBDBF;
+  --acao: #5FE9DE;
+  --texto-sobre-acao: #102A2F;
+
+  --barra-fundo: #0C2024;
+  --barra-borda: #22474E;
+  --barra-data: #9DBDBF;
+  --barra-botao-fundo: #173840;
+  --barra-botao-texto: #F1FAFA;
+
+  --checkbox-borda: #6E9499;
+  --medidor-vazio: #2A5058;
+
+  --botao-fundo: #1A3D44;
+  --botao-borda: #2D565C;
+  --botao-marcado-fundo: #1E4249;
+  --botao-marcado-borda: #5FE9DE;
+
+  --caixa-neutra: #1E4249;
+
+  --nav-fundo: #0D2327;
+  --nav-borda: #1E4048;
+  --nav-inativo: #8FB0B3;
+
+  --mascote-corpo: #13958C;
+  --mascote-olhos: #5FE9DE;
+}
+
+[data-modo='foco'] {
+  --fundo: #131718;
+  --superficie: #1D2223;
+  --borda-card: #2A3133;
+  --texto: #EAF1F0;
+  --texto-secundario: #9AA9A8;
+  --acao: #5FE9DE;
+  --texto-sobre-acao: #102A2F;
+
+  --barra-fundo: #181C1D;
+  --barra-borda: #2A3133;
+  --barra-data: #A4B5B4;
+  --barra-botao-fundo: #262D2E;
+  --barra-botao-texto: #EAF1F0;
+
+  --checkbox-borda: #6F7D7E;
+  --medidor-vazio: #2C3537;
+
+  --botao-fundo: #222829;
+  --botao-borda: #2A3133;
+  --botao-marcado-fundo: #20302F;
+  --botao-marcado-borda: #5FE9DE;
+
+  --caixa-neutra: #262D2E;
+
+  --nav-fundo: #181C1D;
+  --nav-borda: #262D2E;
+  --nav-inativo: #93A3A2;
+
+  --mascote-corpo: #13958C;
+  --mascote-olhos: #5FE9DE;
+}
