@@ -59,17 +59,21 @@ export function BarraMascote({ modo, aberta, onAlternar }: Props) {
         </div>
       </div>
 
-      {!aberta && (
-        <div className="barra-mostrar-area">
-          <button className="barra-mostrar" aria-label="Mostrar a barra do mascote" onClick={onAlternar}>
-            <span className="barra-mostrar-pilula">
-              <Mascote modo={modo} largura={22} />
-              Mostrar
-              <Icone nome="baixo" tamanho={12} />
-            </span>
-          </button>
+      {/* O botão "Mostrar" abre enquanto a barra fecha (e vice-versa), na mesma
+          animação: a altura total muda de forma contínua, sem pulo. */}
+      <div className={`barra-recolhivel ${aberta ? '' : 'aberta'}`}>
+        <div className="barra-recolhivel-interno" inert={aberta}>
+          <div className="barra-mostrar-area">
+            <button className="barra-mostrar" aria-label="Mostrar a barra do mascote" onClick={onAlternar}>
+              <span className="barra-mostrar-pilula">
+                <Mascote modo={modo} largura={22} />
+                Mostrar
+                <Icone nome="baixo" tamanho={12} />
+              </span>
+            </button>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }
