@@ -3,7 +3,7 @@
 import { createClient, type Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { banco, TABELAS } from '../dados/banco'
-import { criarSincronizador, type Remoto } from '../dados/sincronizacao'
+import { criarSincronizador, TAMANHO_PAGINA, type Remoto } from '../dados/sincronizacao'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const chave = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
@@ -18,14 +18,15 @@ export const supabase = nuvemConfigurada
   : null
 
 const remoto: Remoto = {
-  async enviar(tabela, registro) {
-    const { error } = await supabase!.from(tabela).upsert(registro, { onConflict: TABELAS[tabela] })
+  async enviar(tabela, registros) {
+    const { error } = await supabase!.from(tabela).upsert(registros, { onConflict: TABELAS[tabela] })
     return error ? { erro: error.message } : {}
   },
-  async baixar(tabela, desde) {
-    let consulta = supabase!.from(tabela).select('*').order('updated_at')
+  async baixar(tabela, desde, pagina) {
+    let consulta = supabase!.from(tabela).select('*').order('updated_at').order(TABELAS[tabela])
     if (desde) consulta = consulta.gte('updated_at', desde)
-    const { data, error } = await consulta
+    const inicio = pagina * TAMANHO_PAGINA
+    const { data, error } = await consulta.range(inicio, inicio + TAMANHO_PAGINA - 1)
     return error ? { erro: error.message } : { dados: data }
   },
 }
