@@ -1,15 +1,16 @@
 import { Icone, type NomeIcone } from '../icones/Icone'
+import { useNavegacao, type Aba } from './navegacao'
 
-export type Aba = 'inicio' | 'mais'
-
-// As abas principais ainda serão decididas com o usuário (docs/identidade-visual.md).
-// Por enquanto: Início + "Mais" (tela provisória com os módulos).
+// Abas principais decididas com o usuário (docs/identidade-visual.md).
+// "Mais" é provisória e guarda o que ainda não virou aba.
 const ABAS: { id: Aba; rotulo: string; icone: NomeIcone }[] = [
   { id: 'inicio', rotulo: 'Início', icone: 'sol' },
+  { id: 'estudos', rotulo: 'Estudos', icone: 'livro' },
   { id: 'mais', rotulo: 'Mais', icone: 'mais' },
 ]
 
-export function NavInferior({ atual, onEscolher }: { atual: Aba; onEscolher: (aba: Aba) => void }) {
+export function NavInferior() {
+  const { aba: atual, escolherAba } = useNavegacao()
   return (
     <nav className="nav" aria-label="Abas">
       {ABAS.map((aba) => (
@@ -17,7 +18,7 @@ export function NavInferior({ atual, onEscolher }: { atual: Aba; onEscolher: (ab
           key={aba.id}
           className="nav-item"
           aria-current={aba.id === atual ? 'page' : undefined}
-          onClick={() => onEscolher(aba.id)}
+          onClick={() => escolherAba(aba.id)}
         >
           <Icone nome={aba.icone} tamanho={22} />
           <span>{aba.rotulo}</span>

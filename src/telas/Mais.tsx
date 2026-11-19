@@ -1,17 +1,14 @@
-import { Icone } from '../icones/Icone'
+import { useNavegacao } from '../app/navegacao'
+import { Item, Secao } from '../ui/componentes'
 
-export type TelaDeMais = 'configuracoes'
-
-/** Tela provisória "Mais": dá acesso aos módulos enquanto as abas principais não são definidas. */
-export function Mais({ onAbrir }: { onAbrir: (tela: TelaDeMais) => void }) {
+/** Tela provisória "Mais": dá acesso ao que ainda não virou aba principal. */
+export function Mais() {
+  const { abrir } = useNavegacao()
   return (
     <>
-      <section className="card lista">
-        <button className="lista-item" onClick={() => onAbrir('configuracoes')}>
-          <span>Configurações</span>
-          <Icone nome="direita" tamanho={12} />
-        </button>
-      </section>
+      <Secao>
+        <Item titulo="Configurações" onClick={() => abrir({ tela: 'configuracoes' })} />
+      </Secao>
       <p className="texto-secundario nota-rodape">Os módulos aparecem aqui conforme forem construídos.</p>
     </>
   )

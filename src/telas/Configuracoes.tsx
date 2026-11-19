@@ -2,6 +2,7 @@ import { VERSAO } from '../config'
 import { useSituacaoSincronizacao } from '../dados/useSincronizacao'
 import { MODOS, type Modo } from '../estado/preferencias'
 import { Icone } from '../icones/Icone'
+import { Cabecalho } from '../ui/componentes'
 import { supabase } from '../nuvem/supabase'
 
 const NOMES: Record<Modo, string> = { claro: 'Claro', escuro: 'Escuro', foco: 'Foco' }
@@ -10,10 +11,9 @@ interface Props {
   modo: Modo
   email: string
   onModo: (modo: Modo) => void
-  onVoltar: () => void
 }
 
-export function Configuracoes({ modo, email, onModo, onVoltar }: Props) {
+export function Configuracoes({ modo, email, onModo }: Props) {
   const { online, pendentes } = useSituacaoSincronizacao()
 
   let situacao = 'Tudo sincronizado.'
@@ -30,13 +30,7 @@ export function Configuracoes({ modo, email, onModo, onVoltar }: Props) {
 
   return (
     <>
-      <div className="cabecalho-tela">
-        <button className="botao-voltar" onClick={onVoltar}>
-          <Icone nome="esquerda" tamanho={12} />
-          Voltar
-        </button>
-        <h1 className="titulo-tela">Configurações</h1>
-      </div>
+      <Cabecalho titulo="Configurações" />
 
       <section className="card">
         <h2 className="card-titulo">Modo de cor</h2>

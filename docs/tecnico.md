@@ -18,6 +18,9 @@ O Android fecha apps em segundo plano para liberar memória. Isso **vai acontece
 - **Como funciona (código em `src/dados/`):** `registrar()` grava o registro no banco local e o coloca na fila numa única transação. `sincronizar()` envia a fila em ordem (um item só sai depois de o Supabase confirmar) e depois baixa o que mudou na nuvem desde a última vez (cursor por `updated_at`). Alteração local ainda na fila vence a da nuvem; entre as duas versões já sincronizadas, vence a de `updated_at` mais recente. Sincroniza ao abrir, ao voltar a internet, ao voltar para o app e a cada 5 minutos.
 - Toda tabela nova sincronizada entra em `TABELAS` (`src/dados/banco.ts`) com a coluna que a identifica.
 - Estado da interface (tela atual, barra aberta, modo de cor) fica no `localStorage`, que é lido na hora e evita "piscar" ao abrir.
+- **Navegação** (`src/app/navegacao.tsx`): cada aba tem uma pilha de telas, salva no aparelho. O botão voltar do Android fecha a tela de cima; na tela principal de uma aba, volta ao Início; no Início, minimiza o app.
+- **Rascunhos** (`useRascunho`): o que é digitado num formulário fica salvo, ligado àquela tela aberta; sobrevive ao fechamento pelo sistema e é descartado quando o usuário sai da tela pelo "voltar".
+- A sincronização envia a fila em lotes de até 200 registros e baixa em páginas de 1000.
 - Se alguma função ficar indisponível offline, a interface avisa.
 - Prioridade: **confiabilidade > offline completo**.
 

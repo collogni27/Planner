@@ -10,7 +10,7 @@
   - tarefas do dia;
   - hábitos do dia;
   - treino: o que está previsto, e se é "tem que ser hoje";
-  - cards pendentes;
+  - revisões de cards pendentes;
   - lembrete de tomar sol, com botão para marcar "tomei sol" ali mesmo.
 - **Ação de saída:** botão claro ("Começar o dia" ou similar) que leva à tela Início. Opcionalmente, o check do sono da noite anterior e/ou a tela diária (`tela-diaria.md`) aparecem aqui.
 - **Abrir o "Bom dia" conta como "acordei"**: registra o horário real em que abri.

@@ -5,19 +5,24 @@ import { criarSincronizador, type Remoto } from './sincronizacao'
 
 /** Nuvem falsa, em memória, que pode ser "desligada" para simular falta de internet. */
 function nuvemFalsa() {
+  // Só a tabela "configuracoes" tem dados nestes testes; as outras ficam vazias.
   const linhas = new Map<string, Registro>()
   const nuvem = {
     online: true,
     linhas,
+    lotes: [] as number[],
     remoto: {
-      async enviar(_t: NomeTabela, r: Registro) {
+      async enviar(t: NomeTabela, rs: Registro[]) {
+        if (t !== 'configuracoes') throw new Error('tabela inesperada')
         if (!nuvem.online) return { erro: 'sem internet' }
-        linhas.set(r.user_id, r)
+        nuvem.lotes.push(rs.length)
+        for (const r of rs) linhas.set(r.user_id!, r)
         return {}
       },
-      async baixar(_t: NomeTabela, desde: string | null) {
+      async baixar(t: NomeTabela, desde: string | null, pagina: number) {
         if (!nuvem.online) return { erro: 'sem internet' }
-        return { dados: [...linhas.values()].filter((r) => !desde || r.updated_at >= desde) }
+        if (pagina > 0 || t !== 'configuracoes') return { dados: [] }
+        return { dados: [...linhas.values()].filter((r) => !desde || Date.parse(r.updated_at) >= Date.parse(desde)) }
       },
     } satisfies Remoto,
   }
@@ -88,5 +93,31 @@ describe('sincronização local primeiro', () => {
     nuvem.online = true
     await s.sincronizar()
     expect((nuvem.linhas.get('u1') as Configuracoes).dados.modo).toBe('foco')
+  })
+
+  it('envia muitas alterações em lotes, e repetições do mesmo registro viram uma só', async () => {
+    const nuvem = nuvemFalsa()
+    nuvem.online = false
+    const s = criarSincronizador(banco, nuvem.remoto)
+    await s.registrarVarios(
+      'configuracoes',
+      Array.from({ length: 450 }, (_, i) => ({ ...conf('claro'), user_id: `u${i}` })),
+    )
+    await s.registrar('configuracoes', conf('foco'))
+    await s.registrar('configuracoes', conf('escuro'))
+    nuvem.online = true
+    await s.sincronizar()
+    expect(nuvem.lotes).toEqual([200, 200, 51])
+    expect((nuvem.linhas.get('u1') as Configuracoes).dados.modo).toBe('escuro')
+    expect(await banco.fila.count()).toBe(0)
+  })
+
+  it('compara datas do Supabase ("+00:00") e do aparelho ("Z") como datas, não como texto', async () => {
+    const nuvem = nuvemFalsa()
+    const s = criarSincronizador(banco, nuvem.remoto)
+    await banco.configuracoes.put({ ...conf('claro'), updated_at: '2026-11-19T10:00:00.500Z' })
+    nuvem.linhas.set('u1', { ...conf('foco'), updated_at: '2026-11-19T10:00:00.900123+00:00' })
+    await s.sincronizar()
+    expect((await banco.configuracoes.get('u1'))?.dados.modo).toBe('foco')
   })
 })
