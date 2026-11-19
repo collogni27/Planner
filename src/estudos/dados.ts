@@ -14,10 +14,12 @@ import {
   type NomeTabela,
   type Objetivo,
   type Registro,
+  type Revisao,
 } from '../dados/banco'
 import { sincronizador } from '../nuvem/supabase'
 import { estadoInicial } from './fsrs'
 import type { Existentes, RegistrosImportacao } from './importacao'
+import { novosHoje } from './revisao'
 
 const porOrdem = <T extends { ordem: number }>(a: T, b: T) => a.ordem - b.ordem
 const porNome = <T extends { nome: string }>(a: T, b: T) => a.nome.localeCompare(b.nome, 'pt-BR')
@@ -254,4 +256,43 @@ export function proximaAEstudar(micrometas: Micrometa[], areas: Area[], checkins
   return [...micrometas]
     .sort((a, b) => ordemArea(a.area_id) - ordemArea(b.area_id) || a.ordem - b.ordem)
     .find((m) => situacaoDe(m.id, checkins) === 'a-estudar')
+}
+
+// ---------- Revisão ----------
+
+export interface DadosRevisao {
+  cards: Card[]
+  micrometas: Micrometa[]
+  areas: Area[]
+  objetivos: Objetivo[]
+  checkins: Checkin[]
+  novosRespondidosHoje: number
+}
+
+/** Tudo que a revisão precisa, atualizado sozinho quando os dados mudam. */
+export const useDadosRevisao = (inicioDoDia: Date) =>
+  useLiveQuery(async (): Promise<DadosRevisao> => {
+    const [cards, micrometas, areas, objetivos, checkins, revisoesHoje] = await Promise.all([
+      banco.cards.toArray(),
+      banco.micrometas.toArray(),
+      banco.areas.toArray(),
+      banco.objetivos.toArray(),
+      banco.checkins.toArray(),
+      banco.revisoes.where('revisado_em').aboveOrEqual(inicioDoDia.toISOString()).toArray(),
+    ])
+    return {
+      cards: cards.filter(ativo),
+      micrometas: micrometas.filter(ativo),
+      areas: areas.filter(ativo),
+      objetivos: objetivos.filter(ativo),
+      checkins: checkins.filter(ativo),
+      novosRespondidosHoje: novosHoje(revisoesHoje, inicioDoDia),
+    }
+  }, [inicioDoDia.getTime()])
+
+/** Grava a resposta: o card com o novo agendamento e o registro no histórico. */
+export async function gravarResposta(card: Card, revisao: Revisao) {
+  await sincronizador.registrar('revisoes', revisao)
+  await sincronizador.registrar('cards', card)
+  void sincronizador.sincronizar()
 }

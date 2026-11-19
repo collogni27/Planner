@@ -34,18 +34,20 @@ Objetivo (ex.: ENEM)
 - **Baralhos** são geridos pelo usuário, numa lista simples, **sem sub-baralhos** (área e tags já organizam). Ex.: "ENEM – Flashcards", "ENEM – Questões". Questões **não** são um tipo especial: são cards comuns num baralho separado.
 - Cada **card** (frente, verso, tags) pertence a **um baralho** e, opcionalmente, a **um conteúdo**.
 - **Um card ligado a conteúdo só entra na revisão depois do primeiro check-in dele** (primeiro estudar, depois recuperar). Card sem conteúdo entra direto.
-- Se um check-in for liberar muitos cards de uma vez, o app avisa a carga prevista e oferece liberar aos poucos.
+- Se um check-in liberar muitos cards de uma vez, o teto de 50 novos por dia distribui a entrada ao longo dos dias. (Aviso de carga no check-in: futuro, se fizer falta.)
 
 ### Tela principal de Estudos
 - Blocos **Objetivos** e **Baralhos**: mostram os **5 primeiros**; se houver mais, botão **"Ver todos"** abre uma tela com a lista completa.
 - Bloco **Cards**: Importar cards, Gerar cards com IA, Exportar cards.
 
-## Revisão (próxima versão)
-- **Acessada pela tela de Estudos** (não de dentro do baralho).
-- Ao abrir: escolher o **baralho** e então revisar o **baralho inteiro** ou **filtrar** por **áreas** ou por **tags**; aí começa a revisão.
-- Dentro da revisão, conteúdos misturados.
-- Frente → "Mostrar resposta" → verso + 4 botões **Errei / Difícil / Bom / Fácil**, com o intervalo previsto em cada botão.
-- Agendamento pelo FSRS (`ts-fsrs`), meta padrão de 90% de chance de lembrar (ajustável em Configurações). No futuro, com meses de histórico, calibrar os parâmetros do FSRS com as minhas revisões.
+## Revisão (versão 0.3.2)
+- **Acessada pela tela de Estudos**: botão "Revisar" no topo (com o total para revisar agora).
+- Ao abrir: escolher o **baralho** (cada um mostra quantos estão para revisar) e revisar **todos** os cards ou **filtrar** por **várias áreas** ou **várias tags** (vale qualquer uma das marcadas); aí "Começar".
+- Ordem: primeiro os cards em aprendizado que já venceram; depois revisões e novos **misturados** (ordem estável no mesmo dia).
+- Card respondido com "Errei" volta minutos depois, na mesma sessão. Se não houver mais nada, cards que voltam em até 20 min são adiantados; no fim, o app diz a que horas os próximos voltam.
+- **Teto de segurança de 50 cards novos por dia** (o ritmo normal é dado pelos check-ins).
+- Frente → "Mostrar resposta" → verso + 4 botões **Errei / Difícil / Bom / Fácil**, com o intervalo previsto em cada botão (ex.: "Bom · 10min", "Fácil · 10d"). Durante a revisão dá para editar o card.
+- Agendamento pelo FSRS (`ts-fsrs`), meta de 90% de chance de lembrar (por enquanto fixa; ajuste em Configurações quando houver necessidade). No futuro, com meses de histórico, calibrar os parâmetros do FSRS com as minhas revisões.
 - Histórico de toda revisão guardado (tabela `revisoes`), nunca apagado.
 - Salva continuamente o card atual e se a resposta está aberta: reabrir após fechamento volta no mesmo ponto.
 - Funciona offline; sincroniza depois.

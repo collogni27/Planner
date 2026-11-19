@@ -3,6 +3,7 @@
 import { App as AppNativo } from '@capacitor/app'
 import { Capacitor } from '@capacitor/core'
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react'
+import type { Filtro } from '../estudos/revisao'
 import { removerRascunhos, useEstadoSalvo } from '../estado/preferencias'
 
 export type Aba = 'inicio' | 'estudos' | 'mais'
@@ -17,6 +18,8 @@ export type Rota =
   | { tela: 'exportar'; baralhoId?: string }
   | { tela: 'ajuda-ia'; micrometaId?: string; baralhoId?: string }
   | { tela: 'todos'; tipo: 'objetivos' | 'baralhos' }
+  | { tela: 'revisar' }
+  | { tela: 'sessao'; baralhoId: string; filtro: Filtro }
   | { tela: 'configuracoes' }
 
 /** Rota + uma chave única (usada para os rascunhos daquela tela). */

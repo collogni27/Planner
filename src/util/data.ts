@@ -26,3 +26,18 @@ export function saudacao(agora: Date): string {
   if (h >= 12 && h < 18) return 'Boa tarde'
   return 'Boa noite'
 }
+
+/** "2026-11-19": o dia em São Paulo (também serve de semente para a ordem da revisão). */
+export function diaLocal(agora: Date): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: FUSO, year: 'numeric', month: '2-digit', day: '2-digit' }).format(agora)
+}
+
+/** 00:00 do dia em São Paulo (UTC-3; o Brasil não tem horário de verão desde 2019). */
+export function inicioDoDia(agora: Date): Date {
+  return new Date(`${diaLocal(agora)}T00:00:00-03:00`)
+}
+
+/** "14:20" em São Paulo. */
+export function horaMinuto(d: Date): string {
+  return new Intl.DateTimeFormat('pt-BR', { timeZone: FUSO, hour: '2-digit', minute: '2-digit' }).format(d)
+}

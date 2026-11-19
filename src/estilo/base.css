@@ -786,3 +786,118 @@ code {
   display: flex;
   align-items: center;
 }
+
+/* ---------- Revisão ---------- */
+
+.botao-grande {
+  min-height: 52px;
+  font-size: 14px;
+}
+
+.lista-escolha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.escolha {
+  width: 100%;
+}
+
+.escolha-nome {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.escolha-numero {
+  font-family: var(--fonte-pixel);
+  font-size: 16px;
+  font-weight: 400;
+}
+
+.fichas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+
+.ficha {
+  min-height: 36px;
+  padding: 0 var(--espaco-3);
+  border-radius: var(--raio-interno);
+  border: var(--borda) solid var(--botao-borda);
+  background: var(--botao-fundo);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ficha[aria-pressed='true'] {
+  border-color: var(--acao);
+  background: var(--acao);
+  color: var(--texto-sobre-acao);
+}
+
+.restantes {
+  font-family: var(--fonte-pixel);
+  font-size: 18px;
+  color: var(--texto-secundario);
+  padding-right: var(--espaco-1);
+}
+
+.cartao-revisao {
+  min-height: 220px;
+  padding: var(--espaco-5);
+  gap: var(--espaco-3);
+}
+
+.cartao-contexto {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-secundario);
+}
+
+.cartao-texto {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.cartao-divisao {
+  width: 100%;
+  margin: 0;
+  border: none;
+  border-top: var(--borda) dashed var(--borda-card);
+}
+
+.notas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--espaco-2);
+}
+
+.botao-nota {
+  min-height: 56px;
+  padding: 4px;
+  border-radius: var(--raio-interno);
+  border: var(--borda) solid var(--botao-borda);
+  background: var(--superficie);
+  color: var(--texto);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.botao-nota-tempo {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--texto-secundario);
+}
