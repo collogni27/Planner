@@ -19,7 +19,7 @@ import {
 import { sincronizador } from '../nuvem/supabase'
 import { estadoInicial } from './fsrs'
 import type { Existentes, RegistrosImportacao } from './importacao'
-import { novosHoje } from './revisao'
+import { desfazerRevisoesDeHoje, novosHoje } from './revisao'
 
 const porOrdem = <T extends { ordem: number }>(a: T, b: T) => a.ordem - b.ordem
 const porNome = <T extends { nome: string }>(a: T, b: T) => a.nome.localeCompare(b.nome, 'pt-BR')
@@ -295,4 +295,18 @@ export async function gravarResposta(card: Card, revisao: Revisao) {
   await sincronizador.registrar('revisoes', revisao)
   await sincronizador.registrar('cards', card)
   void sincronizador.sincronizar()
+}
+
+/** Modo Desenvolvedor: desfaz as revisões de hoje. Devolve quantas foram desfeitas. */
+export async function resetarRevisoesDeHoje(inicioDoDia: Date): Promise<number> {
+  const hoje = (await banco.revisoes.where('revisado_em').aboveOrEqual(inicioDoDia.toISOString()).toArray()).filter(ativo)
+  if (hoje.length === 0) return 0
+  const ids = [...new Set(hoje.map((r) => r.card_id))]
+  const [cards, todas] = await Promise.all([banco.cards.bulkGet(ids), banco.revisoes.where('card_id').anyOf(ids).toArray()])
+  const anteriores = todas.filter((r) => r.revisado_em < inicioDoDia.toISOString())
+  const r = desfazerRevisoesDeHoje(cards.filter(ativo), hoje, anteriores)
+  await sincronizador.registrarVarios('revisoes', r.revisoes)
+  await sincronizador.registrarVarios('cards', r.cards)
+  void sincronizador.sincronizar()
+  return r.revisoes.length
 }

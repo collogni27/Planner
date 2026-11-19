@@ -12,7 +12,7 @@ import {
   useTodasAreas,
   useTodasMicrometas,
 } from '../dados'
-import { paraRevisar, useInicioDoDia, useRelogio } from './RevisarTela'
+import { paraRevisar, useInicioDoDia, useLimiteNovos, useRelogio } from './RevisarTela'
 
 /** Quantos itens cada lista mostra antes do "Ver todos". */
 export const LIMITE_RESUMO = 5
@@ -42,7 +42,8 @@ export function EstudosInicio() {
 
   const [agora] = useRelogio()
   const dados = useDadosRevisao(useInicioDoDia(agora))
-  const totalRevisar = dados && baralhos ? baralhos.reduce((soma, b) => soma + paraRevisar(dados, b.id, { tipo: 'tudo' }, agora), 0) : 0
+  const [limiteNovos] = useLimiteNovos(agora)
+  const totalRevisar = dados && baralhos ? baralhos.reduce((soma, b) => soma + paraRevisar(dados, b.id, { tipo: 'tudo' }, agora, limiteNovos), 0) : 0
 
   return (
     <>

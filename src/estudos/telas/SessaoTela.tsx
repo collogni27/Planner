@@ -5,8 +5,8 @@ import { useRascunho } from '../../estado/preferencias'
 import { Cabecalho, Secao } from '../../ui/componentes'
 import { diaLocal, horaMinuto } from '../../util/data'
 import { gravarResposta, useDadosRevisao } from '../dados'
-import { cardsLiberados, formatarIntervalo, montarFila, NOTAS, previa, responder, type Filtro } from '../revisao'
-import { useInicioDoDia, useRelogio } from './RevisarTela'
+import { cardsLiberados, formatarIntervalo, LIBERAR_MAIS, montarFila, NOTAS, previa, responder, type Filtro } from '../revisao'
+import { useInicioDoDia, useLimiteNovos, useRelogio } from './RevisarTela'
 
 interface Props {
   chave: string
@@ -27,7 +27,8 @@ export function SessaoTela({ chave, baralhoId, filtro }: Props) {
   const [inicioMs, setInicioMs] = useRascunho<number | null>(chave, 'inicio', null)
 
   const liberados = dados ? cardsLiberados(dados.cards, baralhoId, filtro, dados.micrometas, dados.checkins) : []
-  const fila = dados ? montarFila(liberados, agora, dados.novosRespondidosHoje, diaLocal(agora)) : null
+  const [limiteNovos, liberarMais] = useLimiteNovos(agora)
+  const fila = dados ? montarFila(liberados, agora, dados.novosRespondidosHoje, diaLocal(agora), limiteNovos) : null
   // O card que já estava na tela continua nela (mesmo que a ordem mude).
   const card = liberados.find((c) => c.id === atualId) ?? fila?.proximo ?? null
 
@@ -61,6 +62,16 @@ export function SessaoTela({ chave, baralhoId, filtro }: Props) {
           <p className="texto-secundario">
             {fila.voltaEm ? `Alguns cards voltam às ${horaMinuto(fila.voltaEm)}.` : 'Nada mais para revisar agora.'}
           </p>
+          {fila.novosEsperando > 0 && (
+            <>
+              <p className="texto-secundario">
+                {fila.novosEsperando === 1 ? '1 card novo ficou para amanhã.' : `${fila.novosEsperando} cards novos ficaram para amanhã.`}
+              </p>
+              <button className="botao-secundario" onClick={liberarMais}>
+                Liberar mais {Math.min(LIBERAR_MAIS, fila.novosEsperando)} hoje
+              </button>
+            </>
+          )}
           <button className="botao-principal" onClick={voltar}>
             Concluir
           </button>
