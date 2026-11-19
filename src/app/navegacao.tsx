@@ -5,6 +5,7 @@ import { Capacitor } from '@capacitor/core'
 import { createContext, useCallback, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import type { Filtro } from '../estudos/revisao'
 import { removerRascunhos, useEstadoSalvo } from '../estado/preferencias'
+import { fecharUltimaCaixa } from '../ui/dialogos'
 
 export type Aba = 'inicio' | 'estudos' | 'mais'
 
@@ -82,6 +83,7 @@ export function ProvedorNavegacao({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!Capacitor.isNativePlatform()) return
     const ouvinte = AppNativo.addListener('backButton', () => {
+      if (fecharUltimaCaixa()) return // primeiro fecha a caixa de diálogo aberta
       if (pilha.length > 0) voltar()
       else if (estado.aba !== 'inicio') escolherAba('inicio')
       else void AppNativo.minimizeApp()

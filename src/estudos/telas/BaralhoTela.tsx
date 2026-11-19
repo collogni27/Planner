@@ -1,6 +1,7 @@
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Acoes, Cabecalho, Item, Secao, Vazio, pedirNome } from '../../ui/componentes'
+import { Acoes, Cabecalho, Item, Secao, Vazio, usePedirNome } from '../../ui/componentes'
+import { useDialogos } from '../../ui/dialogos'
 import { normalizar } from '../importacao'
 import { apagarBaralho, renomear, useBaralho, useCardsDoBaralho, useTodasMicrometas } from '../dados'
 
@@ -9,6 +10,8 @@ const LIMITE_LISTA = 100
 /** Um baralho: busca e lista de cards. */
 export function BaralhoTela({ id, chave }: { id: string; chave: string }) {
   const { abrir, voltar } = useNavegacao()
+  const { confirmar } = useDialogos()
+  const pedirNome = usePedirNome()
   const baralho = useBaralho(id)
   const cards = useCardsDoBaralho(id)
   const micrometas = useTodasMicrometas()
@@ -62,18 +65,26 @@ export function BaralhoTela({ id, chave }: { id: string; chave: string }) {
       <Acoes>
         <button
           className="botao-secundario"
-          onClick={() => {
-            const nome = pedirNome(baralho.nome, 'Novo nome do baralho')
-            if (nome) void renomear('baralhos', baralho, nome)
-          }}
+          onClick={() =>
+            void pedirNome(baralho.nome, 'Renomear baralho').then((nome) => {
+              if (nome) void renomear('baralhos', baralho, nome)
+            })
+          }
         >
           Renomear baralho
         </button>
         <button
           className="botao-secundario"
-          onClick={() => {
-            if (confirm(`Apagar o baralho "${baralho.nome}" e todos os ${cards.length} cards dele?`)) void apagarBaralho(baralho).then(voltar)
-          }}
+          onClick={() =>
+            void confirmar({
+              titulo: `Apagar o baralho "${baralho.nome}"?`,
+              mensagem: `Os ${cards.length} cards dele também são apagados.`,
+              confirmar: 'Apagar',
+              perigo: true,
+            }).then((ok) => {
+              if (ok) void apagarBaralho(baralho).then(voltar)
+            })
+          }
         >
           Apagar baralho
         </button>

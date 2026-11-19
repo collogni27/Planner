@@ -21,6 +21,7 @@ import { RevisarTela } from '../estudos/telas/RevisarTela'
 import { SessaoTela } from '../estudos/telas/SessaoTela'
 import { TodosTela } from '../estudos/telas/TodosTela'
 import { ProvedorNavegacao, useNavegacao } from './navegacao'
+import { ProvedorDialogos } from '../ui/dialogos'
 import { BarraMascote } from './BarraMascote'
 import { NavInferior } from './NavInferior'
 
@@ -60,7 +61,9 @@ interface PropsConectado {
 function AppConectado({ userId, email, modo, setModo }: PropsConectado) {
   return (
     <ProvedorNavegacao>
-      <Conteudo userId={userId} email={email} modo={modo} setModo={setModo} />
+      <ProvedorDialogos>
+        <Conteudo userId={userId} email={email} modo={modo} setModo={setModo} />
+      </ProvedorDialogos>
     </ProvedorNavegacao>
   )
 }

@@ -3,6 +3,8 @@ import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
 import { Cabecalho, Recolhivel, Rotulo, Secao } from '../../ui/componentes'
 import { copiarTexto } from '../../util/arquivo'
+import { Seletor } from '../../ui/dialogos'
+import { opcoesBaralhos, opcoesConteudos } from '../opcoes'
 import { useAreas, useBaralhos, useMicrometa, useObjetivo, useObjetivos, useTodasMicrometas } from '../dados'
 
 /**
@@ -88,30 +90,10 @@ export function AjudaIaTela({ chave, micrometaId, baralhoId }: { chave: string; 
       <Secao titulo="Para quais cards">
         <div className="formulario">
           <Rotulo texto="Baralho">
-            <select className="campo-entrada" value={bId} onChange={(e) => setBId(e.target.value)}>
-              <option value="">Escolha…</option>
-              {baralhos?.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.nome}
-                </option>
-              ))}
-            </select>
+            <Seletor rotulo="Baralho" valor={bId} onChange={setBId} opcoes={opcoesBaralhos(baralhos ?? [], 'Escolha…')} />
           </Rotulo>
           <Rotulo texto="Conteúdo">
-            <select className="campo-entrada" value={mId} onChange={(e) => setMId(e.target.value)}>
-              <option value="">Escolha…</option>
-              {objetivos?.map((o) => (
-                <optgroup key={o.id} label={o.nome}>
-                  {micrometas
-                    ?.filter((m) => m.objetivo_id === o.id)
-                    .map((m) => (
-                      <option key={m.id} value={m.id}>
-                        {m.nome}
-                      </option>
-                    ))}
-                </optgroup>
-              ))}
-            </select>
+            <Seletor rotulo="Conteúdo" valor={mId} onChange={setMId} opcoes={opcoesConteudos(objetivos ?? [], micrometas ?? [], 'Escolha…')} />
           </Rotulo>
         </div>
       </Secao>

@@ -901,3 +901,98 @@ code {
   font-weight: 400;
   color: var(--texto-secundario);
 }
+
+/* ---------- Caixas de diálogo (ui/dialogos.tsx) ---------- */
+
+.sobreposicao {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--sobreposicao);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: var(--espaco-4) var(--espaco-4) calc(var(--espaco-4) + env(safe-area-inset-bottom));
+}
+
+.dialogo {
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--superficie);
+  color: var(--texto);
+  border: var(--borda) solid var(--borda-card);
+  border-radius: var(--raio-card);
+  font-family: var(--fonte-texto);
+}
+
+.dialogo-corpo {
+  padding: var(--espaco-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  min-height: 0;
+}
+
+/* Ação perigosa ou urgente: amarelo, a cor de atenção (rara de propósito). */
+.botao-perigo {
+  min-height: var(--toque-minimo);
+  padding: 0 var(--espaco-3);
+  border: none;
+  border-radius: var(--raio-interno);
+  background: var(--urgente);
+  color: var(--texto-sobre-urgente);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.seletor {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.seletor-texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seletor-lista {
+  overflow-y: auto;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+}
+
+.seletor-grupo {
+  display: flex;
+  flex-direction: column;
+}
+
+.seletor-opcao {
+  min-height: var(--toque-minimo);
+  padding: 0 var(--espaco-1);
+  border: none;
+  border-bottom: var(--borda) solid var(--borda-card);
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+  font-size: 13px;
+}
+
+.seletor-opcao[aria-selected='true'] {
+  color: var(--acao);
+  font-weight: 700;
+}

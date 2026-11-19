@@ -3,6 +3,7 @@ import { useSituacaoSincronizacao } from '../dados/useSincronizacao'
 import { MODOS, type Modo } from '../estado/preferencias'
 import { Icone } from '../icones/Icone'
 import { Cabecalho } from '../ui/componentes'
+import { useDialogos } from '../ui/dialogos'
 import { supabase } from '../nuvem/supabase'
 
 const NOMES: Record<Modo, string> = { claro: 'Claro', escuro: 'Escuro', foco: 'Foco' }
@@ -15,13 +16,22 @@ interface Props {
 
 export function Configuracoes({ modo, email, onModo }: Props) {
   const { online, pendentes } = useSituacaoSincronizacao()
+  const { confirmar } = useDialogos()
 
   let situacao = 'Tudo sincronizado.'
   if (!online) situacao = 'Sem internet. O que você registrar fica salvo no aparelho e é enviado quando a conexão voltar.'
   else if (pendentes > 0) situacao = 'Há alterações salvas no aparelho aguardando envio para a nuvem.'
 
   async function sair() {
-    if (pendentes > 0 && !confirm('Há alterações ainda não enviadas. Elas continuam salvas neste aparelho. Sair mesmo assim?')) {
+    if (
+      pendentes > 0 &&
+      !(await confirmar({
+        titulo: 'Sair mesmo assim?',
+        mensagem: 'Há alterações ainda não enviadas. Elas continuam salvas neste aparelho.',
+        confirmar: 'Sair',
+        perigo: true,
+      }))
+    ) {
       return
     }
     // "local": sai só deste aparelho, funciona mesmo sem internet.

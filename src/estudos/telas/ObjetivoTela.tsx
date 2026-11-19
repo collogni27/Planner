@@ -3,7 +3,8 @@ import { useNavegacao } from '../../app/navegacao'
 import type { Area, Micrometa } from '../../dados/banco'
 import { useRascunho } from '../../estado/preferencias'
 import { Icone } from '../../icones/Icone'
-import { Acoes, Cabecalho, Item, Secao, Vazio, dataCurta, pedirNome } from '../../ui/componentes'
+import { Acoes, Cabecalho, Item, Secao, Vazio, dataCurta, usePedirNome } from '../../ui/componentes'
+import { Seletor, useDialogos } from '../../ui/dialogos'
 import {
   apagarArea,
   apagarObjetivo,
@@ -21,6 +22,8 @@ import {
 /** Um objetivo: micrometas agrupadas por área, na ordem da fila de estudo. */
 export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
   const { abrir, voltar } = useNavegacao()
+  const { confirmar } = useDialogos()
+  const pedirNome = usePedirNome()
   const objetivo = useObjetivo(id)
   const areas = useAreas(id)
   const micrometas = useMicrometas(id)
@@ -70,18 +73,26 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
                 <span className="acoes-pequenas">
                   <button
                     className="botao-texto"
-                    onClick={() => {
-                      const nome = pedirNome(g.area!.nome, 'Novo nome da área')
-                      if (nome) void renomear('areas', g.area!, nome)
-                    }}
+                    onClick={() =>
+                      void pedirNome(g.area!.nome, 'Renomear área').then((nome) => {
+                        if (nome) void renomear('areas', g.area!, nome)
+                      })
+                    }
                   >
                     Renomear
                   </button>
                   <button
                     className="botao-texto"
-                    onClick={() => {
-                      if (confirm(`Apagar a área "${g.area!.nome}"? Os conteúdos dela ficam em "Sem área".`)) void apagarArea(g.area!)
-                    }}
+                    onClick={() =>
+                      void confirmar({
+                        titulo: `Apagar a área "${g.area!.nome}"?`,
+                        mensagem: 'Os conteúdos dela ficam em "Sem área".',
+                        confirmar: 'Apagar',
+                        perigo: true,
+                      }).then((ok) => {
+                        if (ok) void apagarArea(g.area!)
+                      })
+                    }
                   >
                     Apagar
                   </button>
@@ -98,7 +109,12 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
                 onClick={() => abrir({ tela: 'micrometa', id: m.id })}
                 direita={
                   <span className="mover">
-                    <button className="botao-icone" aria-label={`Subir ${m.nome}`} disabled={i === 0} onClick={() => void moverNaFila(m, -1)}>
+                    <button
+                      className="botao-icone"
+                      aria-label={`Subir ${m.nome}`}
+                      disabled={i === 0}
+                      onClick={() => void moverNaFila(m, -1)}
+                    >
                       <Icone nome="cima" tamanho={14} />
                     </button>
                     <button
@@ -152,14 +168,12 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
             value={nomeNova}
             onChange={(e) => setNomeNova(e.target.value)}
           />
-          <select className="campo-entrada" aria-label="Área" value={areaNova} onChange={(e) => setAreaNova(e.target.value)}>
-            <option value="">Sem área</option>
-            {areas.map((a) => (
-              <option key={a.id} value={a.id}>
-                {a.nome}
-              </option>
-            ))}
-          </select>
+          <Seletor
+            rotulo="Área"
+            valor={areaNova}
+            onChange={setAreaNova}
+            opcoes={[{ valor: '', rotulo: 'Sem área' }, ...areas.map((a) => ({ valor: a.id, rotulo: a.nome }))]}
+          />
           <button className="botao-principal" type="submit" disabled={!nomeNova.trim()}>
             Adicionar conteúdo
           </button>
@@ -169,20 +183,26 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
       <Acoes>
         <button
           className="botao-secundario"
-          onClick={() => {
-            const nome = pedirNome(objetivo.nome, 'Novo nome do objetivo')
-            if (nome) void renomear('objetivos', objetivo, nome)
-          }}
+          onClick={() =>
+            void pedirNome(objetivo.nome, 'Renomear objetivo').then((nome) => {
+              if (nome) void renomear('objetivos', objetivo, nome)
+            })
+          }
         >
           Renomear objetivo
         </button>
         <button
           className="botao-secundario"
-          onClick={() => {
-            if (confirm(`Apagar o objetivo "${objetivo.nome}" com suas áreas, conteúdos e check-ins? Os cards continuam nos baralhos.`)) {
-              void apagarObjetivo(objetivo).then(voltar)
-            }
-          }}
+          onClick={() =>
+            void confirmar({
+              titulo: `Apagar o objetivo "${objetivo.nome}"?`,
+              mensagem: 'As áreas, os conteúdos e os check-ins dele também são apagados. Os cards continuam nos baralhos.',
+              confirmar: 'Apagar',
+              perigo: true,
+            }).then((ok) => {
+              if (ok) void apagarObjetivo(objetivo).then(voltar)
+            })
+          }
         >
           Apagar objetivo
         </button>

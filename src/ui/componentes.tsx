@@ -2,6 +2,7 @@
 import { useState, type ReactNode } from 'react'
 import { useNavegacao } from '../app/navegacao'
 import { Icone } from '../icones/Icone'
+import { useDialogos } from './dialogos'
 
 /** Cabeçalho de tela com "Voltar" (e, opcionalmente, um botão à direita). */
 export function Cabecalho({ titulo, acao }: { titulo: string; acao?: ReactNode }) {
@@ -114,10 +115,13 @@ export function Rotulo({ texto, children }: { texto: string; children: ReactNode
   )
 }
 
-/** Pede um novo nome (para renomear). */
-export function pedirNome(atual: string, rotulo = 'Novo nome'): string | null {
-  const novo = window.prompt(rotulo, atual)
-  return novo && novo.trim() && novo.trim() !== atual ? novo.trim() : null
+/** Pede um novo nome numa caixa do app (para renomear). Devolve null se não mudou. */
+export function usePedirNome() {
+  const { pedirTexto } = useDialogos()
+  return async (atual: string, titulo: string) => {
+    const novo = await pedirTexto({ titulo, valor: atual, confirmar: 'Salvar' })
+    return novo && novo !== atual ? novo : null
+  }
 }
 
 /** Ações de manutenção no fim da tela (renomear, apagar…). */
