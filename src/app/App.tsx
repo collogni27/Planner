@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { AvisoAtualizacao } from '../atualizacao/AvisoAtualizacao'
 import { banco } from '../dados/banco'
 import { useSincronizacaoAutomatica } from '../dados/useSincronizacao'
@@ -8,18 +8,18 @@ import { nuvemConfigurada, sincronizador, useSessao } from '../nuvem/supabase'
 import { Configuracoes } from '../telas/Configuracoes'
 import { Inicio } from '../telas/Inicio'
 import { Login } from '../telas/Login'
-import { Mais, type TelaDeMais } from '../telas/Mais'
+import { Mais } from '../telas/Mais'
+import { AjudaIaTela } from '../estudos/telas/AjudaIaTela'
+import { BaralhoTela } from '../estudos/telas/BaralhoTela'
+import { CardTela } from '../estudos/telas/CardTela'
+import { EstudosInicio } from '../estudos/telas/EstudosInicio'
+import { ExportarTela } from '../estudos/telas/ExportarTela'
+import { ImportarTela } from '../estudos/telas/ImportarTela'
+import { MicrometaTela } from '../estudos/telas/MicrometaTela'
+import { ObjetivoTela } from '../estudos/telas/ObjetivoTela'
+import { ProvedorNavegacao, useNavegacao } from './navegacao'
 import { BarraMascote } from './BarraMascote'
-import { NavInferior, type Aba } from './NavInferior'
-
-// Onde o usuário está: a aba e, dentro dela, a tela aberta.
-// Fica salvo para o app reabrir exatamente aqui depois de ser fechado pelo sistema.
-interface Navegacao {
-  aba: Aba
-  telaMais: TelaDeMais | null
-}
-
-const NAV_INICIAL: Navegacao = { aba: 'inicio', telaMais: null }
+import { NavInferior } from './NavInferior'
 
 export function App() {
   const [modo, setModo] = useEstadoSalvo<Modo>('modo', 'claro')
@@ -55,8 +55,16 @@ interface PropsConectado {
 }
 
 function AppConectado({ userId, email, modo, setModo }: PropsConectado) {
+  return (
+    <ProvedorNavegacao>
+      <Conteudo userId={userId} email={email} modo={modo} setModo={setModo} />
+    </ProvedorNavegacao>
+  )
+}
+
+function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
+  const { aba, rota } = useNavegacao()
   const [barraAberta, setBarraAberta] = useEstadoSalvo('barra-aberta', true)
-  const [nav, setNav] = useEstadoSalvo<Navegacao>('navegacao', NAV_INICIAL)
   useSincronizacaoAutomatica()
 
   // Configurações salvas (vindas da nuvem ou deste aparelho).
@@ -76,36 +84,57 @@ function AppConectado({ userId, email, modo, setModo }: PropsConectado) {
     void sincronizador.sincronizar()
   }
 
+  // Volta ao topo ao trocar de tela.
+  const chaveTela = rota?.chave ?? aba
+  const refConteudo = useRef<HTMLElement>(null)
+  useEffect(() => {
+    refConteudo.current?.scrollTo(0, 0)
+  }, [chaveTela])
+
   let conteudo
-  if (nav.aba === 'inicio') {
-    conteudo = <Inicio />
-  } else if (nav.telaMais === 'configuracoes') {
-    conteudo = (
-      <Configuracoes
-        modo={modo}
-        email={email}
-        onModo={escolherModo}
-        onVoltar={() => setNav({ aba: 'mais', telaMais: null })}
-      />
-    )
+  if (rota) {
+    switch (rota.tela) {
+      case 'configuracoes':
+        conteudo = <Configuracoes modo={modo} email={email} onModo={escolherModo} />
+        break
+      case 'objetivo':
+        conteudo = <ObjetivoTela id={rota.id} chave={rota.chave} />
+        break
+      case 'micrometa':
+        conteudo = <MicrometaTela id={rota.id} chave={rota.chave} />
+        break
+      case 'baralho':
+        conteudo = <BaralhoTela id={rota.id} chave={rota.chave} />
+        break
+      case 'card':
+        conteudo = <CardTela chave={rota.chave} id={rota.id} baralhoId={rota.baralhoId} micrometaId={rota.micrometaId} />
+        break
+      case 'importar':
+        conteudo = <ImportarTela chave={rota.chave} />
+        break
+      case 'exportar':
+        conteudo = <ExportarTela chave={rota.chave} baralhoId={rota.baralhoId} />
+        break
+      case 'ajuda-ia':
+        conteudo = <AjudaIaTela chave={rota.chave} micrometaId={rota.micrometaId} baralhoId={rota.baralhoId} />
+        break
+    }
+  } else if (aba === 'estudos') {
+    conteudo = <EstudosInicio />
+  } else if (aba === 'mais') {
+    conteudo = <Mais />
   } else {
-    conteudo = <Mais onAbrir={(tela) => setNav({ aba: 'mais', telaMais: tela })} />
+    conteudo = <Inicio />
   }
 
   return (
     <div className="app">
       <BarraMascote modo={modo} aberta={barraAberta} onAlternar={() => setBarraAberta((a) => !a)} />
-      <main className="conteudo">
+      <main className="conteudo" ref={refConteudo} key={chaveTela}>
         <AvisoAtualizacao />
         {conteudo}
       </main>
-      <NavInferior
-        atual={nav.aba}
-        onEscolher={(aba) =>
-          // Tocar de novo na aba atual volta para a tela principal dela.
-          setNav((n) => (n.aba === aba ? { aba, telaMais: null } : { ...n, aba }))
-        }
-      />
+      <NavInferior />
     </div>
   )
 }

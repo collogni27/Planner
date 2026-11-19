@@ -29,7 +29,26 @@ export function gravar<T>(chave: string, valor: T): void {
 /** Como useState, mas o valor fica salvo e volta igual quando o app reabre. */
 export function useEstadoSalvo<T>(chave: string, padrao: T) {
   const [valor, setValor] = useState<T>(() => ler(chave, padrao))
-  useEffect(() => gravar(chave, valor), [chave, valor])
+  useEffect(() => {
+    gravar(chave, valor)
+  }, [chave, valor])
   const atualizar = useCallback((novo: T | ((anterior: T) => T)) => setValor(novo), [])
   return [valor, atualizar] as const
+}
+
+/**
+ * Rascunho de formulário ligado a uma tela aberta (sobrevive ao fechamento do app).
+ * É apagado quando a tela é fechada pelo "voltar" (ver app/navegacao.tsx).
+ */
+export function useRascunho<T>(chaveTela: string, campo: string, padrao: T) {
+  return useEstadoSalvo<T>(`rascunho:${chaveTela}:${campo}`, padrao)
+}
+
+export function removerRascunhos(chaveTela: string) {
+  try {
+    const prefixo = `${PREFIXO}rascunho:${chaveTela}:`
+    for (const k of Object.keys(localStorage)) if (k.startsWith(prefixo)) localStorage.removeItem(k)
+  } catch {
+    // sem armazenamento: nada a apagar
+  }
 }
