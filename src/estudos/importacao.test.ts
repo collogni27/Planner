@@ -21,9 +21,9 @@ const sequencia = () => {
 const agora = new Date('2026-11-19T12:00:00Z')
 
 describe('leitura do texto importado', () => {
-  it('lê TSV com cabeçalho, micrometa em caminho e tags separadas por espaço', () => {
+  it('lê TSV com cabeçalho, conteúdo em caminho e tags separadas por espaço', () => {
     const r = lerTexto(
-      'baralho\tmicrometa\tfrente\tverso\ttags\n' +
+      'baralho\tconteúdo\tfrente\tverso\ttags\n' +
         'ENEM – Flashcards\tENEM::Matemática::Função do 1º grau\tO que é a raiz?\tOnde f(x)=0\tfuncao basico\n',
     )
     expect(r.erros).toEqual([])
@@ -64,7 +64,13 @@ describe('leitura do texto importado', () => {
     expect(lerTexto('B\tf\tv').erros[0]).toContain('cabeçalho')
   })
 
-  it('caminho de micrometa: 2 ou 3 partes', () => {
+  it('aceita "micrometa" (nome antigo) no lugar de "conteudo"', () => {
+    expect(lerTexto('baralho\tmicrometa\tfrente\tverso\nB\tA::C\tf\tv').linhas[0].micrometa).toEqual({ objetivo: 'A', area: null, nome: 'C' })
+    expect(lerTexto(JSON.stringify({ cards: [{ baralho: 'B', micrometa: 'A::C', frente: 'f', verso: 'v' }] })).linhas[0].micrometa?.nome).toBe('C')
+    expect(lerTexto(JSON.stringify({ cards: [{ baralho: 'B', conteudo: 'A::C', frente: 'f', verso: 'v' }] })).linhas[0].micrometa?.nome).toBe('C')
+  })
+
+  it('caminho de conteúdo: 2 ou 3 partes', () => {
     expect(lerCaminho('')).toBeNull()
     expect(lerCaminho('A::B')).toEqual({ objetivo: 'A', area: null, nome: 'B' })
     expect(lerCaminho('A')).toBe('invalido')

@@ -29,8 +29,10 @@ export const normalizar = (t: string) => t.trim().replace(/\s+/g, ' ').toLocaleL
 const semAcento = (t: string) => t.normalize('NFD').replace(/[̀-ͯ]/g, '')
 
 // Nomes aceitos no cabeçalho para cada coluna.
+// "micrometa" é o nome antigo de "conteudo" (aceito para arquivos já gerados).
 const COLUNAS: Record<string, keyof Omit<LinhaImportada, 'linha'>> = {
   baralho: 'baralho',
+  conteudo: 'micrometa',
   micrometa: 'micrometa',
   frente: 'frente',
   pergunta: 'frente',
@@ -72,7 +74,7 @@ function lerJson(t: string): ResultadoLeitura {
   if (!Array.isArray(lista)) return { linhas: [], erros: ['JSON sem a lista "cards".'] }
   const brutas = lista.map((c: Record<string, unknown>) => ({
     baralho: String(c.baralho ?? ''),
-    micrometa: String(c.micrometa ?? ''),
+    micrometa: String(c.conteudo ?? c.micrometa ?? ''),
     frente: String(c.frente ?? ''),
     verso: String(c.verso ?? ''),
     tags: c.tags as string | string[] | undefined,
@@ -144,7 +146,7 @@ function validar(
     if (!b.baralho.trim()) erros.push(`Linha ${n}: falta o baralho.`)
     else if (!b.frente.trim() || !b.verso.trim()) erros.push(`Linha ${n}: falta a frente ou o verso.`)
     else if (caminho === 'invalido')
-      erros.push(`Linha ${n}: micrometa "${b.micrometa}" deve ser Objetivo::Micrometa ou Objetivo::Área::Micrometa.`)
+      erros.push(`Linha ${n}: conteúdo "${b.micrometa}" deve ser Objetivo::Conteúdo ou Objetivo::Área::Conteúdo.`)
     else
       linhas.push({
         linha: n,
@@ -337,7 +339,7 @@ export function gerarRegistros(
 
 export interface CardExportado {
   baralho: string
-  micrometa: string
+  conteudo: string
   frente: string
   verso: string
   tags: string[]
@@ -349,7 +351,7 @@ export function paraExportacao(cards: Card[], ex: Pick<Existentes, 'baralhos' | 
     const cam = m ? caminhoDe(m, ex) : null
     return {
       baralho: ex.baralhos.find((b) => b.id === c.baralho_id)?.nome ?? '',
-      micrometa: cam ? [cam.objetivo, cam.area, cam.nome].filter(Boolean).join('::') : '',
+      conteudo: cam ? [cam.objetivo, cam.area, cam.nome].filter(Boolean).join('::') : '',
       frente: c.frente,
       verso: c.verso,
       tags: c.tags,
@@ -360,8 +362,8 @@ export function paraExportacao(cards: Card[], ex: Pick<Existentes, 'baralhos' | 
 const campoTsv = (v: string) => (/[\t\n\r"]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
 
 export function gerarTsv(cards: CardExportado[]): string {
-  const linhas = [['baralho', 'micrometa', 'frente', 'verso', 'tags']]
-  for (const c of cards) linhas.push([c.baralho, c.micrometa, c.frente, c.verso, c.tags.join(' ')])
+  const linhas = [['baralho', 'conteudo', 'frente', 'verso', 'tags']]
+  for (const c of cards) linhas.push([c.baralho, c.conteudo, c.frente, c.verso, c.tags.join(' ')])
   return linhas.map((l) => l.map(campoTsv).join('\t')).join('\n') + '\n'
 }
 
