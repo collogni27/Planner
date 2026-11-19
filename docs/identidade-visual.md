@@ -16,6 +16,12 @@
 - Permitidos: textos **necessários** (ex.: "Anotação (opcional)", o que acontece ao apagar algo), informações reais em subtítulos (ex.: "Próximo: Função do 1º grau", "12 cards") e notas temporárias de construção.
 - Ajuda extensa fica **escondida** atrás de um botão **"?"**, que abre e fecha como a barra do mascote (fechada por padrão).
 
+## Caixas de diálogo e listas de escolha (2026-11-19)
+- **Nunca** usar as caixas do navegador ou do sistema (`confirm`, `prompt`, `alert`, `<select>` nativo). Tudo é uma caixa própria do app, por cima da tela (`src/ui/dialogos.tsx`): `confirmar`, `pedirTexto` e o componente `Seletor`.
+- Confirmação de ação perigosa: botão de confirmar em **amarelo**; o "Cancelar" ao lado.
+- O "voltar" do Android fecha a caixa aberta antes de mudar de tela.
+- Inevitáveis (do sistema): escolher arquivo, menu Compartilhar, download e instalação do APK.
+
 ## Formas (iguais nos três modos)
 - Cards com borda de 2px, raio de 8px, sem sombra. Elementos internos com raio de 6px.
 - Checkboxes quadradas (raio 3px).
@@ -37,7 +43,7 @@
 
 Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, botões da barra, botão marcado etc.) foram extraídos da referência e ficam em `src/estilo/tokens.css`, que é a fonte de verdade das cores no código.
 
-- O **amarelo `#FEF156` é reservado** para o sol e para o que é urgente ("tem que ser hoje"). Não usar em outros lugares.
+- O **amarelo `#FEF156` é reservado** para o sol, para o que é urgente ("tem que ser hoje") e para o botão que **confirma uma ação perigosa** (apagar etc.). É raro de propósito: se aparece na tela, significa atenção. Não usar em outros lugares.
 - Água-marinha (`#5FE9DE`) nunca como texto sobre fundo claro.
 - O modo **foco** é um escuro em cinza neutro, com exatamente as mesmas formas e posições dos outros dois.
 - O usuário escolhe o modo em Configurações.

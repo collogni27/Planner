@@ -45,3 +45,7 @@
 - 2026-11-19 — Listas de objetivos e baralhos na tela de Estudos mostram 5 itens e "Ver todos".
 - 2026-11-19 — Sem sub-baralhos. A revisão é aberta pela tela de Estudos: escolher baralho e revisar inteiro ou filtrado por áreas ou por tags.
 - 2026-11-19 — Revisão: filtro aceita várias áreas ou várias tags; botões mostram o intervalo previsto; teto de 50 cards novos/dia; cards em aprendizado que voltam em até 20 min são adiantados; ordem misturada estável por dia.
+- 2026-11-19 — Caixas de diálogo e listas de escolha próprias do app no lugar das do navegador/sistema; confirmação de ação perigosa em amarelo (cor de atenção, rara de propósito).
+- 2026-11-19 — Modo Desenvolvedor com senha (só o resumo SHA-256 no código) e ferramenta "Revisão Reset".
+- 2026-11-19 — Cards novos: 20 por dia (padrão do Anki, que o usuário prefere), com "Liberar mais 20 hoje". Revisões sem limite — adiar revisão vencida só faz esquecer e acumula trabalho.
+- 2026-11-19 — Acompanhamento: força (média da chance de lembrar do FSRS), acerto em 30 dias, situação do conteúdo (dominado = todos revisados e ≥ 80% maduros), reforço (acerto < 80% ou força < 70%), cards-problema (≥ 4 lapsos), carga de 7 dias.

@@ -21,6 +21,7 @@ O Android fecha apps em segundo plano para liberar memória. Isso **vai acontece
 - **Navegação** (`src/app/navegacao.tsx`): cada aba tem uma pilha de telas, salva no aparelho. O botão voltar do Android fecha a tela de cima; na tela principal de uma aba, volta ao Início; no Início, minimiza o app.
 - **Rascunhos** (`useRascunho`): o que é digitado num formulário fica salvo, ligado àquela tela aberta; sobrevive ao fechamento pelo sistema e é descartado quando o usuário sai da tela pelo "voltar".
 - A sincronização envia a fila em lotes de até 200 registros e baixa em páginas de 1000.
+- **Modo Desenvolvedor** (Mais → Modo Desenvolvedor, com senha): mostra um botão na barra do mascote, entre a saudação e o botão de recolher, com ferramentas de teste: **Revisão Reset** (desfaz as revisões de hoje; cada card volta ao estado de antes) e **Fechar** (sai do modo). O código guarda só o resumo SHA-256 da senha; não é segurança (o repositório é público), só evita tocar sem querer.
 - Se alguma função ficar indisponível offline, a interface avisa.
 - Prioridade: **confiabilidade > offline completo**.
 
