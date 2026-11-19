@@ -51,6 +51,7 @@ export function EstudosInicio() {
         <button className="botao-principal botao-grande" onClick={() => abrir({ tela: 'revisar' })}>
           {totalRevisar > 0 ? `Revisar · ${totalRevisar}` : 'Revisar'}
         </button>
+        <Item titulo="Acompanhamento" onClick={() => abrir({ tela: 'acompanhamento' })} />
       </Secao>
 
       <Secao titulo="Objetivos">

@@ -140,3 +140,15 @@ export function dataCurta(iso: string) {
     .format(new Date(iso))
     .replace('.', '')
 }
+
+/** Medidor de 10 quadradinhos (0 a 100), como o de qualidade do sono. */
+export function Medidor({ valor, rotulo }: { valor: number; rotulo: string }) {
+  const cheios = Math.round(valor / 10)
+  return (
+    <span className="medidor" role="meter" aria-valuemin={0} aria-valuemax={100} aria-valuenow={valor} aria-label={rotulo}>
+      {Array.from({ length: 10 }, (_, i) => (
+        <span key={i} className={i < cheios ? 'medidor-cheio' : 'medidor-vazio'} />
+      ))}
+    </span>
+  )
+}

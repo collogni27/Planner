@@ -9,6 +9,7 @@ import { Configuracoes } from '../telas/Configuracoes'
 import { Inicio } from '../telas/Inicio'
 import { Login } from '../telas/Login'
 import { Mais } from '../telas/Mais'
+import { AcompanhamentoTela } from '../estudos/telas/AcompanhamentoTela'
 import { AjudaIaTela } from '../estudos/telas/AjudaIaTela'
 import { BaralhoTela } from '../estudos/telas/BaralhoTela'
 import { CardTela } from '../estudos/telas/CardTela'
@@ -120,6 +121,9 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
         break
       case 'exportar':
         conteudo = <ExportarTela chave={rota.chave} baralhoId={rota.baralhoId} />
+        break
+      case 'acompanhamento':
+        conteudo = <AcompanhamentoTela />
         break
       case 'revisar':
         conteudo = <RevisarTela chave={rota.chave} />

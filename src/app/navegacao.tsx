@@ -20,6 +20,7 @@ export type Rota =
   | { tela: 'ajuda-ia'; micrometaId?: string; baralhoId?: string }
   | { tela: 'todos'; tipo: 'objetivos' | 'baralhos' }
   | { tela: 'revisar' }
+  | { tela: 'acompanhamento' }
   | { tela: 'sessao'; baralhoId: string; filtro: Filtro }
   | { tela: 'configuracoes' }
 

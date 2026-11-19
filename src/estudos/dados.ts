@@ -310,3 +310,26 @@ export async function resetarRevisoesDeHoje(inicioDoDia: Date): Promise<number> 
   void sincronizador.sincronizar()
   return r.revisoes.length
 }
+
+// ---------- Acompanhamento ----------
+
+/** Todos os dados ativos de Estudos (para o acompanhamento). */
+export const useTudoDeEstudos = () =>
+  useLiveQuery(async () => {
+    const [cards, micrometas, checkins, revisoes, objetivos, baralhos] = await Promise.all([
+      banco.cards.toArray(),
+      banco.micrometas.toArray(),
+      banco.checkins.toArray(),
+      banco.revisoes.toArray(),
+      banco.objetivos.toArray(),
+      banco.baralhos.toArray(),
+    ])
+    return {
+      cards: cards.filter(ativo),
+      micrometas: micrometas.filter(ativo).sort(porOrdem),
+      checkins: checkins.filter(ativo),
+      revisoes: revisoes.filter(ativo),
+      objetivos: objetivos.filter(ativo).sort(porOrdem),
+      baralhos: baralhos.filter(ativo).sort(porNome),
+    }
+  })

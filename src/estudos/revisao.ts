@@ -121,7 +121,7 @@ export function montarFila(
 
 // ---------- Conversão entre o banco e a biblioteca ----------
 
-function paraFsrs(c: Card): CardFsrs {
+export function paraFsrs(c: Card): CardFsrs {
   return {
     due: new Date(c.due),
     stability: c.stability,

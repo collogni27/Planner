@@ -17,7 +17,9 @@ import {
   useCheckins,
   useMicrometas,
   useObjetivo,
+  useTudoDeEstudos,
 } from '../dados'
+import { NOME_SITUACAO, resumirConteudo } from '../estatisticas'
 
 /** Um objetivo: micrometas agrupadas por área, na ordem da fila de estudo. */
 export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
@@ -28,6 +30,7 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
   const areas = useAreas(id)
   const micrometas = useMicrometas(id)
   const checkins = useCheckins()
+  const tudo = useTudoDeEstudos()
   const [nomeNova, setNomeNova] = useRascunho(chave, 'micrometa', '')
   const [areaNova, setAreaNova] = useRascunho<string>(chave, 'area', '')
   const [novaArea, setNovaArea] = useState('')
@@ -41,9 +44,14 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
     ...areas.map((a) => ({ area: a, itens: micrometas.filter((m) => m.area_id === a.id) })),
   ]
 
-  function ultimoCheckin(m: Micrometa) {
-    const c = checkins?.find((x) => x.micrometa_id === m.id)
-    return c ? `estudada · ${dataCurta(c.estudado_em)}` : 'a estudar'
+  // Situação e força de cada conteúdo (ex.: "em consolidação · força 82%").
+  function detalheConteudo(m: Micrometa) {
+    if (!tudo) return ''
+    const r = resumirConteudo(m, tudo.cards, tudo.checkins, tudo.revisoes, new Date())
+    const partes = [NOME_SITUACAO[r.situacao]]
+    if (r.situacao === 'estudado' && r.ultimoEstudo) partes.push(dataCurta(r.ultimoEstudo))
+    if (r.forca !== null) partes.push(`força ${r.forca}%`)
+    return partes.join(' · ')
   }
 
   async function adicionarMicrometa() {
@@ -105,7 +113,7 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
               <Item
                 key={m.id}
                 titulo={m.nome}
-                detalhe={ultimoCheckin(m)}
+                detalhe={detalheConteudo(m)}
                 onClick={() => abrir({ tela: 'micrometa', id: m.id })}
                 direita={
                   <span className="mover">

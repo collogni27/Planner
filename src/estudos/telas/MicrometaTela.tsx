@@ -1,6 +1,7 @@
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Acoes, Cabecalho, Item, Secao, Vazio, dataCurta, usePedirNome } from '../../ui/componentes'
+import { Acoes, Cabecalho, Item, Medidor, Secao, Vazio, dataCurta, usePedirNome } from '../../ui/componentes'
+import { NOME_SITUACAO, resumirConteudo } from '../estatisticas'
 import { Seletor, useDialogos } from '../../ui/dialogos'
 import {
   apagarCheckin,
@@ -14,6 +15,7 @@ import {
   useCheckins,
   useMicrometa,
   useObjetivo,
+  useTudoDeEstudos,
 } from '../dados'
 
 /** Uma micrometa: check-in de estudo, histórico e cards ligados. */
@@ -26,6 +28,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
   const areas = useAreas(micrometa?.objetivo_id ?? '')
   const checkins = useCheckins()
   const cards = useCardsDaMicrometa(id)
+  const tudo = useTudoDeEstudos()
   const baralhos = useBaralhos()
   const [nota, setNota] = useRascunho(chave, 'nota', '')
 
@@ -34,11 +37,36 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
 
   const meus = checkins?.filter((c) => c.micrometa_id === id) ?? []
   const nomeBaralho = (bid: string) => baralhos?.find((b) => b.id === bid)?.nome ?? ''
+  const resumo = tudo ? resumirConteudo(micrometa, tudo.cards, tudo.checkins, tudo.revisoes, new Date()) : null
 
   return (
     <>
       <Cabecalho titulo={micrometa.nome} />
       <p className="texto-secundario contexto">{objetivo?.nome}</p>
+
+      {resumo && (
+        <Secao titulo="Acompanhamento">
+          <div className="linha-info">
+            <span className="texto-secundario">Situação</span>
+            <span>{NOME_SITUACAO[resumo.situacao]}</span>
+          </div>
+          {resumo.forca !== null && (
+            <>
+              <div className="linha-info">
+                <span className="texto-secundario">Força</span>
+                <span className="numero-destaque">{resumo.forca}%</span>
+              </div>
+              <Medidor valor={resumo.forca} rotulo="Força" />
+            </>
+          )}
+          {resumo.acerto !== null && (
+            <div className="linha-info">
+              <span className="texto-secundario">Acerto (30 dias)</span>
+              <span className="numero-destaque">{resumo.acerto}%</span>
+            </div>
+          )}
+        </Secao>
+      )}
 
       <Secao titulo="Estudo">
         <form
