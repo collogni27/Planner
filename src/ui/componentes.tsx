@@ -3,8 +3,8 @@ import { useState, type ReactNode } from 'react'
 import { useNavegacao } from '../app/navegacao'
 import { Icone } from '../icones/Icone'
 
-/** Cabeçalho de tela com "Voltar". */
-export function Cabecalho({ titulo }: { titulo: string }) {
+/** Cabeçalho de tela com "Voltar" (e, opcionalmente, um botão à direita). */
+export function Cabecalho({ titulo, acao }: { titulo: string; acao?: ReactNode }) {
   const { voltar } = useNavegacao()
   return (
     <div className="cabecalho-tela">
@@ -13,6 +13,18 @@ export function Cabecalho({ titulo }: { titulo: string }) {
         Voltar
       </button>
       <h1 className="titulo-tela">{titulo}</h1>
+      {acao && <span className="cabecalho-acao">{acao}</span>}
+    </div>
+  )
+}
+
+/** Bloco que abre e fecha com a mesma animação da barra do mascote. */
+export function Recolhivel({ aberto, children }: { aberto: boolean; children: ReactNode }) {
+  return (
+    <div className={`barra-recolhivel ${aberto ? 'aberta' : ''}`}>
+      <div className="barra-recolhivel-interno" inert={!aberto}>
+        {children}
+      </div>
     </div>
   )
 }

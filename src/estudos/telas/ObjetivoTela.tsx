@@ -54,14 +54,8 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
       <Cabecalho titulo={objetivo.nome} />
 
       {proxima && (
-        <Secao titulo="Próxima a estudar">
-          <Item titulo={proxima.nome} detalhe="Estude fora do app e faça o check-in" onClick={() => abrir({ tela: 'micrometa', id: proxima.id })} />
-        </Secao>
-      )}
-
-      {micrometas.length === 0 && (
-        <Secao>
-          <Vazio>Adicione as micrometas deste objetivo (ex.: "Função do 1º grau"). A ordem da lista é a sua fila de estudo.</Vazio>
+        <Secao titulo="Próximo a estudar">
+          <Item titulo={proxima.nome} onClick={() => abrir({ tela: 'micrometa', id: proxima.id })} />
         </Secao>
       )}
 
@@ -86,7 +80,7 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
                   <button
                     className="botao-texto"
                     onClick={() => {
-                      if (confirm(`Apagar a área "${g.area!.nome}"? As micrometas dela ficam em "Sem área".`)) void apagarArea(g.area!)
+                      if (confirm(`Apagar a área "${g.area!.nome}"? Os conteúdos dela ficam em "Sem área".`)) void apagarArea(g.area!)
                     }}
                   >
                     Apagar
@@ -95,7 +89,7 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
               )
             }
           >
-            {g.itens.length === 0 && <Vazio>Nenhuma micrometa nesta área.</Vazio>}
+            {g.itens.length === 0 && <Vazio>Nenhum conteúdo nesta área.</Vazio>}
             {g.itens.map((m, i) => (
               <Item
                 key={m.id}
@@ -122,7 +116,28 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
           </Secao>
         ))}
 
-      <Secao titulo="Nova micrometa">
+      <Secao titulo="Nova área (opcional)">
+        <form
+          className="campo-adicionar"
+          onSubmit={(e) => {
+            e.preventDefault()
+            if (novaArea.trim()) void criarArea(id, novaArea).then(() => setNovaArea(''))
+          }}
+        >
+          <input
+            className="campo-entrada"
+            placeholder="Nome"
+            aria-label="Nome da área"
+            value={novaArea}
+            onChange={(e) => setNovaArea(e.target.value)}
+          />
+          <button className="botao-secundario" type="submit" disabled={!novaArea.trim()}>
+            Adicionar
+          </button>
+        </form>
+      </Secao>
+
+      <Secao titulo="Novo conteúdo">
         <form
           className="formulario"
           onSubmit={(e) => {
@@ -132,8 +147,8 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
         >
           <input
             className="campo-entrada"
-            placeholder="Nome (ex.: Função do 1º grau)"
-            aria-label="Nome da micrometa"
+            placeholder="Nome"
+            aria-label="Nome do conteúdo"
             value={nomeNova}
             onChange={(e) => setNomeNova(e.target.value)}
           />
@@ -146,28 +161,7 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
             ))}
           </select>
           <button className="botao-principal" type="submit" disabled={!nomeNova.trim()}>
-            Adicionar micrometa
-          </button>
-        </form>
-      </Secao>
-
-      <Secao titulo="Nova área (opcional)">
-        <form
-          className="campo-adicionar"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (novaArea.trim()) void criarArea(id, novaArea).then(() => setNovaArea(''))
-          }}
-        >
-          <input
-            className="campo-entrada"
-            placeholder="Ex.: Matemática"
-            aria-label="Nome da área"
-            value={novaArea}
-            onChange={(e) => setNovaArea(e.target.value)}
-          />
-          <button className="botao-secundario" type="submit" disabled={!novaArea.trim()}>
-            Adicionar
+            Adicionar conteúdo
           </button>
         </form>
       </Secao>
@@ -185,7 +179,7 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
         <button
           className="botao-secundario"
           onClick={() => {
-            if (confirm(`Apagar o objetivo "${objetivo.nome}" com suas áreas, micrometas e check-ins? Os cards continuam nos baralhos.`)) {
+            if (confirm(`Apagar o objetivo "${objetivo.nome}" com suas áreas, conteúdos e check-ins? Os cards continuam nos baralhos.`)) {
               void apagarObjetivo(objetivo).then(voltar)
             }
           }}

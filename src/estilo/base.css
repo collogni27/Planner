@@ -750,3 +750,39 @@ code {
   font-family: var(--fonte-texto);
   font-weight: 700;
 }
+
+.cabecalho-acao {
+  margin-left: auto;
+  display: flex;
+}
+
+.botao-ajuda {
+  width: var(--toque-minimo);
+  height: var(--toque-minimo);
+  border: var(--borda) solid var(--botao-borda);
+  border-radius: var(--raio-interno);
+  background: var(--botao-fundo);
+  color: var(--texto);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.botao-ajuda[aria-expanded='true'] {
+  border-color: var(--botao-marcado-borda);
+  background: var(--botao-marcado-fundo);
+}
+
+/* Recolhível dentro do conteúdo: o espaço entre blocos também some quando fechado. */
+.conteudo > .barra-recolhivel {
+  margin-bottom: calc(-1 * var(--espaco-3));
+}
+
+.conteudo > .barra-recolhivel > .barra-recolhivel-interno > .card {
+  margin-bottom: var(--espaco-3);
+}
+
+.ver-todos {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+}

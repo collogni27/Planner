@@ -16,6 +16,7 @@ export type Rota =
   | { tela: 'importar' }
   | { tela: 'exportar'; baralhoId?: string }
   | { tela: 'ajuda-ia'; micrometaId?: string; baralhoId?: string }
+  | { tela: 'todos'; tipo: 'objetivos' | 'baralhos' }
   | { tela: 'configuracoes' }
 
 /** Rota + uma chave única (usada para os rascunhos daquela tela). */

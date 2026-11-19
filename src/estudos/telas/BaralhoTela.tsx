@@ -36,7 +36,7 @@ export function BaralhoTela({ id, chave }: { id: string; chave: string }) {
           value={busca}
           onChange={(e) => setBusca(e.target.value)}
         />
-        {cards.length === 0 && <Vazio>Baralho vazio. Crie cards aqui ou importe vários de uma vez.</Vazio>}
+        {cards.length === 0 && <Vazio>Nenhum card.</Vazio>}
         {cards.length > 0 && encontrados.length === 0 && <Vazio>Nenhum card encontrado.</Vazio>}
         {encontrados.slice(0, LIMITE_LISTA).map((c) => (
           <Item

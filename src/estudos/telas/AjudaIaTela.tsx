@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Cabecalho, Rotulo, Secao } from '../../ui/componentes'
+import { Cabecalho, Recolhivel, Rotulo, Secao } from '../../ui/componentes'
 import { copiarTexto } from '../../util/arquivo'
 import { useAreas, useBaralhos, useMicrometa, useObjetivo, useObjetivos, useTodasMicrometas } from '../dados'
 
@@ -9,7 +9,7 @@ import { useAreas, useBaralhos, useMicrometa, useObjetivo, useObjetivos, useToda
  * Texto para pedir a uma IA que gere os cards a partir do conteúdo estudado.
  * Pede JSON (e não TSV) porque copiar do chat da IA pode trocar TABs por espaços.
  */
-export function textoParaIa(baralho: string, micrometa: string) {
+export function textoParaIa(baralho: string, conteudo: string) {
   return `Crie flashcards para eu revisar com repetição espaçada, a partir do conteúdo que vou colar no final.
 
 Regras para bons cards (prática de recuperação):
@@ -24,7 +24,7 @@ Responda SOMENTE com um bloco de código JSON neste formato exato:
   "cards": [
     {
       "baralho": "${baralho}",
-      "micrometa": "${micrometa}",
+      "conteudo": "${conteudo}",
       "frente": "pergunta",
       "verso": "resposta",
       "tags": ["tag1", "tag2"]
@@ -32,7 +32,7 @@ Responda SOMENTE com um bloco de código JSON neste formato exato:
   ]
 }
 
-- "baralho" e "micrometa" devem ser exatamente os valores acima em todos os cards.
+- "baralho" e "conteudo" devem ser exatamente os valores acima em todos os cards.
 - Tags: palavras curtas, sem espaços dentro de cada tag.
 
 Conteúdo:
@@ -47,27 +47,43 @@ export function AjudaIaTela({ chave, micrometaId, baralhoId }: { chave: string; 
   const [mId, setMId] = useRascunho(chave, 'micrometa', micrometaId ?? '')
   const [bId, setBId] = useRascunho(chave, 'baralho', baralhoId ?? '')
   const [copiado, setCopiado] = useState<string | null>(null)
+  const [ajudaAberta, setAjudaAberta] = useState(false)
 
   const micrometa = useMicrometa(mId)
   const objetivo = useObjetivo(micrometa?.objetivo_id ?? '')
   const areas = useAreas(micrometa?.objetivo_id ?? '')
   const area = areas?.find((a) => a.id === micrometa?.area_id)
 
-  const caminho = micrometa && objetivo ? [objetivo.nome, area?.nome, micrometa.nome].filter(Boolean).join('::') : 'Objetivo::Área::Micrometa'
+  const caminho = micrometa && objetivo ? [objetivo.nome, area?.nome, micrometa.nome].filter(Boolean).join('::') : 'Objetivo::Área::Conteúdo'
   const nomeBaralho = baralhos?.find((b) => b.id === bId)?.nome ?? 'Nome do baralho'
   const texto = textoParaIa(nomeBaralho, caminho)
 
   return (
     <>
-      <Cabecalho titulo="Gerar cards com IA" />
+      <Cabecalho
+        titulo="Gerar cards com IA"
+        acao={
+          <button
+            className="botao-ajuda"
+            aria-label="Como funciona"
+            aria-expanded={ajudaAberta}
+            onClick={() => setAjudaAberta((a) => !a)}
+          >
+            ?
+          </button>
+        }
+      />
 
-      <Secao titulo="Como funciona">
-        <ol className="passos">
-          <li>Escolha o baralho e a micrometa abaixo.</li>
-          <li>Copie o texto e cole numa IA (ChatGPT, Claude…), junto com o conteúdo que você estudou.</li>
-          <li>Copie a resposta da IA e cole em "Importar cards".</li>
-        </ol>
-      </Secao>
+      <Recolhivel aberto={ajudaAberta}>
+        <Secao titulo="Como funciona">
+          <ol className="passos">
+            <li>Escolha o baralho e o conteúdo abaixo.</li>
+            <li>Copie o texto e cole numa IA (ChatGPT, Claude…), junto com o que você estudou.</li>
+            <li>Copie a resposta da IA e cole em "Importar cards".</li>
+            <li>Formatos aceitos: JSON (recomendado) ou tabela TSV/CSV.</li>
+          </ol>
+        </Secao>
+      </Recolhivel>
 
       <Secao titulo="Para quais cards">
         <div className="formulario">
@@ -81,7 +97,7 @@ export function AjudaIaTela({ chave, micrometaId, baralhoId }: { chave: string; 
               ))}
             </select>
           </Rotulo>
-          <Rotulo texto="Micrometa">
+          <Rotulo texto="Conteúdo">
             <select className="campo-entrada" value={mId} onChange={(e) => setMId(e.target.value)}>
               <option value="">Escolha…</option>
               {objetivos?.map((o) => (
@@ -114,19 +130,10 @@ export function AjudaIaTela({ chave, micrometaId, baralhoId }: { chave: string; 
             Copiar texto
           </button>
           <button className="botao-secundario" onClick={() => abrir({ tela: 'importar' })}>
-            Ir para importar
+            Importar cards
           </button>
         </div>
         {copiado && <p className="mensagem-ok">{copiado}</p>}
-      </Secao>
-
-      <Secao titulo="Formatos aceitos">
-        <p className="texto-secundario">
-          <strong>JSON</strong> como acima (recomendado) ou <strong>tabela TSV/CSV</strong> com a primeira linha{' '}
-          <code>baralho · micrometa · frente · verso · tags</code>, separada por TAB, ponto e vírgula ou vírgula. A micrometa é
-          escrita como <code>Objetivo::Micrometa</code> ou <code>Objetivo::Área::Micrometa</code> e pode ficar vazia. Tags
-          separadas por espaço. Baralhos, objetivos e micrometas que não existirem são criados na importação.
-        </p>
       </Secao>
     </>
   )

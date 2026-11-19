@@ -64,9 +64,6 @@ export function ExportarTela({ chave, baralhoId }: { chave: string; baralhoId?: 
           {mensagem && <p className="mensagem-ok">{mensagem}</p>}
         </div>
       </Secao>
-      <p className="texto-secundario nota-rodape">
-        O arquivo traz frente, verso, tags, baralho e micrometa. O progresso das revisões fica no backup completo (em uma versão futura).
-      </p>
     </>
   )
 }
