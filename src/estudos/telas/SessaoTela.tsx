@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import type { Grade } from 'ts-fsrs'
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
@@ -26,7 +26,15 @@ export function SessaoTela({ chave, baralhoId, filtro }: Props) {
   const [mostrando, setMostrando] = useRascunho(chave, 'resposta', false)
   const [inicioMs, setInicioMs] = useRascunho<number | null>(chave, 'inicio', null)
 
-  const liberados = dados ? cardsLiberados(dados.cards, baralhoId, filtro, dados.micrometas, dados.checkins) : []
+  // Card recém-respondido: até o banco devolver a versão nova, a versão antiga é ignorada
+  // (senão o mesmo card voltaria à tela por um instante e poderia ser respondido duas vezes).
+  const [respondido, setRespondido] = useState<{ id: string; due: string } | null>(null)
+  const [salvando, setSalvando] = useState(false)
+  const liberados = dados
+    ? cardsLiberados(dados.cards, baralhoId, filtro, dados.micrometas, dados.checkins).filter(
+        (c) => !(respondido && c.id === respondido.id && c.due === respondido.due),
+      )
+    : []
   const [limiteNovos, liberarMais] = useLimiteNovos(agora)
   const fila = dados ? montarFila(liberados, agora, dados.novosRespondidosHoje, diaLocal(agora), limiteNovos) : null
   // O card que já estava na tela continua nela (mesmo que a ordem mude).
@@ -46,11 +54,15 @@ export function SessaoTela({ chave, baralhoId, filtro }: Props) {
     if (!card) return
     const momento = new Date()
     const duracao = inicioMs ? Math.min(Date.now() - inicioMs, 10 * 60_000) : null
+    if (salvando) return
+    setSalvando(true)
     const r = responder(card, nota, momento, duracao, () => crypto.randomUUID())
+    setRespondido({ id: card.id, due: card.due })
     setAtualId(null)
     setMostrando(false)
     setInicioMs(null)
     await gravarResposta(r.card, r.revisao)
+    setSalvando(false)
     setAgora(new Date())
   }
 
@@ -109,7 +121,7 @@ export function SessaoTela({ chave, baralhoId, filtro }: Props) {
       ) : (
         <div className="notas" role="group" aria-label="Como foi">
           {NOTAS.map(({ nota, rotulo }) => (
-            <button key={nota} className="botao-nota" onClick={() => void responderCom(nota)}>
+            <button key={nota} className="botao-nota" disabled={salvando} onClick={() => void responderCom(nota)}>
               <span>{rotulo}</span>
               <span className="botao-nota-tempo">{quando && formatarIntervalo(momento, quando[nota])}</span>
             </button>
