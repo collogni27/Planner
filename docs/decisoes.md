@@ -40,3 +40,7 @@
 - 2026-11-19 — Questões não são tipo especial: são cards comuns em baralhos que o usuário separa (ex.: "ENEM – Questões"). Cada card pertence a um baralho e, opcionalmente, a uma micrometa.
 - 2026-11-19 — "Estudos" é a segunda aba principal.
 - 2026-11-19 — Tabelas do módulo sem chaves estrangeiras entre si — a sincronização local primeiro não pode travar por ordem de chegada; a ligação é garantida pelo app.
+- 2026-11-19 — "Micrometa" passa a se chamar **"conteúdo"** em toda a interface (masculino); no código/banco o nome interno continua `micrometa`. A importação aceita a coluna `conteudo` e ainda a antiga `micrometa`.
+- 2026-11-19 — Textos da interface enxutos: sem textinhos explicativos, exemplos e legendas desnecessárias; ajuda longa atrás de um botão "?" que abre/fecha.
+- 2026-11-19 — Listas de objetivos e baralhos na tela de Estudos mostram 5 itens e "Ver todos".
+- 2026-11-19 — Sem sub-baralhos. A revisão é aberta pela tela de Estudos: escolher baralho e revisar inteiro ou filtrado por áreas ou por tags.

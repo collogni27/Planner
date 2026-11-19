@@ -11,6 +11,11 @@
 - **Nunca usar itálico.** Nunca usar a fonte pixel em texto corrido ou pequeno.
 - JetBrains Mono é larga: textos longos em linha única usam reticências (`text-overflow: ellipsis`) em vez de quebrar o layout.
 
+## Textos da interface (2026-11-19)
+- **Enxutos.** Nada de textinhos explicativos sob itens de menu ("Colar texto ou escolher arquivo" sob "Importar cards"), exemplos em campos ("ex.: Matemática"), legendas óbvias ou instruções que o próprio elemento já deixa claras. Esse estilo parece "texto de IA" e o usuário não gosta.
+- Permitidos: textos **necessários** (ex.: "Anotação (opcional)", o que acontece ao apagar algo), informações reais em subtítulos (ex.: "Próximo: Função do 1º grau", "12 cards") e notas temporárias de construção.
+- Ajuda extensa fica **escondida** atrás de um botão **"?"**, que abre e fecha como a barra do mascote (fechada por padrão).
+
 ## Formas (iguais nos três modos)
 - Cards com borda de 2px, raio de 8px, sem sombra. Elementos internos com raio de 6px.
 - Checkboxes quadradas (raio 3px).
