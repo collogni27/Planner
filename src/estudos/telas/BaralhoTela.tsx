@@ -59,8 +59,6 @@ export function BaralhoTela({ id, chave }: { id: string; chave: string }) {
         </div>
       </Secao>
 
-      <p className="texto-secundario nota-rodape">A revisão dos cards chega na próxima versão.</p>
-
       <Acoes>
         <button
           className="botao-secundario"

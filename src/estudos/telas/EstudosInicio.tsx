@@ -7,10 +7,12 @@ import {
   useBaralhos,
   useCheckins,
   useContagemPorBaralho,
+  useDadosRevisao,
   useObjetivos,
   useTodasAreas,
   useTodasMicrometas,
 } from '../dados'
+import { paraRevisar, useInicioDoDia, useRelogio } from './RevisarTela'
 
 /** Quantos itens cada lista mostra antes do "Ver todos". */
 export const LIMITE_RESUMO = 5
@@ -38,8 +40,18 @@ export function EstudosInicio() {
   const contagem = useContagemPorBaralho()
   const detalheObjetivo = useDetalheObjetivo()
 
+  const [agora] = useRelogio()
+  const dados = useDadosRevisao(useInicioDoDia(agora))
+  const totalRevisar = dados && baralhos ? baralhos.reduce((soma, b) => soma + paraRevisar(dados, b.id, { tipo: 'tudo' }, agora), 0) : 0
+
   return (
     <>
+      <Secao>
+        <button className="botao-principal botao-grande" onClick={() => abrir({ tela: 'revisar' })}>
+          {totalRevisar > 0 ? `Revisar · ${totalRevisar}` : 'Revisar'}
+        </button>
+      </Secao>
+
       <Secao titulo="Objetivos">
         {objetivos?.slice(0, LIMITE_RESUMO).map((o) => (
           <Item key={o.id} titulo={o.nome} detalhe={detalheObjetivo(o.id)} onClick={() => abrir({ tela: 'objetivo', id: o.id })} />
