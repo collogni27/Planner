@@ -44,3 +44,4 @@
 - 2026-11-19 — Textos da interface enxutos: sem textinhos explicativos, exemplos e legendas desnecessárias; ajuda longa atrás de um botão "?" que abre/fecha.
 - 2026-11-19 — Listas de objetivos e baralhos na tela de Estudos mostram 5 itens e "Ver todos".
 - 2026-11-19 — Sem sub-baralhos. A revisão é aberta pela tela de Estudos: escolher baralho e revisar inteiro ou filtrado por áreas ou por tags.
+- 2026-11-19 — Revisão: filtro aceita várias áreas ou várias tags; botões mostram o intervalo previsto; teto de 50 cards novos/dia; cards em aprendizado que voltam em até 20 min são adiantados; ordem misturada estável por dia.
