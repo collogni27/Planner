@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
 import { Cabecalho, Rotulo, Secao } from '../../ui/componentes'
 import { gravarImportacao, lerExistentes } from '../dados'
@@ -9,7 +8,6 @@ const MAX_ERROS = 20
 
 /** Importar cards: colar texto (ou abrir arquivo) → prévia → confirmar. */
 export function ImportarTela({ chave }: { chave: string }) {
-  const { abrir } = useNavegacao()
   const [texto, setTexto] = useRascunho(chave, 'texto', '')
   const [modo, setModo] = useRascunho<ModoDuplicados>(chave, 'modo', 'pular')
   const [previa, setPrevia] = useState<{ plano: Plano; erros: string[] } | null>(null)
@@ -60,12 +58,6 @@ export function ImportarTela({ chave }: { chave: string }) {
       )}
 
       <Secao titulo="Texto ou arquivo">
-        <p className="texto-secundario">
-          Cole aqui o JSON ou a tabela (TSV/CSV) gerada pela IA.{' '}
-          <button className="botao-texto" onClick={() => abrir({ tela: 'ajuda-ia' })}>
-            Ver o formato
-          </button>
-        </p>
         <textarea
           className="campo-entrada area-texto area-grande"
           aria-label="Texto para importar"
@@ -105,7 +97,7 @@ export function ImportarTela({ chave }: { chave: string }) {
             {p.repetidosNoTexto.length > 0 && <li>{p.repetidosNoTexto.length} repetidos no próprio texto (entram uma vez)</li>}
             {p.novosBaralhos.length > 0 && <li>Baralhos novos: {lista(p.novosBaralhos)}</li>}
             {p.novosObjetivos.length > 0 && <li>Objetivos novos: {lista(p.novosObjetivos)}</li>}
-            {p.novasMicrometas.length > 0 && <li>Micrometas novas: {lista(p.novasMicrometas.map((m) => m.nome))}</li>}
+            {p.novasMicrometas.length > 0 && <li>Conteúdos novos: {lista(p.novasMicrometas.map((m) => m.nome))}</li>}
           </ul>
 
           {p.duplicados.length > 0 && (

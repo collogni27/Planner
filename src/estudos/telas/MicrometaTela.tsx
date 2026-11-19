@@ -57,7 +57,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
           </button>
         </form>
         {meus.length === 0 ? (
-          <Vazio>Ainda sem check-in. Os cards desta micrometa entram na revisão a partir do primeiro check-in.</Vazio>
+          <Vazio>Os cards deste conteúdo entram na revisão a partir do primeiro check-in.</Vazio>
         ) : (
           meus.map((c) => (
             <Item
@@ -80,7 +80,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
       </Secao>
 
       <Secao titulo="Cards">
-        {cards?.length === 0 && <Vazio>Nenhum card ligado a esta micrometa.</Vazio>}
+        {cards?.length === 0 && <Vazio>Nenhum card ligado a este conteúdo.</Vazio>}
         {cards?.map((c) => (
           <Item key={c.id} titulo={c.frente} detalhe={nomeBaralho(c.baralho_id)} onClick={() => abrir({ tela: 'card', id: c.id })} />
         ))}
@@ -89,7 +89,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
             Novo card
           </button>
           <button className="botao-secundario" onClick={() => abrir({ tela: 'ajuda-ia', micrometaId: id })}>
-            Gerar com IA
+            Novo card de IA
           </button>
         </div>
       </Secao>
@@ -97,7 +97,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
       <Secao titulo="Área">
         <select
           className="campo-entrada"
-          aria-label="Área da micrometa"
+          aria-label="Área do conteúdo"
           value={micrometa.area_id ?? ''}
           onChange={(e) => void moverMicrometaDeArea(micrometa, e.target.value || null)}
         >
@@ -114,7 +114,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
         <button
           className="botao-secundario"
           onClick={() => {
-            const nome = pedirNome(micrometa.nome, 'Novo nome da micrometa')
+            const nome = pedirNome(micrometa.nome, 'Novo nome do conteúdo')
             if (nome) void renomear('micrometas', micrometa, nome)
           }}
         >
@@ -123,7 +123,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
         <button
           className="botao-secundario"
           onClick={() => {
-            if (confirm(`Apagar "${micrometa.nome}" e seus check-ins? Os cards continuam nos baralhos, sem micrometa.`)) {
+            if (confirm(`Apagar "${micrometa.nome}" e seus check-ins? Os cards continuam nos baralhos, sem conteúdo.`)) {
               void apagarMicrometa(micrometa).then(voltar)
             }
           }}

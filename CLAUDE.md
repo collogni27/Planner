@@ -11,7 +11,7 @@ O projeto muda ao longo do caminho. Quando o usuário mudar de ideia, **atualize
 
 ## Visão
 
-Um app pessoal unificado que funciona como um **assistente particular**: reúne tarefas, estudos (objetivos, micrometas e flashcards), rotina (hábitos e agenda), sono, dieta, treino e um "Bom dia" matinal, e **me avisa** do que precisa ser feito.
+Um app pessoal unificado que funciona como um **assistente particular**: reúne tarefas, estudos (objetivos, conteúdos e flashcards), rotina (hábitos e agenda), sono, dieta, treino e um "Bom dia" matinal, e **me avisa** do que precisa ser feito.
 
 **Por que existe:** tendência a procrastinar. Coordenar vários apps é atrito suficiente para largar tudo. Um lugar só, acessível e que toma a iniciativa de lembrar reduz esse atrito.
 
@@ -34,7 +34,7 @@ Um app pessoal unificado que funciona como um **assistente particular**: reúne 
 4. **APK:** nunca alterar o `applicationId` nem a chave de assinatura (keystore); sempre aumentar o `versionCode`. Se algo exigir mexer nisso, pare e explique o risco.
 5. **Segurança:** login único, cadastro desativado, RLS em todas as tabelas, nunca a chave `service_role`/secret no frontend ou no repositório. **O repositório é público**: nada de segredos nem dados pessoais no código.
 6. **Um só código** para Android (Capacitor) e web (Netlify). Recursos só do Android têm alternativa ou não aparecem na web.
-7. **Identidade visual** de `docs/identidade-visual.md` desde o início, via design tokens. O mascote vem **só** de `docs/mascote/mascote.json`.
+7. **Identidade visual** de `docs/identidade-visual.md` desde o início, via design tokens. O mascote vem **só** de `docs/mascote/mascote.json`. **Textos enxutos:** sem textinhos explicativos, exemplos ("ex.: …") e legendas que não sejam necessários (ver "Textos da interface" no mesmo documento).
 8. Datas no fuso **America/Sao_Paulo**; semana de **domingo a sábado**.
 
 ---
@@ -67,7 +67,7 @@ Um app pessoal unificado que funciona como um **assistente particular**: reúne 
 | Tela diária (check-in da manhã) | `docs/modulos/tela-diaria.md` |
 | Nota diária | `docs/modulos/notas.md` |
 | Tarefas | `docs/modulos/tarefas.md` |
-| Estudos (objetivos, micrometas, flashcards) | `docs/modulos/estudos.md` |
+| Estudos (objetivos, conteúdos, flashcards) | `docs/modulos/estudos.md` |
 | Rotina: hábitos e agenda | `docs/modulos/rotina.md` |
 | Sono | `docs/modulos/sono.md` |
 | Dieta | `docs/modulos/dieta.md` |

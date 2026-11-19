@@ -71,10 +71,10 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
             if (pronto) void salvar()
           }}
         >
-          <Rotulo texto="Frente (a pergunta)">
+          <Rotulo texto="Frente">
             <textarea className="campo-entrada area-texto" rows={3} value={f.frente} onChange={(e) => mudar('frente', e.target.value)} />
           </Rotulo>
-          <Rotulo texto="Verso (a resposta)">
+          <Rotulo texto="Verso">
             <textarea className="campo-entrada area-texto" rows={4} value={f.verso} onChange={(e) => mudar('verso', e.target.value)} />
           </Rotulo>
           <Rotulo texto="Baralho">
@@ -86,7 +86,7 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
               ))}
             </select>
           </Rotulo>
-          <Rotulo texto="Micrometa (opcional)">
+          <Rotulo texto="Conteúdo (opcional)">
             <select className="campo-entrada" value={f.micrometaId} onChange={(e) => mudar('micrometaId', e.target.value)}>
               <option value="">Nenhuma</option>
               {objetivos.map((o) => (

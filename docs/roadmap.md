@@ -3,10 +3,11 @@
 ## Ordem de construção (referência; pode mudar conforme os pedidos)
 1. **Base:** projeto, login único, Supabase com RLS, design tokens, mascote, navegação entre abas, armazenamento local primeiro, versão web no Netlify.
 2. **APK e atualizações:** Capacitor, keystore (com backup feito pelo usuário), build automático no GitHub Actions e verificação de atualização dentro do app. Validar cedo que **instalar uma versão nova por cima mantém os dados**.
-3. **Estudos** (`modulos/estudos.md`), em três versões:
-   - 0.3.0: objetivos, áreas, micrometas com check-in, baralhos e cards, importação/exportação, ajuda com texto para IA;
-   - 0.3.1: revisão com FSRS, retomando onde parou;
-   - 0.3.2: acompanhamento (força por micrometa, reforço, cards-problema, carga).
+3. **Estudos** (`modulos/estudos.md`):
+   - 0.3.0: objetivos, áreas, conteúdos com check-in, baralhos e cards, importação/exportação, texto para IA;
+   - 0.3.1: refinos (textos enxutos, "conteúdo" no lugar de "micrometa", "Ver todos", ajuda no "?");
+   - 0.3.2: revisão com FSRS, aberta pela tela de Estudos (baralho inteiro ou filtrado por áreas/tags), retomando onde parou;
+   - 0.3.3: acompanhamento (força por conteúdo, reforço, cards-problema, carga).
 4. **Sono + tela diária** (horários, checks, tempo, qualidade, peso) e **primeira notificação ponta a ponta**: validar no celular real o agendamento local, o deep link, o comportamento insistente e a chegada no horário exato.
 5. **Rotina:** hábitos, agenda, nota diária.
 6. **Tarefas:** horário/gatilho, prioridade, realizadas, não planejadas.

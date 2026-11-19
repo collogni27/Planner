@@ -17,6 +17,7 @@ import { ExportarTela } from '../estudos/telas/ExportarTela'
 import { ImportarTela } from '../estudos/telas/ImportarTela'
 import { MicrometaTela } from '../estudos/telas/MicrometaTela'
 import { ObjetivoTela } from '../estudos/telas/ObjetivoTela'
+import { TodosTela } from '../estudos/telas/TodosTela'
 import { ProvedorNavegacao, useNavegacao } from './navegacao'
 import { BarraMascote } from './BarraMascote'
 import { NavInferior } from './NavInferior'
@@ -114,6 +115,9 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
         break
       case 'exportar':
         conteudo = <ExportarTela chave={rota.chave} baralhoId={rota.baralhoId} />
+        break
+      case 'todos':
+        conteudo = <TodosTela tipo={rota.tipo} />
         break
       case 'ajuda-ia':
         conteudo = <AjudaIaTela chave={rota.chave} micrometaId={rota.micrometaId} baralhoId={rota.baralhoId} />
