@@ -4,6 +4,8 @@ import { Mascote } from '../mascote/Mascote'
 import type { Modo } from '../estado/preferencias'
 import { dataPorExtenso, saudacao } from '../util/data'
 import { NOME_USUARIO } from '../config'
+import { useModoDev } from '../estado/modoDev'
+import { BotaoDev } from './ModoDev'
 
 interface Props {
   modo: Modo
@@ -24,6 +26,7 @@ function useAgora() {
 /** Barra do mascote no topo de todas as abas. Pode ser recolhida; o estado é lembrado. */
 export function BarraMascote({ modo, aberta, onAlternar }: Props) {
   const agora = useAgora()
+  const modoDev = useModoDev()
 
   return (
     <div className="barra-area">
@@ -40,6 +43,7 @@ export function BarraMascote({ modo, aberta, onAlternar }: Props) {
                 </div>
                 <div className="barra-data">{dataPorExtenso(agora)}</div>
               </div>
+              {modoDev && <BotaoDev />}
               <button className="barra-botao barra-recolher" aria-label="Recolher a barra do mascote" onClick={onAlternar}>
                 <Icone nome="cima" tamanho={18} />
               </button>

@@ -3,6 +3,8 @@ import { banco, ativo } from '../../dados/banco'
 import { useRascunho } from '../../estado/preferencias'
 import { Cabecalho, Rotulo, Secao } from '../../ui/componentes'
 import { entregarArquivo } from '../../util/arquivo'
+import { Seletor } from '../../ui/dialogos'
+import { opcoesBaralhos } from '../opcoes'
 import { lerExistentes, useBaralhos } from '../dados'
 import { gerarJson, gerarTsv, paraExportacao } from '../importacao'
 
@@ -39,14 +41,7 @@ export function ExportarTela({ chave, baralhoId }: { chave: string; baralhoId?: 
       <Secao>
         <div className="formulario">
           <Rotulo texto="O que exportar">
-            <select className="campo-entrada" value={escolhido} onChange={(e) => setEscolhido(e.target.value)}>
-              <option value="">Todos os baralhos</option>
-              {baralhos?.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.nome}
-                </option>
-              ))}
-            </select>
+            <Seletor rotulo="O que exportar" valor={escolhido} onChange={setEscolhido} opcoes={opcoesBaralhos(baralhos ?? [], 'Todos os baralhos')} />
           </Rotulo>
           <Rotulo texto="Formato">
             <div className="opcoes opcoes-2" role="radiogroup" aria-label="Formato">

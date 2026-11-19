@@ -9,6 +9,7 @@ const PIXEL = {
   lua: 'M6 1h6v2h-6z M4 3h4v2h-4z M3 5h3v6h-3z M4 11h4v2h-4z M6 13h6v2h-6z M11 11h3v2h-3z',
   halter: 'M1 6h2v5h-2z M3 4h3v9h-3z M6 7h5v3h-5z M11 4h3v9h-3z M14 6h2v5h-2z',
   mais: 'M3 7h2v2h-2z M7 7h2v2h-2z M11 7h2v2h-2z',
+  terminal: 'M2 4h2v2h-2z M4 6h2v2h-2z M6 8h2v2h-2z M4 10h2v2h-2z M2 12h2v2h-2z M9 12h5v2h-5z',
   livro: 'M1 3h6v10h-6z M9 3h6v10h-6z M7 12h2v2h-2z',
 } as const
 

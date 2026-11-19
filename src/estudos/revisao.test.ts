@@ -2,7 +2,7 @@ import { fsrs, generatorParameters, Rating, State } from 'ts-fsrs'
 import { describe, expect, it } from 'vitest'
 import type { Card, Checkin, Micrometa, Revisao } from '../dados/banco'
 import { estadoInicial } from './fsrs'
-import { cardsLiberados, formatarIntervalo, montarFila, NOVOS_POR_DIA, novosHoje, previa, responder } from './revisao'
+import { cardsLiberados, desfazerRevisoesDeHoje, formatarIntervalo, montarFila, NOVOS_POR_DIA, novosHoje, previa, responder } from './revisao'
 
 // Sem aleatoriedade nos testes (o app usa um pequeno sorteio nos intervalos).
 const f = fsrs(generatorParameters({ request_retention: 0.9, enable_fuzz: false }))
@@ -72,7 +72,11 @@ describe('fila de revisão', () => {
   it('respeita o teto de cards novos por dia', () => {
     const novos = Array.from({ length: 5 }, () => card())
     expect(montarFila(novos, agora, NOVOS_POR_DIA - 2, 'x').restantes).toBe(2)
-    expect(montarFila(novos, agora, NOVOS_POR_DIA, 'x').proximo).toBeNull()
+    const cheio = montarFila(novos, agora, NOVOS_POR_DIA, 'x')
+    expect(cheio.proximo).toBeNull()
+    expect(cheio.novosEsperando).toBe(5)
+    // "Liberar mais" aumenta o limite do dia.
+    expect(montarFila(novos, agora, NOVOS_POR_DIA, 'x', NOVOS_POR_DIA + 3).restantes).toBe(3)
   })
 
   it('sem nada vencido, adianta card em aprendizado que volta em poucos minutos', () => {
@@ -135,5 +139,27 @@ describe('intervalo nos botões', () => {
     expect(formatarIntervalo(agora, mais(60 * 86_400_000))).toBe('2 meses')
     expect(formatarIntervalo(agora, mais(548 * 86_400_000))).toBe('1,5 anos')
     expect(formatarIntervalo(agora, mais(365 * 86_400_000))).toBe('1 ano')
+  })
+})
+
+describe('Modo Desenvolvedor: desfazer as revisões de hoje', () => {
+  it('o card volta exatamente ao estado de antes da primeira resposta de hoje', () => {
+    const original = card()
+    const r1 = responder(original, Rating.Good, agora, null, id, f)
+    const depois = new Date(r1.card.due)
+    const r2 = responder(r1.card, Rating.Good, depois, null, id, f)
+    const { cards, revisoes } = desfazerRevisoesDeHoje([r2.card], [r1.revisao, r2.revisao], [])
+    expect(cards[0]).toMatchObject({ state: State.New, reps: 0, lapses: 0, stability: 0, last_review: null, due: agora.toISOString() })
+    expect(revisoes.every((r) => r.deleted_at)).toBe(true)
+  })
+
+  it('card já em revisão: mantém o estado anterior e a data da última revisão de antes de hoje', () => {
+    let c = card()
+    const ontem = new Date(agora.getTime() - 86_400_000 * 10)
+    const antiga = responder(c, Rating.Easy, ontem, null, id, f)
+    c = antiga.card
+    const hoje = responder(c, Rating.Again, agora, null, id, f)
+    const { cards } = desfazerRevisoesDeHoje([hoje.card], [hoje.revisao], [antiga.revisao])
+    expect(cards[0]).toMatchObject({ state: State.Review, stability: c.stability, reps: c.reps, lapses: 0, last_review: ontem.toISOString() })
   })
 })

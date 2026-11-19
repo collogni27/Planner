@@ -1,6 +1,8 @@
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Acoes, Cabecalho, Item, Secao, Vazio, dataCurta, pedirNome } from '../../ui/componentes'
+import { Acoes, Cabecalho, Item, Medidor, Secao, Vazio, dataCurta, usePedirNome } from '../../ui/componentes'
+import { NOME_SITUACAO, resumirConteudo } from '../estatisticas'
+import { Seletor, useDialogos } from '../../ui/dialogos'
 import {
   apagarCheckin,
   apagarMicrometa,
@@ -13,16 +15,20 @@ import {
   useCheckins,
   useMicrometa,
   useObjetivo,
+  useTudoDeEstudos,
 } from '../dados'
 
 /** Uma micrometa: check-in de estudo, histórico e cards ligados. */
 export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
   const { abrir, voltar } = useNavegacao()
+  const { confirmar } = useDialogos()
+  const pedirNome = usePedirNome()
   const micrometa = useMicrometa(id)
   const objetivo = useObjetivo(micrometa?.objetivo_id ?? '')
   const areas = useAreas(micrometa?.objetivo_id ?? '')
   const checkins = useCheckins()
   const cards = useCardsDaMicrometa(id)
+  const tudo = useTudoDeEstudos()
   const baralhos = useBaralhos()
   const [nota, setNota] = useRascunho(chave, 'nota', '')
 
@@ -31,11 +37,36 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
 
   const meus = checkins?.filter((c) => c.micrometa_id === id) ?? []
   const nomeBaralho = (bid: string) => baralhos?.find((b) => b.id === bid)?.nome ?? ''
+  const resumo = tudo ? resumirConteudo(micrometa, tudo.cards, tudo.checkins, tudo.revisoes, new Date()) : null
 
   return (
     <>
       <Cabecalho titulo={micrometa.nome} />
       <p className="texto-secundario contexto">{objetivo?.nome}</p>
+
+      {resumo && (
+        <Secao titulo="Acompanhamento">
+          <div className="linha-info">
+            <span className="texto-secundario">Situação</span>
+            <span>{NOME_SITUACAO[resumo.situacao]}</span>
+          </div>
+          {resumo.forca !== null && (
+            <>
+              <div className="linha-info">
+                <span className="texto-secundario">Força</span>
+                <span className="numero-destaque">{resumo.forca}%</span>
+              </div>
+              <Medidor valor={resumo.forca} rotulo="Força" />
+            </>
+          )}
+          {resumo.acerto !== null && (
+            <div className="linha-info">
+              <span className="texto-secundario">Acerto (30 dias)</span>
+              <span className="numero-destaque">{resumo.acerto}%</span>
+            </div>
+          )}
+        </Secao>
+      )}
 
       <Secao titulo="Estudo">
         <form
@@ -67,9 +98,11 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
               direita={
                 <button
                   className="botao-texto"
-                  onClick={() => {
-                    if (confirm('Apagar este check-in?')) void apagarCheckin(c)
-                  }}
+                  onClick={() =>
+                    void confirmar({ titulo: 'Apagar este check-in?', confirmar: 'Apagar', perigo: true }).then((ok) => {
+                      if (ok) void apagarCheckin(c)
+                    })
+                  }
                 >
                   Apagar
                 </button>
@@ -82,7 +115,12 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
       <Secao titulo="Cards">
         {cards?.length === 0 && <Vazio>Nenhum card ligado a este conteúdo.</Vazio>}
         {cards?.map((c) => (
-          <Item key={c.id} titulo={c.frente} detalhe={nomeBaralho(c.baralho_id)} onClick={() => abrir({ tela: 'card', id: c.id })} />
+          <Item
+            key={c.id}
+            titulo={c.frente}
+            detalhe={nomeBaralho(c.baralho_id)}
+            onClick={() => abrir({ tela: 'card', id: c.id })}
+          />
         ))}
         <div className="botoes-linha">
           <button className="botao-secundario" onClick={() => abrir({ tela: 'card', id: null, micrometaId: id })}>
@@ -95,38 +133,37 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
       </Secao>
 
       <Secao titulo="Área">
-        <select
-          className="campo-entrada"
-          aria-label="Área do conteúdo"
-          value={micrometa.area_id ?? ''}
-          onChange={(e) => void moverMicrometaDeArea(micrometa, e.target.value || null)}
-        >
-          <option value="">Sem área</option>
-          {areas?.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.nome}
-            </option>
-          ))}
-        </select>
+        <Seletor
+          rotulo="Área do conteúdo"
+          valor={micrometa.area_id ?? ''}
+          onChange={(v) => void moverMicrometaDeArea(micrometa, v || null)}
+          opcoes={[{ valor: '', rotulo: 'Sem área' }, ...(areas ?? []).map((a) => ({ valor: a.id, rotulo: a.nome }))]}
+        />
       </Secao>
 
       <Acoes>
         <button
           className="botao-secundario"
-          onClick={() => {
-            const nome = pedirNome(micrometa.nome, 'Novo nome do conteúdo')
-            if (nome) void renomear('micrometas', micrometa, nome)
-          }}
+          onClick={() =>
+            void pedirNome(micrometa.nome, 'Renomear conteúdo').then((nome) => {
+              if (nome) void renomear('micrometas', micrometa, nome)
+            })
+          }
         >
           Renomear
         </button>
         <button
           className="botao-secundario"
-          onClick={() => {
-            if (confirm(`Apagar "${micrometa.nome}" e seus check-ins? Os cards continuam nos baralhos, sem conteúdo.`)) {
-              void apagarMicrometa(micrometa).then(voltar)
-            }
-          }}
+          onClick={() =>
+            void confirmar({
+              titulo: `Apagar "${micrometa.nome}"?`,
+              mensagem: 'Os check-ins dele também são apagados. Os cards continuam nos baralhos, sem conteúdo.',
+              confirmar: 'Apagar',
+              perigo: true,
+            }).then((ok) => {
+              if (ok) void apagarMicrometa(micrometa).then(voltar)
+            })
+          }
         >
           Apagar
         </button>

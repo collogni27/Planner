@@ -6,10 +6,12 @@ import type { Card, Checkin, Micrometa, Revisao } from '../dados/banco'
 export const META_RETENCAO = 0.9
 
 /**
- * Teto de segurança de cards novos por dia. O ritmo normal é dado pelos check-ins;
- * isto só evita uma avalanche de revisões nas semanas seguintes.
+ * Cards novos por dia (padrão do Anki). O ritmo normal é dado pelos check-ins; isto evita
+ * uma avalanche de revisões nas semanas seguintes. Dá para liberar mais no dia
+ * (LIBERAR_MAIS por vez). Revisões NÃO têm limite: adiar revisões vencidas só faz esquecer.
  */
-export const NOVOS_POR_DIA = 50
+export const NOVOS_POR_DIA = 20
+export const LIBERAR_MAIS = 20
 
 /** Cards em aprendizado que voltam em até 20 min podem ser adiantados quando não há mais nada. */
 export const ADIANTAR_MS = 20 * 60_000
@@ -70,21 +72,31 @@ export interface Fila {
   restantes: number
   /** Quando volta o próximo card em aprendizado, se houver (para avisar no fim). */
   voltaEm: Date | null
+  /** Cards novos que ficaram de fora por causa do limite do dia. */
+  novosEsperando: number
 }
 
 /**
  * Escolhe o próximo card: primeiro os em aprendizado que já venceram (são sensíveis ao
  * tempo), depois revisões e novos misturados. Novos respeitam o teto diário.
  */
-export function montarFila(liberados: Card[], agora: Date, novosRespondidosHoje: number, semente: string): Fila {
+export function montarFila(
+  liberados: Card[],
+  agora: Date,
+  novosRespondidosHoje: number,
+  semente: string,
+  limiteNovos = NOVOS_POR_DIA,
+): Fila {
   const t = agora.getTime()
-  const vagasNovos = Math.max(0, NOVOS_POR_DIA - novosRespondidosHoje)
+  const vagasNovos = Math.max(0, limiteNovos - novosRespondidosHoje)
   const ordem = (a: Card, b: Card) => misturar(a.id, semente) - misturar(b.id, semente)
 
   const vencidos = liberados.filter((c) => Date.parse(c.due) <= t)
   const aprendendo = vencidos.filter((c) => c.state === State.Learning || c.state === State.Relearning)
   const revisoes = vencidos.filter((c) => c.state === State.Review)
-  const novos = vencidos.filter((c) => c.state === State.New).sort(ordem).slice(0, vagasNovos)
+  const todosNovos = vencidos.filter((c) => c.state === State.New).sort(ordem)
+  const novos = todosNovos.slice(0, vagasNovos)
+  const novosEsperando = todosNovos.length - novos.length
 
   aprendendo.sort((a, b) => Date.parse(a.due) - Date.parse(b.due))
   const resto = [...revisoes, ...novos].sort(ordem)
@@ -94,17 +106,22 @@ export function montarFila(liberados: Card[], agora: Date, novosRespondidosHoje:
     .filter((c) => (c.state === State.Learning || c.state === State.Relearning) && Date.parse(c.due) > t)
     .sort((a, b) => Date.parse(a.due) - Date.parse(b.due))
 
-  if (fila.length > 0) return { proximo: fila[0], restantes: fila.length, voltaEm: null }
+  if (fila.length > 0) return { proximo: fila[0], restantes: fila.length, voltaEm: null, novosEsperando }
 
   // Nada vencido: adianta um card em aprendizado que volta em poucos minutos.
   const adiantavel = futurosAprendendo.find((c) => Date.parse(c.due) - t <= ADIANTAR_MS)
-  if (adiantavel) return { proximo: adiantavel, restantes: 1, voltaEm: null }
-  return { proximo: null, restantes: 0, voltaEm: futurosAprendendo[0] ? new Date(futurosAprendendo[0].due) : null }
+  if (adiantavel) return { proximo: adiantavel, restantes: 1, voltaEm: null, novosEsperando }
+  return {
+    proximo: null,
+    restantes: 0,
+    voltaEm: futurosAprendendo[0] ? new Date(futurosAprendendo[0].due) : null,
+    novosEsperando,
+  }
 }
 
 // ---------- Conversão entre o banco e a biblioteca ----------
 
-function paraFsrs(c: Card): CardFsrs {
+export function paraFsrs(c: Card): CardFsrs {
   return {
     due: new Date(c.due),
     stability: c.stability,
@@ -186,4 +203,47 @@ export function formatarIntervalo(de: Date, ate: Date): string {
   if (meses < 12) return meses === 1 ? '1 mês' : `${meses} meses`
   const anos = (dias / 365).toFixed(1).replace('.', ',').replace(',0', '')
   return anos === '1' ? '1 ano' : `${anos} anos`
+}
+
+/**
+ * Modo Desenvolvedor: desfaz as revisões de hoje. Cada card volta ao estado de antes
+ * da primeira resposta de hoje (o histórico guarda esse estado), e as revisões de hoje
+ * são marcadas como apagadas.
+ */
+export function desfazerRevisoesDeHoje(
+  cards: Card[],
+  revisoesHoje: Revisao[],
+  revisoesAnteriores: Revisao[],
+): { cards: Card[]; revisoes: Revisao[] } {
+  const apagadoEm = new Date().toISOString()
+  const hoje = revisoesHoje.filter((r) => !r.deleted_at).sort((a, b) => a.revisado_em.localeCompare(b.revisado_em))
+  const porCard = new Map<string, Revisao[]>()
+  for (const r of hoje) porCard.set(r.card_id, [...(porCard.get(r.card_id) ?? []), r])
+
+  const restaurados: Card[] = []
+  for (const [cardId, lista] of porCard) {
+    const card = cards.find((c) => c.id === cardId)
+    if (!card) continue
+    const primeira = lista[0]
+    // Lapso = "Errei" num card que estava em revisão.
+    const lapsos = lista.filter((r) => r.nota === Rating.Again && r.state === State.Review).length
+    const anterior = revisoesAnteriores
+      .filter((r) => r.card_id === cardId && !r.deleted_at && r.revisado_em < primeira.revisado_em)
+      .sort((a, b) => b.revisado_em.localeCompare(a.revisado_em))[0]
+    restaurados.push({
+      ...card,
+      state: primeira.state,
+      stability: primeira.stability,
+      difficulty: primeira.difficulty,
+      elapsed_days: primeira.elapsed_days,
+      scheduled_days: primeira.scheduled_days,
+      learning_steps: 0,
+      reps: Math.max(0, card.reps - lista.length),
+      lapses: Math.max(0, card.lapses - lapsos),
+      // Estava vencido no momento da primeira resposta de hoje.
+      due: primeira.revisado_em,
+      last_review: primeira.state === State.New ? null : (anterior?.revisado_em ?? null),
+    })
+  }
+  return { cards: restaurados, revisoes: hoje.map((r) => ({ ...r, deleted_at: apagadoEm })) }
 }

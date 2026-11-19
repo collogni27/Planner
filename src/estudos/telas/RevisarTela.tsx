@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavegacao } from '../../app/navegacao'
-import { useRascunho } from '../../estado/preferencias'
+import { useEstadoSalvo, useRascunho } from '../../estado/preferencias'
 import { Icone } from '../../icones/Icone'
 import { Cabecalho, Rotulo, Secao, Vazio } from '../../ui/componentes'
 import { diaLocal, inicioDoDia } from '../../util/data'
 import { useBaralhos, useDadosRevisao, type DadosRevisao } from '../dados'
-import { cardsLiberados, montarFila, type Filtro } from '../revisao'
+import { cardsLiberados, LIBERAR_MAIS, montarFila, NOVOS_POR_DIA, type Filtro } from '../revisao'
 
 /** Relógio que anda sozinho (cards em aprendizado vencem com o passar dos minutos). */
 export function useRelogio(intervaloMs = 30_000) {
@@ -24,11 +24,28 @@ export function useInicioDoDia(agora: Date) {
   return useMemo(() => inicioDoDia(agora), [dia])
 }
 
-/** Quantos cards estão para revisar agora num baralho, com um filtro. */
-export function paraRevisar(d: DadosRevisao, baralhoId: string, filtro: Filtro, agora: Date) {
-  return montarFila(cardsLiberados(d.cards, baralhoId, filtro, d.micrometas, d.checkins), agora, d.novosRespondidosHoje, diaLocal(agora))
-    .restantes
+/** Limite de cards novos de hoje: o padrão + o que foi liberado a mais hoje. */
+export function useLimiteNovos(agora: Date) {
+  const dia = diaLocal(agora)
+  const [liberado, setLiberado] = useEstadoSalvo('novos-extra', { dia, extra: 0 })
+  const extra = liberado.dia === dia ? liberado.extra : 0 // vale só para o dia em que foi liberado
+  return [NOVOS_POR_DIA + extra, () => setLiberado({ dia, extra: extra + LIBERAR_MAIS })] as const
 }
+
+/** Fila de um baralho com um filtro. */
+export function filaDe(d: DadosRevisao, baralhoId: string, filtro: Filtro, agora: Date, limiteNovos: number) {
+  return montarFila(
+    cardsLiberados(d.cards, baralhoId, filtro, d.micrometas, d.checkins),
+    agora,
+    d.novosRespondidosHoje,
+    diaLocal(agora),
+    limiteNovos,
+  )
+}
+
+/** Quantos cards estão para revisar agora num baralho, com um filtro. */
+export const paraRevisar = (d: DadosRevisao, baralhoId: string, filtro: Filtro, agora: Date, limiteNovos: number) =>
+  filaDe(d, baralhoId, filtro, agora, limiteNovos).restantes
 
 type TipoFiltro = Filtro['tipo']
 
@@ -38,6 +55,7 @@ export function RevisarTela({ chave }: { chave: string }) {
   const [agora] = useRelogio()
   const dados = useDadosRevisao(useInicioDoDia(agora))
   const baralhos = useBaralhos()
+  const [limiteNovos] = useLimiteNovos(agora)
   const [baralhoId, setBaralhoId] = useRascunho(chave, 'baralho', '')
   const [tipo, setTipo] = useRascunho<TipoFiltro>(chave, 'tipo', 'tudo')
   const [areasEscolhidas, setAreas] = useRascunho<string[]>(chave, 'areas', [])
@@ -59,7 +77,7 @@ export function RevisarTela({ chave }: { chave: string }) {
     .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
   const opcoesTags = [...new Set(liberados.flatMap((c) => c.tags))].sort((a, b) => a.localeCompare(b, 'pt-BR'))
 
-  const total = baralho ? paraRevisar(dados, baralho.id, filtro, agora) : 0
+  const total = baralho ? paraRevisar(dados, baralho.id, filtro, agora, limiteNovos) : 0
   const alternar = (lista: string[], valor: string) => (lista.includes(valor) ? lista.filter((x) => x !== valor) : [...lista, valor])
   const filtroIncompleto = (tipo === 'areas' && areasEscolhidas.length === 0) || (tipo === 'tags' && tagsEscolhidas.length === 0)
 
@@ -71,7 +89,7 @@ export function RevisarTela({ chave }: { chave: string }) {
         {baralhos.length === 0 && <Vazio>Nenhum baralho.</Vazio>}
         <div className="lista-escolha" role="radiogroup" aria-label="Baralho">
           {baralhos.map((b) => {
-            const n = paraRevisar(dados, b.id, { tipo: 'tudo' }, agora)
+            const n = paraRevisar(dados, b.id, { tipo: 'tudo' }, agora, limiteNovos)
             return (
               <button
                 key={b.id}

@@ -34,7 +34,7 @@ Objetivo (ex.: ENEM)
 - **Baralhos** são geridos pelo usuário, numa lista simples, **sem sub-baralhos** (área e tags já organizam). Ex.: "ENEM – Flashcards", "ENEM – Questões". Questões **não** são um tipo especial: são cards comuns num baralho separado.
 - Cada **card** (frente, verso, tags) pertence a **um baralho** e, opcionalmente, a **um conteúdo**.
 - **Um card ligado a conteúdo só entra na revisão depois do primeiro check-in dele** (primeiro estudar, depois recuperar). Card sem conteúdo entra direto.
-- Se um check-in liberar muitos cards de uma vez, o teto de 50 novos por dia distribui a entrada ao longo dos dias. (Aviso de carga no check-in: futuro, se fizer falta.)
+- Se um check-in liberar muitos cards de uma vez, o limite de 20 novos por dia distribui a entrada ao longo dos dias (dá para liberar mais).
 
 ### Tela principal de Estudos
 - Blocos **Objetivos** e **Baralhos**: mostram os **5 primeiros**; se houver mais, botão **"Ver todos"** abre uma tela com a lista completa.
@@ -45,20 +45,24 @@ Objetivo (ex.: ENEM)
 - Ao abrir: escolher o **baralho** (cada um mostra quantos estão para revisar) e revisar **todos** os cards ou **filtrar** por **várias áreas** ou **várias tags** (vale qualquer uma das marcadas); aí "Começar".
 - Ordem: primeiro os cards em aprendizado que já venceram; depois revisões e novos **misturados** (ordem estável no mesmo dia).
 - Card respondido com "Errei" volta minutos depois, na mesma sessão. Se não houver mais nada, cards que voltam em até 20 min são adiantados; no fim, o app diz a que horas os próximos voltam.
-- **Teto de segurança de 50 cards novos por dia** (o ritmo normal é dado pelos check-ins).
+- **Cards novos: 20 por dia** (padrão do Anki). Quando o limite segura cards, o fim da revisão mostra quantos ficaram para amanhã e o botão **"Liberar mais 20 hoje"**.
+- **Revisões não têm limite.** Card vencido é card que o FSRS calculou estar perto de ser esquecido; adiá-lo só aumenta o esquecimento e acumula trabalho. O limite existe só para **novos**, porque cada card novo gera várias revisões nas semanas seguintes. Revisar cards que ainda não venceram (estudar adiantado) não é oferecido: rende pouco, porque a memória ainda está forte.
 - Frente → "Mostrar resposta" → verso + 4 botões **Errei / Difícil / Bom / Fácil**, com o intervalo previsto em cada botão (ex.: "Bom · 10min", "Fácil · 10d"). Durante a revisão dá para editar o card.
 - Agendamento pelo FSRS (`ts-fsrs`), meta de 90% de chance de lembrar (por enquanto fixa; ajuste em Configurações quando houver necessidade). No futuro, com meses de histórico, calibrar os parâmetros do FSRS com as minhas revisões.
 - Histórico de toda revisão guardado (tabela `revisoes`), nunca apagado.
 - Salva continuamente o card atual e se a resposta está aberta: reabrir após fechamento volta no mesmo ponto.
 - Funciona offline; sincroniza depois.
 
-## Acompanhamento (versão seguinte)
-- **Por objetivo:** conteúdos a estudar / estudados / dominados; mapa de força por conteúdo.
-- **Por conteúdo:** quanto lembro hoje (estimativa do FSRS), acerto, data do último estudo.
-- **"Precisa de reforço":** conteúdos com muitos erros → sugerir **reestudar**.
-- **Cards-problema:** errados várias vezes → sugerir reescrever ou dividir.
-- **Carga dos próximos dias:** revisões previstas para amanhã e para a semana.
-- Cards por baralho e por tag; novos/jovens/maduros.
+## Acompanhamento (versão 0.3.3)
+Tela "Acompanhamento" (abaixo do botão Revisar), mais dados na tela do objetivo e do conteúdo.
+- **Força** de um conteúdo: média da chance de lembrar agora (estimativa do FSRS) dos cards já revisados, em %. Medidor de 10 quadradinhos na tela do conteúdo.
+- **Acerto (30 dias):** % de respostas diferentes de "Errei" em cards que já estavam aprendidos (como a "retenção real" do Anki).
+- **Situação** do conteúdo: a estudar (sem check-in) → estudado (check-in, nenhum card revisado) → em consolidação → **dominado** (todos os cards revisados e ≥ 80% maduros).
+- **Maduro:** intervalo de 21 dias ou mais; **jovem:** revisado, intervalo menor; **novo:** nunca revisado.
+- **Precisa de reforço:** acerto < 80% (com ≥ 5 respostas) ou força < 70% → sugerir **reestudar o conteúdo**.
+- **Cards-problema:** errados 4 vezes ou mais (lapsos) → reescrever ou dividir.
+- **Revisões nos próximos dias:** hoje (com atrasados) e os 6 dias seguintes.
+- Por objetivo: quantos conteúdos em cada situação. Por baralho: novos / jovens / maduros. Por tag: quantos cards.
 
 ## Importação e exportação
 - Colar texto ou abrir arquivo. Formatos:

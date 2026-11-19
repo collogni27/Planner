@@ -128,3 +128,8 @@
   --mascote-corpo: #13958C;
   --mascote-olhos: #5FE9DE;
 }
+
+/* Fundo escurecido atrás das caixas de diálogo (igual nos três modos). */
+:root {
+  --sobreposicao: rgba(16, 42, 47, 0.55);
+}
