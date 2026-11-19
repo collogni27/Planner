@@ -56,6 +56,6 @@ Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, bot
 - O visual da barra acompanha a aba atual (o mascote pode mudar de variação por aba).
 
 ## Navegação inferior (abas ainda indefinidas)
-- A primeira aba é **"Início"** (ícone de sol em pixel). As demais estão como **"(XXXXX)"** com ícone de ponto de interrogação no protótipo: **quais serão as abas principais será decidido aos poucos com o usuário.** Candidata já mencionada: Tarefas.
+- A primeira aba é **"Início"** (ícone de sol em pixel). As demais estão como **"(XXXXX)"** com ícone de ponto de interrogação no protótipo: **quais serão as abas principais será decidido aos poucos com o usuário.** Definidas até agora: **Início** e **Estudos** (2026-11-19). Candidata mencionada: Tarefas.
 - Na versão web, o Netlify (plano gratuito) mostra um selo "Powered by Netlify" fixo no **canto inferior direito**, que não pode ser removido. Layouts de PC devem deixar esse canto livre. No APK o selo não existe.
 - Não decidir sozinho quais módulos viram abas. Enquanto isso, os módulos ficam numa tela provisória **"Mais"**, e o Claude Code pergunta quando a decisão for necessária.

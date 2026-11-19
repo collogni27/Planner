@@ -36,3 +36,7 @@
 - 2026-11-18 — `applicationId` = `io.github.collogni27.planner` (permanente); versionCode calculado da versão do `package.json`; APK publicado por GitHub Actions como Release quando a versão muda no `main`; impressão digital da chave conferida a cada build.
 - 2026-11-18 — Chave de assinatura gerada pelo Claude Code e entregue ao usuário para backup no Google Drive; no GitHub fica como segredo.
 - 2026-11-18 — Atualização: o botão "Atualizar" abre o download do APK no navegador (o Android pede confirmação). Instalador dentro do app pode vir depois, se o usuário quiser menos toques.
+- 2026-11-19 — "Flashcards" vira o módulo **Estudos**: objetivo → área (opcional) → micrometa com check-in; cards ligados a micrometa entram na revisão só após o primeiro check-in — primeiro estudar, depois recuperar (prática de recuperação + espaçamento).
+- 2026-11-19 — Questões não são tipo especial: são cards comuns em baralhos que o usuário separa (ex.: "ENEM – Questões"). Cada card pertence a um baralho e, opcionalmente, a uma micrometa.
+- 2026-11-19 — "Estudos" é a segunda aba principal.
+- 2026-11-19 — Tabelas do módulo sem chaves estrangeiras entre si — a sincronização local primeiro não pode travar por ordem de chegada; a ligação é garantida pelo app.

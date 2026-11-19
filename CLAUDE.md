@@ -11,7 +11,7 @@ O projeto muda ao longo do caminho. Quando o usuário mudar de ideia, **atualize
 
 ## Visão
 
-Um app pessoal unificado que funciona como um **assistente particular**: reúne tarefas, flashcards, rotina (hábitos e agenda), sono, dieta, treino e um "Bom dia" matinal, e **me avisa** do que precisa ser feito.
+Um app pessoal unificado que funciona como um **assistente particular**: reúne tarefas, estudos (objetivos, micrometas e flashcards), rotina (hábitos e agenda), sono, dieta, treino e um "Bom dia" matinal, e **me avisa** do que precisa ser feito.
 
 **Por que existe:** tendência a procrastinar. Coordenar vários apps é atrito suficiente para largar tudo. Um lugar só, acessível e que toma a iniciativa de lembrar reduz esse atrito.
 
@@ -47,7 +47,7 @@ Um app pessoal unificado que funciona como um **assistente particular**: reúne 
 2. **Peça confirmação antes de mudanças estruturais:** esquema do banco (tabelas, colunas), apagar ou migrar dados, trocar biblioteca ou stack, mudar a sincronização. Explique o motivo em linguagem simples.
 3. **Passos fora do código** (Supabase, Netlify, variáveis de ambiente, permissões no Android): instruções numeradas, clique a clique, dizendo exatamente o que copiar e onde colar. Guias em `docs/guias/`.
 4. **Git:** commits pequenos e descritivos em português, um por mudança lógica.
-5. **Testes automatizados** para a lógica crítica: planejador de treino, agendamento de notificações (incluindo a condição do sol) e integração com o FSRS.
+5. **Testes automatizados** para a lógica crítica: planejador de treino, agendamento de notificações (incluindo a condição do sol), integração com o FSRS e importação de cards.
 6. **Uma coisa por vez.** Não adicione funcionalidades não pedidas; sugira no resumo.
 7. **Código simples e legível,** com comentários curtos em português na lógica de negócio.
 8. **Mantenha os documentos atualizados** e registre decisões em `docs/decisoes.md`.
@@ -67,7 +67,7 @@ Um app pessoal unificado que funciona como um **assistente particular**: reúne 
 | Tela diária (check-in da manhã) | `docs/modulos/tela-diaria.md` |
 | Nota diária | `docs/modulos/notas.md` |
 | Tarefas | `docs/modulos/tarefas.md` |
-| Flashcards | `docs/modulos/flashcards.md` |
+| Estudos (objetivos, micrometas, flashcards) | `docs/modulos/estudos.md` |
 | Rotina: hábitos e agenda | `docs/modulos/rotina.md` |
 | Sono | `docs/modulos/sono.md` |
 | Dieta | `docs/modulos/dieta.md` |
