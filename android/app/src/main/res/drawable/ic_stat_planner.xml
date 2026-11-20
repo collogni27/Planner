@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone pequeno das notificações: silhueta do mascote (gerada de docs/mascote/mascote.json). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="25"
+    android:viewportHeight="25">
+    <path android:fillColor="#FFFFFFFF" android:pathData="M5,3h15v1h-15z M5,4h15v1h-15z M5,5h15v1h-15z M5,6h15v1h-15z M5,7h15v1h-15z M5,8h15v1h-15z M2,9h21v1h-21z M2,10h21v1h-21z M0,11h25v1h-25z M0,12h4v1h-4z M5,12h15v1h-15z M21,12h4v1h-4z M0,13h4v1h-4z M5,13h15v1h-15z M21,13h4v1h-4z M5,14h15v1h-15z M5,15h15v1h-15z M5,16h15v1h-15z M5,17h15v1h-15z M5,18h4v1h-4z M16,18h4v1h-4z M5,19h4v1h-4z M16,19h4v1h-4z M5,20h4v1h-4z M16,20h4v1h-4z M5,21h4v1h-4z M16,21h4v1h-4z" />
+</vector>
