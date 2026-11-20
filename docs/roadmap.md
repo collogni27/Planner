@@ -7,7 +7,8 @@
    - 0.3.0: objetivos, áreas, conteúdos com check-in, baralhos e cards, importação/exportação, texto para IA;
    - 0.3.1: refinos (textos enxutos, "conteúdo" no lugar de "micrometa", "Ver todos", ajuda no "?");
    - 0.3.2: revisão com FSRS, aberta pela tela de Estudos (baralho inteiro ou filtrado por áreas/tags), retomando onde parou;
-   - 0.3.3: acompanhamento (força por conteúdo, reforço, cards-problema, carga).
+   - 0.3.3: acompanhamento (força por conteúdo, reforço, cards-problema, carga);
+   - 0.3.4: baralhos e conteúdos compartilhados entre objetivos (sem áreas), revisão com filtros combinados, Revisão Livre, baralho agrupado e histórico do card.
 4. **Sono + tela diária** (horários, checks, tempo, qualidade, peso) e **primeira notificação ponta a ponta**: validar no celular real o agendamento local, o deep link, o comportamento insistente e a chegada no horário exato.
 5. **Rotina:** hábitos, agenda, nota diária.
 6. **Tarefas:** horário/gatilho, prioridade, realizadas, não planejadas.

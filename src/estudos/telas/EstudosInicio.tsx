@@ -3,15 +3,14 @@ import { CampoAdicionar, Item, Secao } from '../../ui/componentes'
 import {
   criarBaralho,
   criarObjetivo,
-  proximaAEstudar,
   useBaralhos,
-  useCheckins,
   useContagemPorBaralho,
   useDadosRevisao,
   useObjetivos,
-  useTodasAreas,
-  useTodasMicrometas,
+  useTudoDeEstudos,
 } from '../dados'
+import { gruposDoObjetivo, proximoAEstudar } from '../modelo'
+import { SEM_FILTRO } from '../revisao'
 import { paraRevisar, useInicioDoDia, useLimiteNovos, useRelogio } from './RevisarTela'
 
 /** Quantos itens cada lista mostra antes do "Ver todos". */
@@ -19,13 +18,12 @@ export const LIMITE_RESUMO = 5
 
 /** Detalhe de um objetivo: o próximo conteúdo a estudar. */
 export function useDetalheObjetivo() {
-  const micrometas = useTodasMicrometas()
-  const areas = useTodasAreas()
-  const checkins = useCheckins()
+  const tudo = useTudoDeEstudos()
   return (objetivoId: string) => {
-    const doObjetivo = (micrometas ?? []).filter((m) => m.objetivo_id === objetivoId)
-    if (doObjetivo.length === 0) return 'Sem conteúdos'
-    const proximo = proximaAEstudar(doObjetivo, areas ?? [], checkins)
+    if (!tudo) return ''
+    const grupos = gruposDoObjetivo(objetivoId, tudo.micrometas, tudo.baralhos, tudo.vinculos)
+    if (grupos.every((g) => g.itens.length === 0)) return 'Sem conteúdos'
+    const proximo = proximoAEstudar(grupos, tudo.checkins)
     return proximo ? `Próximo: ${proximo.nome}` : 'Todos os conteúdos estudados'
   }
 }
@@ -43,7 +41,7 @@ export function EstudosInicio() {
   const [agora] = useRelogio()
   const dados = useDadosRevisao(useInicioDoDia(agora))
   const [limiteNovos] = useLimiteNovos(agora)
-  const totalRevisar = dados && baralhos ? baralhos.reduce((soma, b) => soma + paraRevisar(dados, b.id, { tipo: 'tudo' }, agora, limiteNovos), 0) : 0
+  const totalRevisar = dados && baralhos ? paraRevisar(dados, SEM_FILTRO, agora, limiteNovos) : 0
 
   return (
     <>

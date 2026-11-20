@@ -1,7 +1,7 @@
 import { fsrs, generatorParameters, Rating, State } from 'ts-fsrs'
 import { describe, expect, it } from 'vitest'
 import type { Card, Checkin, Micrometa, Revisao } from '../dados/banco'
-import { acerto, carga, cardsPorTag, cardsProblema, forca, maturidade, precisamReforco, resumirConteudo } from './estatisticas'
+import { acerto, carga, cardsPorTag, cardsProblema, forca, maturidade, precisamReforco, resumirConteudo, situacaoDoCard } from './estatisticas'
 import { estadoInicial } from './fsrs'
 import { responder } from './revisao'
 
@@ -66,5 +66,12 @@ describe('acompanhamento', () => {
     const cs = [card({ tags: ['a'] }), card({ state: State.Review, scheduled_days: 5, tags: ['a', 'b'] }), card({ state: State.Review, scheduled_days: 40 })]
     expect(maturidade(cs)).toEqual({ novos: 1, jovens: 1, maduros: 1 })
     expect(cardsPorTag(cs)).toEqual([{ tag: 'a', cards: 2 }, { tag: 'b', cards: 1 }])
+  })
+
+  it('situação do card para a lista do baralho', () => {
+    expect(situacaoDoCard(card(), agora)).toBe('novo')
+    const jovem = card({ state: State.Review, scheduled_days: 3, due: new Date(agora.getTime() + 3 * dia).toISOString() })
+    expect(situacaoDoCard(jovem, agora)).toBe('jovem · volta em 3d')
+    expect(situacaoDoCard({ ...jovem, scheduled_days: 30, due: agora.toISOString() }, agora)).toBe('maduro · para revisar')
   })
 })

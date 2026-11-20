@@ -1,6 +1,7 @@
 // Lógica da revisão (docs/modulos/estudos.md), sem banco nem tela, para ser testada.
 import { fsrs, generatorParameters, Rating, State, type Card as CardFsrs, type FSRS, type Grade } from 'ts-fsrs'
-import type { Card, Checkin, Micrometa, Revisao } from '../dados/banco'
+import type { Card, Checkin, Revisao } from '../dados/banco'
+import type { Vinculos } from './modelo'
 
 /** Meta de memorização: o card volta quando a chance de lembrar cair para 90%. */
 export const META_RETENCAO = 0.9
@@ -18,7 +19,18 @@ export const ADIANTAR_MS = 20 * 60_000
 
 export const agendador = fsrs(generatorParameters({ request_retention: META_RETENCAO, enable_fuzz: true }))
 
-export type Filtro = { tipo: 'tudo' } | { tipo: 'areas'; ids: string[] } | { tipo: 'tags'; tags: string[] }
+/**
+ * Quais cards revisar. Lista vazia = sem filtro naquela categoria.
+ * Dentro de uma categoria vale QUALQUER um dos marcados; entre categorias, TODAS
+ * (ex.: baralho Matemática + tag "questao" = só questões de Matemática).
+ */
+export interface Filtro {
+  baralhos: string[]
+  objetivos: string[]
+  tags: string[]
+}
+
+export const SEM_FILTRO: Filtro = { baralhos: [], objetivos: [], tags: [] }
 
 export const NOTAS: { nota: Grade; rotulo: string }[] = [
   { nota: Rating.Again, rotulo: 'Errei' },
@@ -28,26 +40,22 @@ export const NOTAS: { nota: Grade; rotulo: string }[] = [
 ]
 
 /**
- * Cards do baralho que podem ser revisados: ativos, dentro do filtro e, se ligados
- * a um conteúdo, só depois do primeiro check-in dele (primeiro estudar, depois recuperar).
+ * Cards que podem ser revisados: ativos, dentro do filtro e, se ligados a um conteúdo,
+ * só depois do primeiro check-in dele (primeiro estudar, depois recuperar).
+ * O filtro de objetivo usa os objetivos do conteúdo do card (card sem conteúdo não entra).
  */
-export function cardsLiberados(
-  cards: Card[],
-  baralhoId: string,
-  filtro: Filtro,
-  micrometas: Micrometa[],
-  checkins: Checkin[],
-): Card[] {
+export function cardsLiberados(cards: Card[], filtro: Filtro, checkins: Checkin[], vinculos: Vinculos): Card[] {
   const estudados = new Set(checkins.filter((c) => !c.deleted_at).map((c) => c.micrometa_id))
-  const areaDe = new Map(micrometas.map((m) => [m.id, m.area_id]))
+  const objetivos = new Set(filtro.objetivos)
+  const conteudosDosObjetivos = new Set(
+    vinculos.conteudos.filter((v) => !v.deleted_at && objetivos.has(v.objetivo_id)).map((v) => v.micrometa_id),
+  )
   return cards.filter((c) => {
-    if (c.deleted_at || c.baralho_id !== baralhoId) return false
+    if (c.deleted_at) return false
     if (c.micrometa_id && !estudados.has(c.micrometa_id)) return false
-    if (filtro.tipo === 'areas') {
-      const area = c.micrometa_id ? areaDe.get(c.micrometa_id) : null
-      return !!area && filtro.ids.includes(area)
-    }
-    if (filtro.tipo === 'tags') return c.tags.some((t) => filtro.tags.includes(t))
+    if (filtro.baralhos.length > 0 && !filtro.baralhos.includes(c.baralho_id)) return false
+    if (filtro.objetivos.length > 0 && !(c.micrometa_id && conteudosDosObjetivos.has(c.micrometa_id))) return false
+    if (filtro.tags.length > 0 && !c.tags.some((t) => filtro.tags.includes(t))) return false
     return true
   })
 }
@@ -246,4 +254,9 @@ export function desfazerRevisoesDeHoje(
     })
   }
   return { cards: restaurados, revisoes: hoje.map((r) => ({ ...r, deleted_at: apagadoEm })) }
+}
+
+/** Ordem embaralhada (estável para a mesma semente), usada na Revisão Livre. */
+export function embaralhar(ids: string[], semente: string): string[] {
+  return [...ids].sort((a, b) => misturar(a, semente) - misturar(b, semente))
 }

@@ -1,164 +1,165 @@
-import { useState } from 'react'
 import { useNavegacao } from '../../app/navegacao'
-import type { Area, Micrometa } from '../../dados/banco'
 import { useRascunho } from '../../estado/preferencias'
 import { Icone } from '../../icones/Icone'
 import { Acoes, Cabecalho, Item, Secao, Vazio, dataCurta, usePedirNome } from '../../ui/componentes'
 import { Seletor, useDialogos } from '../../ui/dialogos'
 import {
-  apagarArea,
+  adicionarConteudoAoObjetivo,
   apagarObjetivo,
-  criarArea,
-  criarMicrometa,
+  criarBaralho,
+  criarConteudo,
+  desvincularBaralho,
+  moverBaralhoNoObjetivo,
   moverNaFila,
-  proximaAEstudar,
   renomear,
-  useAreas,
-  useCheckins,
-  useMicrometas,
+  useBaralhos,
   useObjetivo,
+  useObjetivos,
   useTudoDeEstudos,
+  vincularBaralho,
 } from '../dados'
 import { NOME_SITUACAO, resumirConteudo } from '../estatisticas'
+import { conteudosForaDoObjetivo, gruposDoObjetivo, objetivosDoConteudo, proximoAEstudar } from '../modelo'
 
-/** Um objetivo: micrometas agrupadas por área, na ordem da fila de estudo. */
+const NOVO_BARALHO = '__novo__'
+
+/**
+ * Um objetivo: os baralhos dele (no lugar das antigas áreas) e, em cada um, os
+ * conteúdos deste objetivo que estão naquele baralho, na ordem da fila de estudo.
+ */
 export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
   const { abrir, voltar } = useNavegacao()
-  const { confirmar } = useDialogos()
+  const { confirmar, pedirTexto } = useDialogos()
   const pedirNome = usePedirNome()
   const objetivo = useObjetivo(id)
-  const areas = useAreas(id)
-  const micrometas = useMicrometas(id)
-  const checkins = useCheckins()
+  const objetivos = useObjetivos()
+  const baralhos = useBaralhos()
   const tudo = useTudoDeEstudos()
-  const [nomeNova, setNomeNova] = useRascunho(chave, 'micrometa', '')
-  const [areaNova, setAreaNova] = useRascunho<string>(chave, 'area', '')
-  const [novaArea, setNovaArea] = useState('')
+  const [nomeNovo, setNomeNovo] = useRascunho(chave, 'conteudo', '')
+  const [baralhoNovo, setBaralhoNovo] = useRascunho(chave, 'baralho', '')
 
-  if (objetivo === undefined || !areas || !micrometas) return null
+  if (objetivo === undefined || !baralhos || !tudo || !objetivos) return null
   if (objetivo === null) return <Cabecalho titulo="Objetivo apagado" />
 
-  const proxima = proximaAEstudar(micrometas, areas, checkins)
-  const grupos: { area: Area | null; itens: Micrometa[] }[] = [
-    { area: null, itens: micrometas.filter((m) => !m.area_id) },
-    ...areas.map((a) => ({ area: a, itens: micrometas.filter((m) => m.area_id === a.id) })),
-  ]
+  const grupos = gruposDoObjetivo(id, tudo.micrometas, baralhos, tudo.vinculos)
+  const proximo = proximoAEstudar(grupos, tudo.checkins)
+  const vinculados = grupos.filter((g) => g.baralho).map((g) => g.baralho!)
+  const naoVinculados = baralhos.filter((b) => !vinculados.includes(b))
+  const fora = conteudosForaDoObjetivo(id, tudo.micrometas, tudo.vinculos)
 
-  // Situação e força de cada conteúdo (ex.: "em consolidação · força 82%").
-  function detalheConteudo(m: Micrometa) {
-    if (!tudo) return ''
-    const r = resumirConteudo(m, tudo.cards, tudo.checkins, tudo.revisoes, new Date())
+  // Situação e força do conteúdo; avisa quando ele também está em outro objetivo.
+  function detalheConteudo(conteudoId: string) {
+    const m = tudo!.micrometas.find((x) => x.id === conteudoId)!
+    const r = resumirConteudo(m, tudo!.cards, tudo!.checkins, tudo!.revisoes, new Date())
     const partes = [NOME_SITUACAO[r.situacao]]
     if (r.situacao === 'estudado' && r.ultimoEstudo) partes.push(dataCurta(r.ultimoEstudo))
     if (r.forca !== null) partes.push(`força ${r.forca}%`)
+    if (objetivosDoConteudo(conteudoId, tudo!.vinculos).length > 1) partes.push('compartilhado')
     return partes.join(' · ')
   }
 
-  async function adicionarMicrometa() {
-    if (!nomeNova.trim()) return
-    await criarMicrometa(id, areaNova || null, nomeNova)
-    setNomeNova('')
+  async function vincular(valor: string) {
+    if (valor === NOVO_BARALHO) {
+      const nome = await pedirTexto({ titulo: 'Novo baralho', confirmar: 'Criar' })
+      if (!nome) return
+      const b = await criarBaralho(nome)
+      await vincularBaralho(id, b.id)
+    } else if (valor) await vincularBaralho(id, valor)
   }
+
+  async function adicionarConteudo() {
+    if (!nomeNovo.trim()) return
+    await criarConteudo(id, baralhoNovo || null, nomeNovo)
+    setNomeNovo('')
+  }
+
+  // Conteúdos de outros objetivos, agrupados pelo primeiro objetivo de cada um.
+  const opcoesFora = fora.map((m) => {
+    const primeiro = objetivosDoConteudo(m.id, tudo.vinculos)[0]
+    return { valor: m.id, rotulo: m.nome, grupo: objetivos.find((o) => o.id === primeiro)?.nome ?? 'Sem objetivo' }
+  })
 
   return (
     <>
       <Cabecalho titulo={objetivo.nome} />
 
-      {proxima && (
+      {proximo && (
         <Secao titulo="Próximo a estudar">
-          <Item titulo={proxima.nome} onClick={() => abrir({ tela: 'micrometa', id: proxima.id })} />
+          <Item titulo={proximo.nome} onClick={() => abrir({ tela: 'micrometa', id: proximo.id })} />
         </Secao>
       )}
 
-      {grupos
-        .filter((g) => g.area || g.itens.length > 0)
-        .map((g) => (
-          <Secao
-            key={g.area?.id ?? 'sem-area'}
-            titulo={g.area?.nome ?? 'Sem área'}
-            acao={
-              g.area && (
-                <span className="acoes-pequenas">
+      {grupos.map((g, gi) => (
+        <Secao
+          key={g.baralho?.id ?? 'sem-baralho'}
+          titulo={g.baralho?.nome ?? 'Sem baralho'}
+          acao={
+            g.baralho && (
+              <span className="acoes-pequenas">
+                {g.itens.length === 0 && (
+                  <button className="botao-texto" onClick={() => void desvincularBaralho(id, g.baralho!.id)}>
+                    Remover
+                  </button>
+                )}
+                <button
+                  className="botao-icone"
+                  aria-label={`Subir ${g.baralho.nome}`}
+                  disabled={gi === 0 || !grupos[gi - 1].baralho}
+                  onClick={() => void moverBaralhoNoObjetivo(id, g.baralho!.id, -1)}
+                >
+                  <Icone nome="cima" tamanho={14} />
+                </button>
+                <button
+                  className="botao-icone"
+                  aria-label={`Descer ${g.baralho.nome}`}
+                  disabled={gi === grupos.length - 1}
+                  onClick={() => void moverBaralhoNoObjetivo(id, g.baralho!.id, 1)}
+                >
+                  <Icone nome="baixo" tamanho={14} />
+                </button>
+              </span>
+            )
+          }
+        >
+          {g.itens.length === 0 && <Vazio>Nenhum conteúdo deste objetivo neste baralho.</Vazio>}
+          {g.itens.map((item, i) => (
+            <Item
+              key={item.conteudo.id}
+              titulo={item.conteudo.nome}
+              detalhe={detalheConteudo(item.conteudo.id)}
+              onClick={() => abrir({ tela: 'micrometa', id: item.conteudo.id })}
+              direita={
+                <span className="mover">
                   <button
-                    className="botao-texto"
-                    onClick={() =>
-                      void pedirNome(g.area!.nome, 'Renomear área').then((nome) => {
-                        if (nome) void renomear('areas', g.area!, nome)
-                      })
-                    }
+                    className="botao-icone"
+                    aria-label={`Subir ${item.conteudo.nome}`}
+                    disabled={i === 0}
+                    onClick={() => void moverNaFila(id, g.itens, item.conteudo.id, -1)}
                   >
-                    Renomear
+                    <Icone nome="cima" tamanho={14} />
                   </button>
                   <button
-                    className="botao-texto"
-                    onClick={() =>
-                      void confirmar({
-                        titulo: `Apagar a área "${g.area!.nome}"?`,
-                        mensagem: 'Os conteúdos dela ficam em "Sem área".',
-                        confirmar: 'Apagar',
-                        perigo: true,
-                      }).then((ok) => {
-                        if (ok) void apagarArea(g.area!)
-                      })
-                    }
+                    className="botao-icone"
+                    aria-label={`Descer ${item.conteudo.nome}`}
+                    disabled={i === g.itens.length - 1}
+                    onClick={() => void moverNaFila(id, g.itens, item.conteudo.id, 1)}
                   >
-                    Apagar
+                    <Icone nome="baixo" tamanho={14} />
                   </button>
                 </span>
-              )
-            }
-          >
-            {g.itens.length === 0 && <Vazio>Nenhum conteúdo nesta área.</Vazio>}
-            {g.itens.map((m, i) => (
-              <Item
-                key={m.id}
-                titulo={m.nome}
-                detalhe={detalheConteudo(m)}
-                onClick={() => abrir({ tela: 'micrometa', id: m.id })}
-                direita={
-                  <span className="mover">
-                    <button
-                      className="botao-icone"
-                      aria-label={`Subir ${m.nome}`}
-                      disabled={i === 0}
-                      onClick={() => void moverNaFila(m, -1)}
-                    >
-                      <Icone nome="cima" tamanho={14} />
-                    </button>
-                    <button
-                      className="botao-icone"
-                      aria-label={`Descer ${m.nome}`}
-                      disabled={i === g.itens.length - 1}
-                      onClick={() => void moverNaFila(m, 1)}
-                    >
-                      <Icone nome="baixo" tamanho={14} />
-                    </button>
-                  </span>
-                }
-              />
-            ))}
-          </Secao>
-        ))}
+              }
+            />
+          ))}
+        </Secao>
+      ))}
 
-      <Secao titulo="Nova área (opcional)">
-        <form
-          className="campo-adicionar"
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (novaArea.trim()) void criarArea(id, novaArea).then(() => setNovaArea(''))
-          }}
-        >
-          <input
-            className="campo-entrada"
-            placeholder="Nome"
-            aria-label="Nome da área"
-            value={novaArea}
-            onChange={(e) => setNovaArea(e.target.value)}
-          />
-          <button className="botao-secundario" type="submit" disabled={!novaArea.trim()}>
-            Adicionar
-          </button>
-        </form>
+      <Secao titulo="Adicionar baralho">
+        <Seletor
+          rotulo="Baralho"
+          valor=""
+          onChange={(v) => void vincular(v)}
+          opcoes={[...naoVinculados.map((b) => ({ valor: b.id, rotulo: b.nome })), { valor: NOVO_BARALHO, rotulo: 'Novo baralho…' }]}
+        />
       </Secao>
 
       <Secao titulo="Novo conteúdo">
@@ -166,27 +167,40 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
           className="formulario"
           onSubmit={(e) => {
             e.preventDefault()
-            void adicionarMicrometa()
+            void adicionarConteudo()
           }}
         >
           <input
             className="campo-entrada"
             placeholder="Nome"
             aria-label="Nome do conteúdo"
-            value={nomeNova}
-            onChange={(e) => setNomeNova(e.target.value)}
+            value={nomeNovo}
+            onChange={(e) => setNomeNovo(e.target.value)}
           />
           <Seletor
-            rotulo="Área"
-            valor={areaNova}
-            onChange={setAreaNova}
-            opcoes={[{ valor: '', rotulo: 'Sem área' }, ...areas.map((a) => ({ valor: a.id, rotulo: a.nome }))]}
+            rotulo="Baralho do conteúdo"
+            valor={baralhoNovo}
+            onChange={setBaralhoNovo}
+            opcoes={[{ valor: '', rotulo: 'Sem baralho' }, ...vinculados.map((b) => ({ valor: b.id, rotulo: b.nome }))]}
           />
-          <button className="botao-principal" type="submit" disabled={!nomeNova.trim()}>
+          <button className="botao-principal" type="submit" disabled={!nomeNovo.trim()}>
             Adicionar conteúdo
           </button>
         </form>
       </Secao>
+
+      {opcoesFora.length > 0 && (
+        <Secao titulo="Conteúdo de outro objetivo">
+          <Seletor
+            rotulo="Conteúdo"
+            valor=""
+            onChange={(v) => {
+              if (v) void adicionarConteudoAoObjetivo(id, v)
+            }}
+            opcoes={opcoesFora}
+          />
+        </Secao>
+      )}
 
       <Acoes>
         <button
@@ -204,7 +218,8 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
           onClick={() =>
             void confirmar({
               titulo: `Apagar o objetivo "${objetivo.nome}"?`,
-              mensagem: 'As áreas, os conteúdos e os check-ins dele também são apagados. Os cards continuam nos baralhos.',
+              mensagem:
+                'Conteúdos que só existem neste objetivo são apagados, com os check-ins. Os compartilhados continuam nos outros objetivos. Os cards continuam nos baralhos.',
               confirmar: 'Apagar',
               perigo: true,
             }).then((ok) => {

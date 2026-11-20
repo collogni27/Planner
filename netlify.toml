@@ -2,6 +2,10 @@
 [build]
   command = "npm run build"
   publish = "dist"
+  # Para economizar créditos, o Netlify só publica quando a mensagem do commit tem
+  # "[web]" (o Claude Code põe "[web]" no título do pedido de aprovação quando a
+  # versão deve ir para a web). Sem isso, o build é pulado (sair com 0 = pular).
+  ignore = "git log -1 --pretty=%B | grep -qF '[web]' && exit 1 || exit 0"
 
 [build.environment]
   NODE_VERSION = "22"

@@ -10,7 +10,6 @@ import { useInicioDoDia, useLimiteNovos, useRelogio } from './RevisarTela'
 
 interface Props {
   chave: string
-  baralhoId: string
   filtro: Filtro
 }
 
@@ -18,7 +17,7 @@ interface Props {
  * A revisão em si. Fica salvo qual card está na tela, se a resposta está aberta e
  * quando o card apareceu: se o app for fechado, reabre no mesmo ponto.
  */
-export function SessaoTela({ chave, baralhoId, filtro }: Props) {
+export function SessaoTela({ chave, filtro }: Props) {
   const { abrir, voltar } = useNavegacao()
   const [agora, setAgora] = useRelogio()
   const dados = useDadosRevisao(useInicioDoDia(agora))
@@ -31,7 +30,7 @@ export function SessaoTela({ chave, baralhoId, filtro }: Props) {
   const [respondido, setRespondido] = useState<{ id: string; due: string } | null>(null)
   const [salvando, setSalvando] = useState(false)
   const liberados = dados
-    ? cardsLiberados(dados.cards, baralhoId, filtro, dados.micrometas, dados.checkins).filter(
+    ? cardsLiberados(dados.cards, filtro, dados.checkins, dados.vinculos).filter(
         (c) => !(respondido && c.id === respondido.id && c.due === respondido.due),
       )
     : []

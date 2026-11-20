@@ -2,6 +2,9 @@
 // gravado aqui antes e enviado ao Supabase depois, pela fila de sincronização.
 // Mudanças de formato = nova versão com migração (nunca apagar dados).
 import Dexie, { type Table } from 'dexie'
+import { idFixo } from './ids'
+
+export { idFixo }
 
 /** Campos que toda tabela sincronizada tem (iguais aos do Supabase). */
 export interface Registro {
@@ -31,11 +34,33 @@ export interface Area extends Registro {
   ordem: number
 }
 
+/**
+ * Conteúdo (nome interno: micrometa). Pode estar em vários objetivos (tabela
+ * objetivo_conteudos) e tem um baralho opcional, onde ficam os cards dele.
+ * `objetivo_id` = objetivo onde foi criado; `area_id` não é mais usado (0.3.4).
+ */
 export interface Micrometa extends Registro {
   id: string
   objetivo_id: string
   area_id: string | null
+  baralho_id?: string | null
   nome: string
+  ordem: number
+}
+
+/** Baralho que aparece num objetivo (no lugar da antiga área), com a ordem dele ali. */
+export interface ObjetivoBaralho extends Registro {
+  id: string
+  objetivo_id: string
+  baralho_id: string
+  ordem: number
+}
+
+/** Conteúdo que faz parte de um objetivo, com a posição dele na fila de estudo. */
+export interface ObjetivoConteudo extends Registro {
+  id: string
+  objetivo_id: string
+  micrometa_id: string
   ordem: number
 }
 
@@ -114,6 +139,8 @@ export const TABELAS = {
   baralhos: 'id',
   cards: 'id',
   revisoes: 'id',
+  objetivo_baralhos: 'id',
+  objetivo_conteudos: 'id',
 } as const
 
 export type NomeTabela = keyof typeof TABELAS
@@ -127,6 +154,8 @@ export class BancoPlanner extends Dexie {
   baralhos!: Table<Baralho, string>
   cards!: Table<Card, string>
   revisoes!: Table<Revisao, string>
+  objetivo_baralhos!: Table<ObjetivoBaralho, string>
+  objetivo_conteudos!: Table<ObjetivoConteudo, string>
   fila!: Table<ItemFila, number>
   meta!: Table<Meta, string>
 
@@ -147,7 +176,70 @@ export class BancoPlanner extends Dexie {
       cards: 'id, baralho_id, micrometa_id, due',
       revisoes: 'id, card_id, revisado_em',
     })
+    // Versão 3 (2026-11-20): baralhos e conteúdos compartilhados entre objetivos.
+    // Converte os dados existentes (nada é apagado) e põe a conversão na fila da nuvem.
+    this.version(3)
+      .stores({
+        micrometas: 'id, objetivo_id, baralho_id',
+        objetivo_baralhos: 'id, objetivo_id, baralho_id',
+        objetivo_conteudos: 'id, objetivo_id, micrometa_id',
+      })
+      .upgrade(async (tx) => {
+        const micrometas = (await tx.table('micrometas').toArray()) as Micrometa[]
+        const cards = (await tx.table('cards').toArray()) as Card[]
+        const r = converterParaVinculos(micrometas, cards, new Date().toISOString())
+        await tx.table('micrometas').bulkPut(r.micrometas)
+        await tx.table('objetivo_conteudos').bulkPut(r.vinculosConteudos)
+        await tx.table('objetivo_baralhos').bulkPut(r.vinculosBaralhos)
+        const fila = (tabela: NomeTabela, registros: Registro[]) =>
+          registros.map((registro) => ({
+            tabela,
+            chave: (registro as unknown as { id: string }).id,
+            registro,
+            criadoEm: registro.updated_at,
+            tentativas: 0,
+          }))
+        await tx.table('fila').bulkAdd([
+          ...fila('micrometas', r.micrometas),
+          ...fila('objetivo_conteudos', r.vinculosConteudos),
+          ...fila('objetivo_baralhos', r.vinculosBaralhos),
+        ])
+      })
   }
+}
+
+/**
+ * Conversão de 0.3.3 → 0.3.4: cada conteúdo passa a estar no objetivo onde foi criado
+ * (com a mesma ordem), ganha como baralho o baralho onde está a maioria dos cards dele,
+ * e esses baralhos passam a aparecer no objetivo.
+ */
+export function converterParaVinculos(micrometas: Micrometa[], cards: Card[], agora: string) {
+  const ativos = micrometas.filter((m) => !m.deleted_at)
+  const vinculosConteudos: ObjetivoConteudo[] = ativos.map((m) => ({
+    id: idFixo(`conteudo:${m.objetivo_id}:${m.id}`),
+    objetivo_id: m.objetivo_id,
+    micrometa_id: m.id,
+    ordem: m.ordem,
+    updated_at: agora,
+  }))
+  const atualizados: Micrometa[] = []
+  const pares = new Map<string, ObjetivoBaralho>()
+  for (const m of ativos) {
+    const contagem = new Map<string, number>()
+    for (const c of cards) if (!c.deleted_at && c.micrometa_id === m.id) contagem.set(c.baralho_id, (contagem.get(c.baralho_id) ?? 0) + 1)
+    const baralho = [...contagem].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? null
+    atualizados.push({ ...m, baralho_id: baralho, updated_at: agora })
+    if (baralho && !pares.has(`${m.objetivo_id}:${baralho}`)) {
+      pares.set(`${m.objetivo_id}:${baralho}`, {
+        id: idFixo(`baralho:${m.objetivo_id}:${baralho}`),
+        objetivo_id: m.objetivo_id,
+        baralho_id: baralho,
+        ordem: pares.size + 1,
+        updated_at: agora,
+      })
+    }
+  }
+  return { micrometas: atualizados, vinculosConteudos, vinculosBaralhos: [...pares.values()] }
 }
 
 export const banco = new BancoPlanner()

@@ -13,7 +13,7 @@ import {
   type Existentes,
 } from './importacao'
 
-const vazio: Existentes = { baralhos: [], objetivos: [], areas: [], micrometas: [], cards: [] }
+const vazio: Existentes = { baralhos: [], objetivos: [], micrometas: [], cards: [], vinculos: { baralhos: [], conteudos: [] } }
 const sequencia = () => {
   let n = 0
   return () => `id${++n}`
@@ -97,7 +97,14 @@ describe('planejamento e registros da importação', () => {
     ...estadoInicial(agora),
     reps: 5,
   }
-  const ex: Existentes = { ...vazio, baralhos: [baralho], objetivos: [objetivo], micrometas: [micrometa], cards: [card] }
+  const ex: Existentes = {
+    ...vazio,
+    baralhos: [baralho],
+    objetivos: [objetivo],
+    micrometas: [micrometa],
+    cards: [card],
+    vinculos: { baralhos: [], conteudos: [{ id: 'v1', objetivo_id: 'o1', micrometa_id: 'm1', ordem: 1, updated_at: '' }] },
+  }
 
   it('detecta duplicados (mesma frente no mesmo baralho, sem ligar para maiúsculas e espaços)', () => {
     const { linhas } = lerTexto('baralho\tfrente\tverso\nenem – flashcards\to que é  a raiz?\tnovo\nOutro\tO que é a raiz?\tv')
@@ -114,7 +121,7 @@ describe('planejamento e registros da importação', () => {
     expect(p.repetidosNoTexto).toHaveLength(1)
   })
 
-  it('cria baralhos, objetivos, áreas e micrometas que faltam, reaproveitando os existentes', () => {
+  it('cria baralhos, objetivos e conteúdos que faltam, reaproveitando os existentes (área antiga é ignorada)', () => {
     const { linhas } = lerTexto(
       'baralho\tmicrometa\tfrente\tverso\n' +
         'ENEM – Flashcards\tENEM::Funções\tnova pergunta\tv\n' +
@@ -124,8 +131,13 @@ describe('planejamento e registros da importação', () => {
     const r = gerarRegistros(planejar(linhas, ex), 'pular', ex, sequencia(), agora)
     expect(r.objetivos).toHaveLength(0) // ENEM já existe
     expect(r.baralhos.map((b) => b.nome)).toEqual(['ENEM – Questões'])
-    expect(r.areas.map((a) => a.nome)).toEqual(['Matemática'])
-    expect(r.micrometas.map((m) => m.nome)).toEqual(['Combinatória'])
+    // "Funções" já existia sem baralho: ganha o baralho da linha. "Combinatória" é criado.
+    expect(r.micrometas.map((m) => [m.nome, m.baralho_id])).toEqual([
+      ['Funções', 'b1'],
+      ['Combinatória', r.baralhos[0].id],
+    ])
+    expect(r.vinculosConteudos.map((v) => v.objetivo_id)).toEqual(['o1'])
+    expect(r.vinculosBaralhos.map((v) => v.baralho_id)).toEqual(['b1', r.baralhos[0].id])
     expect(r.cards).toHaveLength(3)
     expect(r.cards[0].micrometa_id).toBe('m1') // "Funções" já existia
     expect(r.cards[1].micrometa_id).toBe(r.cards[2].micrometa_id)
@@ -147,13 +159,13 @@ describe('exportação', () => {
       ...vazio,
       baralhos: [{ id: 'b', nome: 'B', ordem: 1, updated_at: '' }],
       objetivos: [{ id: 'o', nome: 'ENEM', ordem: 1, updated_at: '' }],
-      areas: [{ id: 'a', objetivo_id: 'o', nome: 'Mat', ordem: 1, updated_at: '' }],
-      micrometas: [{ id: 'm', objetivo_id: 'o', area_id: 'a', nome: 'F', ordem: 1, updated_at: '' }],
+      micrometas: [{ id: 'm', objetivo_id: 'o', area_id: null, nome: 'F', ordem: 1, updated_at: '' }],
+      vinculos: { baralhos: [], conteudos: [{ id: 'v', objetivo_id: 'o', micrometa_id: 'm', ordem: 1, updated_at: '' }] },
     }
     const card = { id: 'c', baralho_id: 'b', micrometa_id: 'm', frente: 'linha 1\nlinha\t2', verso: 'diz "oi"', tags: ['x', 'y'], updated_at: '', ...estadoInicial(agora) }
     const exportados = paraExportacao([card], ex)
     const volta = lerTexto(gerarTsv(exportados)).linhas[0]
-    expect(volta).toMatchObject({ baralho: 'B', micrometa: { objetivo: 'ENEM', area: 'Mat', nome: 'F' }, frente: card.frente, verso: card.verso, tags: ['x', 'y'] })
+    expect(volta).toMatchObject({ baralho: 'B', micrometa: { objetivo: 'ENEM', area: null, nome: 'F' }, frente: card.frente, verso: card.verso, tags: ['x', 'y'] })
     expect(lerTexto(gerarJson(exportados)).linhas[0].frente).toBe(card.frente)
   })
 })

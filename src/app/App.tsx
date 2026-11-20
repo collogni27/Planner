@@ -20,6 +20,7 @@ import { MicrometaTela } from '../estudos/telas/MicrometaTela'
 import { ObjetivoTela } from '../estudos/telas/ObjetivoTela'
 import { RevisarTela } from '../estudos/telas/RevisarTela'
 import { SessaoTela } from '../estudos/telas/SessaoTela'
+import { RevisaoLivreTela } from '../estudos/telas/RevisaoLivreTela'
 import { TodosTela } from '../estudos/telas/TodosTela'
 import { ProvedorNavegacao, useNavegacao } from './navegacao'
 import { ProvedorDialogos } from '../ui/dialogos'
@@ -129,7 +130,10 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
         conteudo = <RevisarTela chave={rota.chave} />
         break
       case 'sessao':
-        conteudo = <SessaoTela chave={rota.chave} baralhoId={rota.baralhoId} filtro={rota.filtro} />
+        conteudo = <SessaoTela chave={rota.chave} filtro={rota.filtro} />
+        break
+      case 'livre':
+        conteudo = <RevisaoLivreTela chave={rota.chave} filtro={rota.filtro} />
         break
       case 'todos':
         conteudo = <TodosTela tipo={rota.tipo} />

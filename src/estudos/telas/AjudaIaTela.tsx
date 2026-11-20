@@ -4,8 +4,9 @@ import { useRascunho } from '../../estado/preferencias'
 import { Cabecalho, Recolhivel, Rotulo, Secao } from '../../ui/componentes'
 import { copiarTexto } from '../../util/arquivo'
 import { Seletor } from '../../ui/dialogos'
+import { objetivosDoConteudo } from '../modelo'
 import { opcoesBaralhos, opcoesConteudos } from '../opcoes'
-import { useAreas, useBaralhos, useMicrometa, useObjetivo, useObjetivos, useTodasMicrometas } from '../dados'
+import { useBaralhos, useMicrometa, useObjetivos, useTodasMicrometas, useVinculos } from '../dados'
 
 /**
  * Texto para pedir a uma IA que gere os cards a partir do conteúdo estudado.
@@ -52,12 +53,13 @@ export function AjudaIaTela({ chave, micrometaId, baralhoId }: { chave: string; 
   const [ajudaAberta, setAjudaAberta] = useState(false)
 
   const micrometa = useMicrometa(mId)
-  const objetivo = useObjetivo(micrometa?.objetivo_id ?? '')
-  const areas = useAreas(micrometa?.objetivo_id ?? '')
-  const area = areas?.find((a) => a.id === micrometa?.area_id)
+  const vinculos = useVinculos()
+  // O conteúdo é identificado pelo primeiro objetivo dele; se tem baralho, os cards vão para ele.
+  const objetivo = objetivos?.find((o) => micrometa && vinculos && o.id === objetivosDoConteudo(micrometa.id, vinculos)[0])
+  const baralhoDoConteudo = baralhos?.find((b) => b.id === micrometa?.baralho_id)
 
-  const caminho = micrometa && objetivo ? [objetivo.nome, area?.nome, micrometa.nome].filter(Boolean).join('::') : 'Objetivo::Área::Conteúdo'
-  const nomeBaralho = baralhos?.find((b) => b.id === bId)?.nome ?? 'Nome do baralho'
+  const caminho = micrometa && objetivo ? `${objetivo.nome}::${micrometa.nome}` : 'Objetivo::Conteúdo'
+  const nomeBaralho = (baralhoDoConteudo ?? baralhos?.find((b) => b.id === bId))?.nome ?? 'Nome do baralho'
   const texto = textoParaIa(nomeBaralho, caminho)
 
   return (
@@ -89,12 +91,24 @@ export function AjudaIaTela({ chave, micrometaId, baralhoId }: { chave: string; 
 
       <Secao titulo="Para quais cards">
         <div className="formulario">
-          <Rotulo texto="Baralho">
-            <Seletor rotulo="Baralho" valor={bId} onChange={setBId} opcoes={opcoesBaralhos(baralhos ?? [], 'Escolha…')} />
-          </Rotulo>
           <Rotulo texto="Conteúdo">
-            <Seletor rotulo="Conteúdo" valor={mId} onChange={setMId} opcoes={opcoesConteudos(objetivos ?? [], micrometas ?? [], 'Escolha…')} />
+            <Seletor
+              rotulo="Conteúdo"
+              valor={mId}
+              onChange={setMId}
+              opcoes={opcoesConteudos(objetivos ?? [], micrometas ?? [], vinculos ?? { baralhos: [], conteudos: [] }, 'Escolha…')}
+            />
           </Rotulo>
+          {baralhoDoConteudo ? (
+            <div className="linha-info">
+              <span className="texto-secundario">Baralho</span>
+              <span>{baralhoDoConteudo.nome}</span>
+            </div>
+          ) : (
+            <Rotulo texto="Baralho">
+              <Seletor rotulo="Baralho" valor={bId} onChange={setBId} opcoes={opcoesBaralhos(baralhos ?? [], 'Escolha…')} />
+            </Rotulo>
+          )}
         </div>
       </Secao>
 

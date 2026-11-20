@@ -1,6 +1,8 @@
 // Importação e exportação de cards (docs/modulos/estudos.md).
 // Tudo aqui é lógica pura (sem banco), para ser coberta por testes.
-import type { Area, Baralho, Card, Micrometa, Objetivo } from '../dados/banco'
+import type { Baralho, Card, Micrometa, Objetivo, ObjetivoBaralho, ObjetivoConteudo } from '../dados/banco'
+import { idFixo } from '../dados/ids'
+import type { Vinculos } from './modelo'
 import { estadoInicial } from './fsrs'
 
 export interface CaminhoMicrometa {
@@ -48,6 +50,7 @@ export function lerCaminho(texto: string): CaminhoMicrometa | null | 'invalido' 
   const partes = t.split('::').map((p) => p.trim())
   if (partes.some((p) => !p)) return 'invalido'
   if (partes.length === 2) return { objetivo: partes[0], area: null, nome: partes[1] }
+  // Formato antigo (com área): a área é ignorada.
   if (partes.length === 3) return { objetivo: partes[0], area: partes[1], nome: partes[2] }
   return 'invalido'
 }
@@ -146,7 +149,7 @@ function validar(
     if (!b.baralho.trim()) erros.push(`Linha ${n}: falta o baralho.`)
     else if (!b.frente.trim() || !b.verso.trim()) erros.push(`Linha ${n}: falta a frente ou o verso.`)
     else if (caminho === 'invalido')
-      erros.push(`Linha ${n}: conteúdo "${b.micrometa}" deve ser Objetivo::Conteúdo ou Objetivo::Área::Conteúdo.`)
+      erros.push(`Linha ${n}: conteúdo "${b.micrometa}" deve ser Objetivo::Conteúdo.`)
     else
       linhas.push({
         linha: n,
@@ -165,9 +168,9 @@ function validar(
 export interface Existentes {
   baralhos: Baralho[]
   objetivos: Objetivo[]
-  areas: Area[]
   micrometas: Micrometa[]
   cards: Card[]
+  vinculos: Vinculos
 }
 
 export interface Plano {
@@ -180,8 +183,15 @@ export interface Plano {
 }
 
 const chaveCard = (baralho: string, frente: string) => `${normalizar(baralho)}\u0000${normalizar(frente)}`
-const chaveCaminho = (c: CaminhoMicrometa) =>
-  [c.objetivo, c.area ?? '', c.nome].map(normalizar).join('\u0000')
+// O conteúdo é identificado pelo objetivo + nome (a área do formato antigo é ignorada).
+const chaveCaminho = (objetivo: string, nome: string) => `${normalizar(objetivo)}\u0000${normalizar(nome)}`
+
+/** Conteúdo com este nome dentro deste objetivo (pelos vínculos). */
+function acharConteudo(objetivoId: string, nome: string, micrometas: Micrometa[], v: Vinculos) {
+  return micrometas.find(
+    (m) => normalizar(m.nome) === normalizar(nome) && v.conteudos.some((x) => !x.deleted_at && x.objetivo_id === objetivoId && x.micrometa_id === m.id),
+  )
+}
 
 /** Separa novos, duplicados (já existem: mesma frente no mesmo baralho) e o que será criado. */
 export function planejar(linhas: LinhaImportada[], ex: Existentes): Plano {
@@ -189,7 +199,12 @@ export function planejar(linhas: LinhaImportada[], ex: Existentes): Plano {
   const existentes = new Map(ex.cards.map((c) => [chaveCard(nomeBaralho.get(c.baralho_id) ?? '', c.frente), c.id]))
   const baralhosExistentes = new Set(ex.baralhos.map((b) => normalizar(b.nome)))
   const objetivosExistentes = new Set(ex.objetivos.map((o) => normalizar(o.nome)))
-  const caminhosExistentes = new Set(ex.micrometas.map((m) => chaveCaminho(caminhoDe(m, ex))))
+  const caminhosExistentes = new Set<string>()
+  for (const v of ex.vinculos.conteudos) {
+    const o = ex.objetivos.find((x) => x.id === v.objetivo_id)
+    const m = ex.micrometas.find((x) => x.id === v.micrometa_id)
+    if (o && m && !v.deleted_at) caminhosExistentes.add(chaveCaminho(o.nome, m.nome))
+  }
 
   const plano: Plano = {
     novos: [],
@@ -220,7 +235,7 @@ export function planejar(linhas: LinhaImportada[], ex: Existentes): Plano {
         objetivosExistentes.add(normalizar(l.micrometa.objetivo))
         plano.novosObjetivos.push(l.micrometa.objetivo)
       }
-      const cc = chaveCaminho(l.micrometa)
+      const cc = chaveCaminho(l.micrometa.objetivo, l.micrometa.nome)
       if (!caminhosExistentes.has(cc)) {
         caminhosExistentes.add(cc)
         plano.novasMicrometas.push(l.micrometa)
@@ -230,27 +245,24 @@ export function planejar(linhas: LinhaImportada[], ex: Existentes): Plano {
   return plano
 }
 
-function caminhoDe(m: Micrometa, ex: Pick<Existentes, 'objetivos' | 'areas'>): CaminhoMicrometa {
-  return {
-    objetivo: ex.objetivos.find((o) => o.id === m.objetivo_id)?.nome ?? '',
-    area: ex.areas.find((a) => a.id === m.area_id)?.nome ?? null,
-    nome: m.nome,
-  }
-}
-
 // ---------- Registros a gravar ----------
 
 export type ModoDuplicados = 'pular' | 'atualizar'
 
 export interface RegistrosImportacao {
   objetivos: Objetivo[]
-  areas: Area[]
-  micrometas: Micrometa[]
   baralhos: Baralho[]
+  micrometas: Micrometa[]
+  vinculosConteudos: ObjetivoConteudo[]
+  vinculosBaralhos: ObjetivoBaralho[]
   cards: Card[]
 }
 
-/** Monta tudo que precisa ser gravado (criando baralhos, objetivos, áreas e micrometas que faltam). */
+/**
+ * Monta tudo que precisa ser gravado: cria baralhos, objetivos e conteúdos que faltam,
+ * põe o conteúdo no objetivo, dá a ele o baralho da linha (se ainda não tem) e faz o
+ * baralho aparecer no objetivo.
+ */
 export function gerarRegistros(
   plano: Plano,
   modo: ModoDuplicados,
@@ -258,13 +270,13 @@ export function gerarRegistros(
   gerarId: () => string,
   agora: Date,
 ): RegistrosImportacao {
-  const r: RegistrosImportacao = { objetivos: [], areas: [], micrometas: [], baralhos: [], cards: [] }
+  const r: RegistrosImportacao = { objetivos: [], baralhos: [], micrometas: [], vinculosConteudos: [], vinculosBaralhos: [], cards: [] }
   const proximaOrdem = (lista: { ordem: number }[]) => Math.max(0, ...lista.map((x) => x.ordem)) + 1
 
   const baralhos = [...ex.baralhos]
   const objetivos = [...ex.objetivos]
-  const areas = [...ex.areas]
   const micrometas = [...ex.micrometas]
+  const v: Vinculos = { baralhos: [...ex.vinculos.baralhos], conteudos: [...ex.vinculos.conteudos] }
   const novo = { updated_at: '' }
 
   const idBaralho = (nome: string) => {
@@ -276,49 +288,60 @@ export function gerarRegistros(
     }
     return b.id
   }
-  const idMicrometa = (c: CaminhoMicrometa) => {
+  const garantirBaralhoNoObjetivo = (objetivoId: string, baralhoId: string) => {
+    if (v.baralhos.some((x) => !x.deleted_at && x.objetivo_id === objetivoId && x.baralho_id === baralhoId)) return
+    const vb: ObjetivoBaralho = {
+      ...novo,
+      id: idFixo(`baralho:${objetivoId}:${baralhoId}`),
+      objetivo_id: objetivoId,
+      baralho_id: baralhoId,
+      ordem: proximaOrdem(v.baralhos.filter((x) => x.objetivo_id === objetivoId)),
+      deleted_at: null,
+    }
+    v.baralhos.push(vb)
+    r.vinculosBaralhos.push(vb)
+  }
+  const idConteudo = (c: CaminhoMicrometa, baralhoId: string) => {
     let o = objetivos.find((x) => normalizar(x.nome) === normalizar(c.objetivo))
     if (!o) {
       o = { ...novo, id: gerarId(), nome: c.objetivo, ordem: proximaOrdem(objetivos) }
       objetivos.push(o)
       r.objetivos.push(o)
     }
-    let areaId: string | null = null
-    if (c.area) {
-      const objetivoId = o.id
-      let a = areas.find((x) => x.objetivo_id === objetivoId && normalizar(x.nome) === normalizar(c.area!))
-      if (!a) {
-        a = { ...novo, id: gerarId(), objetivo_id: o.id, nome: c.area, ordem: proximaOrdem(areas.filter((x) => x.objetivo_id === objetivoId)) }
-        areas.push(a)
-        r.areas.push(a)
-      }
-      areaId = a.id
-    }
     const objetivoId = o.id
-    let m = micrometas.find(
-      (x) => x.objetivo_id === objetivoId && x.area_id === areaId && normalizar(x.nome) === normalizar(c.nome),
-    )
+    let m = acharConteudo(objetivoId, c.nome, micrometas, v)
     if (!m) {
-      m = {
-        ...novo,
-        id: gerarId(),
-        objetivo_id: o.id,
-        area_id: areaId,
-        nome: c.nome,
-        ordem: proximaOrdem(micrometas.filter((x) => x.objetivo_id === objetivoId)),
-      }
+      m = { ...novo, id: gerarId(), objetivo_id: objetivoId, area_id: null, baralho_id: baralhoId, nome: c.nome, ordem: 0 }
       micrometas.push(m)
       r.micrometas.push(m)
+      const vc: ObjetivoConteudo = {
+        ...novo,
+        id: idFixo(`conteudo:${objetivoId}:${m.id}`),
+        objetivo_id: objetivoId,
+        micrometa_id: m.id,
+        ordem: proximaOrdem(v.conteudos.filter((x) => x.objetivo_id === objetivoId)),
+        deleted_at: null,
+      }
+      v.conteudos.push(vc)
+      r.vinculosConteudos.push(vc)
+    } else if (!m.baralho_id) {
+      // Conteúdo sem baralho ganha o baralho da linha importada.
+      const atualizado: Micrometa = { ...m, baralho_id: baralhoId }
+      micrometas[micrometas.indexOf(m)] = atualizado
+      r.micrometas.push(atualizado)
+      m = atualizado
     }
+    garantirBaralhoNoObjetivo(objetivoId, m.baralho_id ?? baralhoId)
     return m.id
   }
 
   for (const l of plano.novos) {
+    const baralhoId = idBaralho(l.baralho)
     r.cards.push({
       ...novo,
       id: gerarId(),
-      baralho_id: idBaralho(l.baralho),
-      micrometa_id: l.micrometa ? idMicrometa(l.micrometa) : null,
+      baralho_id: baralhoId,
+      micrometa_id: l.micrometa ? idConteudo(l.micrometa, baralhoId) : null,
       frente: l.frente,
       verso: l.verso,
       tags: l.tags,
@@ -345,13 +368,15 @@ export interface CardExportado {
   tags: string[]
 }
 
-export function paraExportacao(cards: Card[], ex: Pick<Existentes, 'baralhos' | 'objetivos' | 'areas' | 'micrometas'>) {
+/** O conteúdo é exportado como "Objetivo::Conteúdo" (com o primeiro objetivo dele). */
+export function paraExportacao(cards: Card[], ex: Pick<Existentes, 'baralhos' | 'objetivos' | 'micrometas' | 'vinculos'>) {
   return cards.map((c): CardExportado => {
     const m = ex.micrometas.find((x) => x.id === c.micrometa_id)
-    const cam = m ? caminhoDe(m, ex) : null
+    const v = m && ex.vinculos.conteudos.find((x) => !x.deleted_at && x.micrometa_id === m.id)
+    const objetivo = v ? ex.objetivos.find((o) => o.id === v.objetivo_id)?.nome : undefined
     return {
       baralho: ex.baralhos.find((b) => b.id === c.baralho_id)?.nome ?? '',
-      conteudo: cam ? [cam.objetivo, cam.area, cam.nome].filter(Boolean).join('::') : '',
+      conteudo: m && objetivo ? `${objetivo}::${m.nome}` : '',
       frente: c.frente,
       verso: c.verso,
       tags: c.tags,

@@ -20,29 +20,39 @@ Rotina esperada: revisão de cards **todo dia**; estudar conteúdos **3 a 5 dias
 - **Intercalação:** dentro de uma revisão, os conteúdos vêm misturados.
 - **Feedback honesto e gentil:** mostrar onde estou fraco para decidir o próximo estudo; sem placar, sem culpa.
 
-## Estrutura
+## Estrutura (desde 0.3.4)
 ```
-Objetivo (ex.: ENEM)
- └ Área (opcional, só organização; ex.: Matemática)
-    └ Conteúdo (ex.: Função do 1º grau)  ← check-ins de estudo
+Baralho (ex.: Português, Matemática)  ← independente; pode aparecer em vários objetivos
+Objetivo (ex.: TJSP, UNIVESP)          ← mostra os baralhos vinculados a ele
+Conteúdo (ex.: Crase)                  ← pode estar em vários objetivos; tem um baralho (opcional)
+Card                                   ← fica no baralho do conteúdo; tags livres (ex.: card, questao)
 ```
-- Pode haver vários objetivos ao mesmo tempo.
-- **Conteúdos** têm ordem (fila de estudo, reordenável; o app mostra o "Próximo a estudar") e situação:
-  - **a estudar** (sem check-in);
-  - **estudado** (tem check-in; pode haver vários, guardados no histórico);
-  - **em consolidação** e **dominado**: calculados pelo app a partir dos cards (versão de acompanhamento).
-- **Baralhos** são geridos pelo usuário, numa lista simples, **sem sub-baralhos** (área e tags já organizam). Ex.: "ENEM – Flashcards", "ENEM – Questões". Questões **não** são um tipo especial: são cards comuns num baralho separado.
-- Cada **card** (frente, verso, tags) pertence a **um baralho** e, opcionalmente, a **um conteúdo**.
+- **Áreas deixaram de existir** (2026-11-20): o **baralho faz o papel da matéria**. "Card" ou "questão" vira **tag**.
+- **Baralho:** ente independente, vinculável a vários objetivos.
+- **Objetivo:** na tela dele aparecem os baralhos vinculados (ordem ajustável) e, em cada baralho, **só os conteúdos daquele objetivo que estão naquele baralho**. Conteúdo do mesmo baralho que é de outro objetivo não aparece. A ordem dos conteúdos é a fila de estudo do objetivo ("Próximo a estudar").
+- **Conteúdo:** criado dentro de um objetivo; pode ser **compartilhado** com outros objetivos ("Conteúdo de outro objetivo" na tela do objetivo, ou "Adicionar a outro objetivo" na tela do conteúdo). É **um só registro**: check-ins, cards e acompanhamento são os mesmos nos dois objetivos. Cada objetivo tem a própria posição dele na fila. Marcado como "compartilhado" na lista.
+- **Baralho do conteúdo:** os cards de um conteúdo ficam no baralho dele. Mudar o baralho do conteúdo leva os cards junto (com confirmação). Conteúdo sem baralho aparece em "Sem baralho".
+- **Situação do conteúdo:** a estudar → estudado → em consolidação → dominado (ver Acompanhamento).
 - **Um card ligado a conteúdo só entra na revisão depois do primeiro check-in dele** (primeiro estudar, depois recuperar). Card sem conteúdo entra direto.
-- Se um check-in liberar muitos cards de uma vez, o limite de 20 novos por dia distribui a entrada ao longo dos dias (dá para liberar mais).
+- Apagar objetivo: conteúdos que só existem nele são apagados; os compartilhados continuam. Apagar conteúdo: sai de todos os objetivos. Apagar baralho: apaga os cards; os conteúdos ficam sem baralho.
+- No banco: `objetivo_baralhos`, `objetivo_conteudos` e `micrometas.baralho_id` (migração 003). A conversão dos dados de antes (cada conteúdo no objetivo onde foi criado; baralho = onde está a maioria dos cards dele) foi automática.
 
 ### Tela principal de Estudos
-- Blocos **Objetivos** e **Baralhos**: mostram os **5 primeiros**; se houver mais, botão **"Ver todos"** abre uma tela com a lista completa.
+- Botão **Revisar** e **Acompanhamento**.
+- Blocos **Objetivos** e **Baralhos**: mostram os **5 primeiros**; se houver mais, **"Ver todos"**.
 - Bloco **Cards**: Importar cards, Gerar cards com IA, Exportar cards.
+
+### Tela do baralho
+- Resumo: novos / jovens / maduros e acerto (30 dias).
+- Cards: busca e visão **Todos / Conteúdos / Tags** (agrupados sob subtítulos, com a quantidade).
+- Cada card mostra a situação: "novo", "jovem · volta em 3d", "maduro · para revisar".
+- Tela do card: bloco **Histórico** (situação, força, revisões e erros, lista das respostas).
 
 ## Revisão (versão 0.3.2)
 - **Acessada pela tela de Estudos**: botão "Revisar" no topo (com o total para revisar agora).
-- Ao abrir: escolher o **baralho** (cada um mostra quantos estão para revisar) e revisar **todos** os cards ou **filtrar** por **várias áreas** ou **várias tags** (vale qualquer uma das marcadas); aí "Começar".
+- Ao abrir: marcar **Baralhos**, **Objetivos** e **Tags** (vários em cada um; nada marcado = sem filtro ali). Dentro de cada um vale **qualquer** dos marcados; entre eles, **todos** (ex.: baralho Português + tag `questao` = só questões de Português). Aí "Começar".
+- **"Nada para revisar agora"** não é limite: os cards daqueles filtros ainda estão fortes; revisá-los antes da hora rende pouco (ver abaixo).
+- **Revisão Livre:** passa por todos os cards dos filtros (vencidos ou não), com "Errei"/"Acertei", **sem mudar o agendamento e sem gravar no histórico**. Para véspera de prova. No fim mostra quantos acertos. Retoma no mesmo card se o app fechar.
 - Ordem: primeiro os cards em aprendizado que já venceram; depois revisões e novos **misturados** (ordem estável no mesmo dia).
 - Card respondido com "Errei" volta minutos depois, na mesma sessão. Se não houver mais nada, cards que voltam em até 20 min são adiantados; no fim, o app diz a que horas os próximos voltam.
 - **Cards novos: 20 por dia** (padrão do Anki). Quando o limite segura cards, o fim da revisão mostra quantos ficaram para amanhã e o botão **"Liberar mais 20 hoje"**.
@@ -62,14 +72,14 @@ Tela "Acompanhamento" (abaixo do botão Revisar), mais dados na tela do objetivo
 - **Precisa de reforço:** acerto < 80% (com ≥ 5 respostas) ou força < 70% → sugerir **reestudar o conteúdo**.
 - **Cards-problema:** errados 4 vezes ou mais (lapsos) → reescrever ou dividir.
 - **Revisões nos próximos dias:** hoje (com atrasados) e os 6 dias seguintes.
-- Por objetivo: quantos conteúdos em cada situação. Por baralho: novos / jovens / maduros. Por tag: quantos cards.
+- Por objetivo: quantos conteúdos em cada situação (conteúdos compartilhados contam nos dois). Por baralho: novos / jovens / maduros.
 
 ## Importação e exportação
 - Colar texto ou abrir arquivo. Formatos:
   - **JSON** (recomendado): `{ "cards": [ { "baralho", "conteudo", "frente", "verso", "tags" } ] }` (`tags` como lista ou texto).
   - **TSV/CSV** (separador detectado: tab, `;` ou `,`; campos entre aspas podem ter quebra de linha) com cabeçalho `baralho`, `conteudo`, `frente`, `verso`, `tags`.
-  - `conteudo` = `Objetivo::Conteúdo` ou `Objetivo::Área::Conteúdo` (pode ficar vazio). `tags` separadas por espaço.
-- Baralhos, objetivos, áreas e conteúdos que não existirem são criados.
+  - `conteudo` = `Objetivo::Conteúdo` (pode ficar vazio). O formato antigo `Objetivo::Área::Conteúdo` ainda é aceito (a área é ignorada). `tags` separadas por espaço.
+- Baralhos, objetivos e conteúdos que não existirem são criados; o conteúdo novo ganha o baralho da linha, e o baralho passa a aparecer no objetivo.
 - **Prévia** antes de confirmar; **duplicados** = mesma frente no mesmo baralho → **pular** ou **atualizar** verso/tags.
 - **Exportação** de um baralho ou de todos em JSON e TSV (mesmo formato da importação).
 - **Gerar cards com IA:** escolher baralho e conteúdo; o app monta um texto pronto (pede JSON, que resiste melhor a copiar e colar do chat) com orientações de bons cards. Um botão **"?"** abre/fecha o "Como funciona" (fechado por padrão).

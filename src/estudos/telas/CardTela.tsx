@@ -1,10 +1,14 @@
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Cabecalho, Rotulo, Secao, Vazio } from '../../ui/componentes'
+import { Cabecalho, Rotulo, Secao, Vazio, dataCurta } from '../../ui/componentes'
+import type { Card } from '../../dados/banco'
+import { horaMinuto } from '../../util/data'
+import { forcaCard, situacaoDoCard } from '../estatisticas'
 import { lerTags } from '../importacao'
+import { NOTAS } from '../revisao'
 import { Seletor, useDialogos } from '../../ui/dialogos'
 import { opcoesBaralhos, opcoesConteudos } from '../opcoes'
-import { apagarCard, salvarCard, useBaralhos, useCard, useObjetivos, useTodasMicrometas } from '../dados'
+import { apagarCard, salvarCard, useBaralhos, useCard, useRevisoesDoCard, useObjetivos, useTodasMicrometas, useVinculos } from '../dados'
 
 interface Formulario {
   baralhoId: string
@@ -29,9 +33,10 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
   const baralhos = useBaralhos()
   const objetivos = useObjetivos()
   const micrometas = useTodasMicrometas()
+  const vinculos = useVinculos()
   const [rascunho, setRascunho] = useRascunho<Formulario | null>(chave, 'card', null)
 
-  if (card === undefined || !baralhos || !objetivos || !micrometas) return null
+  if (card === undefined || !baralhos || !objetivos || !micrometas || !vinculos) return null
   if (id && card === null) return <Cabecalho titulo="Card apagado" />
 
   const inicial: Formulario = card
@@ -45,7 +50,9 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
     : { baralhoId: baralhoId ?? baralhos[0]?.id ?? '', micrometaId: micrometaId ?? '', frente: '', verso: '', tags: '' }
   const f = rascunho ?? inicial
   const mudar = (campo: keyof Formulario, valor: string) => setRascunho({ ...f, [campo]: valor })
-  const pronto = f.baralhoId && f.frente.trim() && f.verso.trim()
+  const conteudoEscolhido = micrometas.find((m) => m.id === f.micrometaId)
+  const baralhoDoConteudo = baralhos.find((b) => b.id === conteudoEscolhido?.baralho_id)
+  const pronto = (baralhoDoConteudo || f.baralhoId) && f.frente.trim() && f.verso.trim()
 
   async function salvar() {
     await salvarCard(id, {
@@ -96,22 +103,25 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
               onChange={(e) => mudar('verso', e.target.value)}
             />
           </Rotulo>
-          <Rotulo texto="Baralho">
-            <Seletor
-              rotulo="Baralho"
-              valor={f.baralhoId}
-              onChange={(v) => mudar('baralhoId', v)}
-              opcoes={opcoesBaralhos(baralhos)}
-            />
-          </Rotulo>
           <Rotulo texto="Conteúdo (opcional)">
             <Seletor
               rotulo="Conteúdo"
               valor={f.micrometaId}
               onChange={(v) => mudar('micrometaId', v)}
-              opcoes={opcoesConteudos(objetivos, micrometas, 'Nenhum')}
+              opcoes={opcoesConteudos(objetivos, micrometas, vinculos, 'Nenhum')}
             />
           </Rotulo>
+          {baralhoDoConteudo ? (
+            // Card de conteúdo com baralho fica no baralho do conteúdo.
+            <div className="linha-info">
+              <span className="texto-secundario">Baralho</span>
+              <span>{baralhoDoConteudo.nome}</span>
+            </div>
+          ) : (
+            <Rotulo texto="Baralho">
+              <Seletor rotulo="Baralho" valor={f.baralhoId} onChange={(v) => mudar('baralhoId', v)} opcoes={opcoesBaralhos(baralhos)} />
+            </Rotulo>
+          )}
           <Rotulo texto="Tags (separadas por espaço)">
             <input className="campo-entrada" value={f.tags} onChange={(e) => mudar('tags', e.target.value)} />
           </Rotulo>
@@ -120,6 +130,7 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
           </button>
         </form>
       </Secao>
+      {card && <HistoricoCard card={card} />}
       {card && (
         <div className="acoes">
           <button
@@ -135,5 +146,41 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
         </div>
       )}
     </>
+  )
+}
+
+/** Situação do card e lista das respostas (mais recentes primeiro). */
+function HistoricoCard({ card }: { card: Card }) {
+  const revisoes = useRevisoesDoCard(card.id)
+  const agora = new Date()
+  const f = forcaCard(card, agora)
+  const rotulo = (nota: number) => NOTAS.find((n) => n.nota === nota)?.rotulo ?? ''
+  return (
+    <Secao titulo="Histórico">
+      <div className="linha-info">
+        <span className="texto-secundario">Situação</span>
+        <span>{situacaoDoCard(card, agora)}</span>
+      </div>
+      {f !== null && (
+        <div className="linha-info">
+          <span className="texto-secundario">Força</span>
+          <span className="numero-destaque">{Math.round(f * 100)}%</span>
+        </div>
+      )}
+      <div className="linha-info">
+        <span className="texto-secundario">Revisões · erros</span>
+        <span className="numero-destaque">
+          {card.reps} · {card.lapses}
+        </span>
+      </div>
+      {revisoes?.slice(0, 20).map((r) => (
+        <div key={r.id} className="linha-info">
+          <span className="texto-secundario">
+            {dataCurta(r.revisado_em)} {horaMinuto(new Date(r.revisado_em))}
+          </span>
+          <span>{rotulo(r.nota)}</span>
+        </div>
+      ))}
+    </Secao>
   )
 }

@@ -16,7 +16,8 @@ Para cada arquivo novo em `supabase/migrations/` (em ordem de nome):
 
 Migrações já aplicadas (o Claude Code atualiza esta lista):
 - `20261118000001_configuracoes.sql` — aplicada em 2026-11-18
-- `20261119000001_estudos.sql` — tabelas do módulo Estudos (aplicar antes de usar a versão 0.3.0)
+- `20261119000001_estudos.sql` — tabelas do módulo Estudos (aplicada)
+- `20261120000001_vinculos.sql` — baralhos e conteúdos compartilhados (aplicar **antes** de atualizar para a 0.3.4)
 
 ## Se o projeto for pausado
 O plano gratuito pausa após ~7 dias sem uso. No painel do Supabase, abra o projeto e clique em **Restore/Resume**. O app continua funcionando no celular enquanto isso.

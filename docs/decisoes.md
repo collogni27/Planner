@@ -49,3 +49,8 @@
 - 2026-11-19 — Modo Desenvolvedor com senha (só o resumo SHA-256 no código) e ferramenta "Revisão Reset".
 - 2026-11-19 — Cards novos: 20 por dia (padrão do Anki, que o usuário prefere), com "Liberar mais 20 hoje". Revisões sem limite — adiar revisão vencida só faz esquecer e acumula trabalho.
 - 2026-11-19 — Acompanhamento: força (média da chance de lembrar do FSRS), acerto em 30 dias, situação do conteúdo (dominado = todos revisados e ≥ 80% maduros), reforço (acerto < 80% ou força < 70%), cards-problema (≥ 4 lapsos), carga de 7 dias.
+- 2026-11-20 — Netlify só publica quando o título do pedido tem `[web]` (regra `ignore` no `netlify.toml`) — cada publicação gasta créditos; o APK continua saindo pelo GitHub.
+- 2026-11-20 — **Áreas deixam de existir; o baralho faz o papel da matéria.** Baralho é independente e vinculável a vários objetivos; conteúdo pode estar em vários objetivos (um só registro, sincronizado) e tem um baralho opcional, onde ficam seus cards; a tela do objetivo mostra, em cada baralho, só os conteúdos daquele objetivo. "Card"/"questão" passa a ser tag. — Evita repetir conteúdos comuns entre TJSP e UNIVESP.
+- 2026-11-20 — Revisão: filtros Baralhos, Objetivos e Tags, vários em cada um; qualquer um dentro da categoria, todos entre categorias.
+- 2026-11-20 — "Revisão Livre": revisar cards não vencidos sem alterar o agendamento nem gravar histórico (véspera de prova). Revisar antes da hora na revisão normal não é oferecido: rende pouco (efeito de espaçamento).
+- 2026-11-20 — Baralho com resumo (novos/jovens/maduros/acerto), visão Todos/Conteúdos/Tags e situação por card; histórico na tela do card; acompanhamento sem seção de tags.
