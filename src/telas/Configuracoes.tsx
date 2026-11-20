@@ -2,7 +2,8 @@ import { VERSAO } from '../config'
 import { useSituacaoSincronizacao } from '../dados/useSincronizacao'
 import { MODOS, type Modo } from '../estado/preferencias'
 import { Icone } from '../icones/Icone'
-import { Cabecalho } from '../ui/componentes'
+import { useNavegacao } from '../app/navegacao'
+import { Cabecalho, Item, Secao } from '../ui/componentes'
 import { useDialogos } from '../ui/dialogos'
 import { supabase } from '../nuvem/supabase'
 
@@ -17,6 +18,7 @@ interface Props {
 export function Configuracoes({ modo, email, onModo }: Props) {
   const { online, pendentes } = useSituacaoSincronizacao()
   const { confirmar } = useDialogos()
+  const { abrir } = useNavegacao()
 
   let situacao = 'Tudo sincronizado.'
   if (!online) situacao = 'Sem internet. O que você registrar fica salvo no aparelho e é enviado quando a conexão voltar.'
@@ -41,6 +43,10 @@ export function Configuracoes({ modo, email, onModo }: Props) {
   return (
     <>
       <Cabecalho titulo="Configurações" />
+
+      <Secao>
+        <Item titulo="Notificações" onClick={() => abrir({ tela: 'notificacoes' })} />
+      </Secao>
 
       <section className="card">
         <h2 className="card-titulo">Modo de cor</h2>
