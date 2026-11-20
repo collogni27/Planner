@@ -9,7 +9,9 @@
    - 0.3.2: revisão com FSRS, aberta pela tela de Estudos (baralho inteiro ou filtrado por áreas/tags), retomando onde parou;
    - 0.3.3: acompanhamento (força por conteúdo, reforço, cards-problema, carga);
    - 0.3.4: baralhos e conteúdos compartilhados entre objetivos (sem áreas), revisão com filtros combinados, Revisão Livre, baralho agrupado e histórico do card.
-4. **Sono + tela diária** (horários, checks, tempo, qualidade, peso) e **primeira notificação ponta a ponta**: validar no celular real o agendamento local, o deep link, o comportamento insistente e a chegada no horário exato.
+4. **Sono + tela diária e primeira notificação ponta a ponta**:
+   - 0.4.0: horários-alvo e meta, tela diária automática (tempo, qualidade, peso, 2 perguntas), tela do Sono com "tomei sol", resumo e histórico;
+   - 0.4.1: avisos Bom dia (insistente, abre a tela diária), Tomar sol (+30/+60 da abertura do Bom dia) e Hora de dormir (60, 30 min antes e na hora); permissões e botão de teste. Validar no celular real o agendamento, o deep link, a insistência e a chegada no horário exato.
 5. **Rotina:** hábitos, agenda, nota diária.
 6. **Tarefas:** horário/gatilho, prioridade, realizadas, não planejadas.
 7. **"Bom dia"** (resumo + animação provisória; opção de tela cheia).
@@ -33,7 +35,6 @@
 - Pode haver duas sessões de treino no mesmo dia?
 - O cardio tem regra de espaçamento, ou é só a meta semanal?
 - Fórmula exata da contagem de "encaixes" na rotina livre (passo 8).
-- Lembretes de sol: **proposta** — contar +30 e +60 min a partir de quando abro o "Bom dia"; se não abrir, contar do horário-alvo de acordar. Confirmar.
 - Horário padrão da notificação de treino.
 - A "nota para amanhã" (escrita na véspera) continua existindo ao lado da nota diária, ou o "Bom dia" mostra a nota de ontem?
 - Como a tela diária se encaixa no "Bom dia" (antes, dentro ou depois).

@@ -54,3 +54,6 @@
 - 2026-11-20 — Revisão: filtros Baralhos, Objetivos e Tags, vários em cada um; qualquer um dentro da categoria, todos entre categorias.
 - 2026-11-20 — "Revisão Livre": revisar cards não vencidos sem alterar o agendamento nem gravar histórico (véspera de prova). Revisar antes da hora na revisão normal não é oferecido: rende pouco (efeito de espaçamento).
 - 2026-11-20 — Baralho com resumo (novos/jovens/maduros/acerto), visão Todos/Conteúdos/Tags e situação por card; histórico na tela do card; acompanhamento sem seção de tags.
+- 2026-11-20 — Filtro de tags na revisão: várias tags marcadas exigem **todas** no card (a tag elimina, não soma). Baralhos e objetivos continuam "qualquer um".
+- 2026-11-20 — Sono em Mais (bloco próprio com ícone). Tela diária abre sozinha na primeira abertura do dia, com tempo de sono, qualidade, peso e só duas perguntas (acordei de madrugada? prejuízo ao sono?); "dormi ao menos a meta" sai do tempo; "dormi/acordei no horário" saíram. Registros na tabela `dias` (id calculado da data).
+- 2026-11-20 — Avisos de hora de dormir: 60 min antes, 30 min antes e na hora. Sol: +30/+60 a partir da abertura do "Bom dia". Bom dia insistente: recolocado na hora sempre que deslizado, por até 30 min (deleteIntent + código Android próprio), em vez de repetições agendadas.

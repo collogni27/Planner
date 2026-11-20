@@ -64,6 +64,17 @@ describe('quais cards podem ser revisados', () => {
     expect(cardsLiberados(todos, f({ objetivos: ['tjsp'] }), ch, vinculos)).toHaveLength(3)
   })
 
+  it('várias tags: o card precisa ter todas (A+B traz só quem tem A e B)', () => {
+    const ab = card({ tags: ['A', 'B'] })
+    const bc = card({ tags: ['B', 'C'] })
+    const so = (tags: string[]) => ids(cardsLiberados([ab, bc], f({ tags }), [], vinculos))
+    expect(so(['B'])).toEqual([ab.id, bc.id])
+    expect(so(['A'])).toEqual([ab.id])
+    expect(so(['A', 'B'])).toEqual([ab.id])
+    expect(so(['B', 'C'])).toEqual([bc.id])
+    expect(so(['A', 'C'])).toEqual([])
+  })
+
   it('combinação: baralho E tag (ex.: só questões de Matemática)', () => {
     expect(ids(cardsLiberados(todos, f({ baralhos: ['mat'], tags: ['questao'] }), ch, vinculos))).toEqual([c2.id])
     expect(ids(cardsLiberados(todos, f({ objetivos: ['univesp'], tags: ['card'] }), ch, vinculos))).toEqual([c3.id])

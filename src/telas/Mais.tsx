@@ -23,6 +23,9 @@ export function Mais() {
   return (
     <>
       <Secao>
+        <Item titulo="Sono" icone="lua" onClick={() => abrir({ tela: 'sono' })} />
+      </Secao>
+      <Secao>
         <Item titulo="Configurações" onClick={() => abrir({ tela: 'configuracoes' })} />
         <Item
           titulo="Modo Desenvolvedor"
