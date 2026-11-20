@@ -18,7 +18,8 @@ Migrações já aplicadas (o Claude Code atualiza esta lista):
 - `20261118000001_configuracoes.sql` — aplicada em 2026-11-18
 - `20261119000001_estudos.sql` — tabelas do módulo Estudos (aplicada)
 - `20261120000001_vinculos.sql` — baralhos e conteúdos compartilhados (0.3.4)
-- `20261120000002_dias.sql` — registros diários do sono (aplicar **antes** de atualizar para a 0.4.0)
+- `20261120000002_dias.sql` — registros diários do sono (0.4.0)
+- `20261121000001_dias_horario.sql` — perguntas "dormi/acordei no horário" (aplicar **antes** de atualizar para a 0.4.1)
 
 ## Se o projeto for pausado
 O plano gratuito pausa após ~7 dias sem uso. No painel do Supabase, abra o projeto e clique em **Restore/Resume**. O app continua funcionando no celular enquanto isso.

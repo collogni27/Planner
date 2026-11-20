@@ -11,7 +11,7 @@
    - 0.3.4: baralhos e conteúdos compartilhados entre objetivos (sem áreas), revisão com filtros combinados, Revisão Livre, baralho agrupado e histórico do card.
 4. **Sono + tela diária e primeira notificação ponta a ponta**:
    - 0.4.0: horários-alvo e meta, tela diária automática (tempo, qualidade, peso, 2 perguntas), tela do Sono com "tomei sol", resumo e histórico;
-   - 0.4.1: avisos Bom dia (insistente, abre a tela diária), Tomar sol (+30/+60 da abertura do Bom dia) e Hora de dormir (60, 30 min antes e na hora); permissões e botão de teste. Validar no celular real o agendamento, o deep link, a insistência e a chegada no horário exato.
+   - 0.4.1: perguntas da tela diária corrigidas (dormi/acordei no horário), histórico do sono em tela própria, Dia Reset no Modo Desenvolvedor; avisos Bom dia (insistente, abre a tela diária), Tomar sol (+30/+60 da abertura do Bom dia) e Hora de dormir (60, 30 min antes e na hora); permissões e botão de teste. Validar no celular real o agendamento, o deep link, a insistência e a chegada no horário exato.
 5. **Rotina:** hábitos, agenda, nota diária.
 6. **Tarefas:** horário/gatilho, prioridade, realizadas, não planejadas.
 7. **"Bom dia"** (resumo + animação provisória; opção de tela cheia).
