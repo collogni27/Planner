@@ -54,3 +54,4 @@
 - 2026-11-20 — Revisão: filtros Baralhos, Objetivos e Tags, vários em cada um; qualquer um dentro da categoria, todos entre categorias.
 - 2026-11-20 — "Revisão Livre": revisar cards não vencidos sem alterar o agendamento nem gravar histórico (véspera de prova). Revisar antes da hora na revisão normal não é oferecido: rende pouco (efeito de espaçamento).
 - 2026-11-20 — Baralho com resumo (novos/jovens/maduros/acerto), visão Todos/Conteúdos/Tags e situação por card; histórico na tela do card; acompanhamento sem seção de tags.
+- 2026-11-20 — Filtro de tags na revisão: várias tags marcadas exigem **todas** no card (a tag elimina, não soma). Baralhos e objetivos continuam "qualquer um".

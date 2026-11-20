@@ -50,7 +50,7 @@ Card                                   ← fica no baralho do conteúdo; tags li
 
 ## Revisão (versão 0.3.2)
 - **Acessada pela tela de Estudos**: botão "Revisar" no topo (com o total para revisar agora).
-- Ao abrir: marcar **Baralhos**, **Objetivos** e **Tags** (vários em cada um; nada marcado = sem filtro ali). Dentro de cada um vale **qualquer** dos marcados; entre eles, **todos** (ex.: baralho Português + tag `questao` = só questões de Português). Aí "Começar".
+- Ao abrir: marcar **Baralhos**, **Objetivos** e **Tags** (vários em cada um; nada marcado = sem filtro ali). Baralhos e objetivos: vale **qualquer** dos marcados. **Tags: o card precisa ter todas as marcadas** (a tag elimina quem não a tem; corrigido em 2026-11-20). Entre categorias, valem **todas** (ex.: baralho Português + tag `questao` = só questões de Português). Aí "Começar".
 - **"Nada para revisar agora"** não é limite: os cards daqueles filtros ainda estão fortes; revisá-los antes da hora rende pouco (ver abaixo).
 - **Revisão Livre:** passa por todos os cards dos filtros (vencidos ou não), com "Errei"/"Acertei", **sem mudar o agendamento e sem gravar no histórico**. Para véspera de prova. No fim mostra quantos acertos. Retoma no mesmo card se o app fechar.
 - Ordem: primeiro os cards em aprendizado que já venceram; depois revisões e novos **misturados** (ordem estável no mesmo dia).

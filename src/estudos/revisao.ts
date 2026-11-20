@@ -21,7 +21,8 @@ export const agendador = fsrs(generatorParameters({ request_retention: META_RETE
 
 /**
  * Quais cards revisar. Lista vazia = sem filtro naquela categoria.
- * Dentro de uma categoria vale QUALQUER um dos marcados; entre categorias, TODAS
+ * Baralhos e objetivos: vale QUALQUER um dos marcados. Tags: o card precisa ter TODAS
+ * as marcadas (a tag elimina quem não a tem). Entre categorias, valem todas
  * (ex.: baralho Matemática + tag "questao" = só questões de Matemática).
  */
 export interface Filtro {
@@ -55,7 +56,8 @@ export function cardsLiberados(cards: Card[], filtro: Filtro, checkins: Checkin[
     if (c.micrometa_id && !estudados.has(c.micrometa_id)) return false
     if (filtro.baralhos.length > 0 && !filtro.baralhos.includes(c.baralho_id)) return false
     if (filtro.objetivos.length > 0 && !(c.micrometa_id && conteudosDosObjetivos.has(c.micrometa_id))) return false
-    if (filtro.tags.length > 0 && !c.tags.some((t) => filtro.tags.includes(t))) return false
+    // Tags eliminam: o card precisa ter TODAS as tags marcadas.
+    if (!filtro.tags.every((t) => c.tags.includes(t))) return false
     return true
   })
 }
