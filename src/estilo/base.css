@@ -1051,3 +1051,13 @@ code {
   justify-content: space-between;
   align-items: baseline;
 }
+
+.notas-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.ficha-numero {
+  margin-left: 6px;
+  font-family: var(--fonte-pixel);
+  font-weight: 400;
+}

@@ -21,7 +21,8 @@ export type Rota =
   | { tela: 'todos'; tipo: 'objetivos' | 'baralhos' }
   | { tela: 'revisar' }
   | { tela: 'acompanhamento' }
-  | { tela: 'sessao'; baralhoId: string; filtro: Filtro }
+  | { tela: 'sessao'; filtro: Filtro }
+  | { tela: 'livre'; filtro: Filtro }
   | { tela: 'configuracoes' }
 
 /** Rota + uma chave única (usada para os rascunhos daquela tela). */
@@ -45,7 +46,7 @@ interface Navegacao {
 const Contexto = createContext<Navegacao | null>(null)
 
 export function ProvedorNavegacao({ children }: { children: ReactNode }) {
-  const [estado, setEstado] = useEstadoSalvo<Estado>('navegacao:v2', INICIAL)
+  const [estado, setEstado] = useEstadoSalvo<Estado>('navegacao:v3', INICIAL)
   const pilha = estado.pilhas[estado.aba] ?? []
 
   const abrir = useCallback(

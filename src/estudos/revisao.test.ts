@@ -1,8 +1,9 @@
 import { fsrs, generatorParameters, Rating, State } from 'ts-fsrs'
 import { describe, expect, it } from 'vitest'
-import type { Card, Checkin, Micrometa, Revisao } from '../dados/banco'
+import type { Card, Checkin, Revisao } from '../dados/banco'
+import type { Vinculos } from './modelo'
 import { estadoInicial } from './fsrs'
-import { cardsLiberados, desfazerRevisoesDeHoje, formatarIntervalo, montarFila, NOVOS_POR_DIA, novosHoje, previa, responder } from './revisao'
+import { cardsLiberados, desfazerRevisoesDeHoje, embaralhar, SEM_FILTRO, type Filtro, formatarIntervalo, montarFila, NOVOS_POR_DIA, novosHoje, previa, responder } from './revisao'
 
 // Sem aleatoriedade nos testes (o app usa um pequeno sorteio nos intervalos).
 const f = fsrs(generatorParameters({ request_retention: 0.9, enable_fuzz: false }))
@@ -23,37 +24,49 @@ function card(extra: Partial<Card> = {}): Card {
     ...extra,
   }
 }
-const conteudo = (mid: string, area: string | null): Micrometa => ({ id: mid, objetivo_id: 'o', area_id: area, nome: mid, ordem: 1, updated_at: '' })
 const checkin = (mid: string): Checkin => ({ id: id(), micrometa_id: mid, estudado_em: agora.toISOString(), nota: null, updated_at: '' })
 
 describe('quais cards podem ser revisados', () => {
-  const m1 = conteudo('m1', 'matematica')
-  const m2 = conteudo('m2', 'fisica')
-  const c1 = card({ micrometa_id: 'm1', tags: ['funcao'] })
-  const c2 = card({ micrometa_id: 'm2', tags: ['cinematica'] })
-  const c3 = card({ tags: ['geral'] })
-  const outroBaralho = card({ baralho_id: 'b2' })
-  const todos = [c1, c2, c3, outroBaralho]
+  // Conteúdo m1 (no objetivo TJSP) e m2 (nos objetivos TJSP e UNIVESP).
+  const vinculos: Vinculos = {
+    baralhos: [],
+    conteudos: [
+      { id: 'a', objetivo_id: 'tjsp', micrometa_id: 'm1', ordem: 1, updated_at: '' },
+      { id: 'b', objetivo_id: 'tjsp', micrometa_id: 'm2', ordem: 2, updated_at: '' },
+      { id: 'c', objetivo_id: 'univesp', micrometa_id: 'm2', ordem: 1, updated_at: '' },
+    ],
+  }
+  const c1 = card({ baralho_id: 'mat', micrometa_id: 'm1', tags: ['card'] })
+  const c2 = card({ baralho_id: 'mat', micrometa_id: 'm2', tags: ['questao'] })
+  const c3 = card({ baralho_id: 'port', micrometa_id: 'm2', tags: ['card'] })
+  const solto = card({ baralho_id: 'port', tags: ['questao'] })
+  const todos = [c1, c2, c3, solto]
+  const ch = [checkin('m1'), checkin('m2')]
+  const ids = (l: Card[]) => l.map((c) => c.id)
+  const f = (x: Partial<Filtro>): Filtro => ({ ...SEM_FILTRO, ...x })
 
   it('card ligado a conteúdo só entra depois do primeiro check-in; sem conteúdo entra direto', () => {
-    const r = cardsLiberados(todos, 'b1', { tipo: 'tudo' }, [m1, m2], [checkin('m1')])
-    expect(r.map((c) => c.id)).toEqual([c1.id, c3.id])
+    expect(ids(cardsLiberados(todos, SEM_FILTRO, [checkin('m1')], vinculos))).toEqual([c1.id, solto.id])
   })
 
   it('check-in apagado não libera', () => {
     const apagado = { ...checkin('m1'), deleted_at: agora.toISOString() }
-    expect(cardsLiberados(todos, 'b1', { tipo: 'tudo' }, [m1], [apagado]).map((c) => c.id)).toEqual([c3.id])
+    expect(ids(cardsLiberados(todos, SEM_FILTRO, [apagado], vinculos))).toEqual([solto.id])
   })
 
-  it('filtra por várias áreas', () => {
-    const ch = [checkin('m1'), checkin('m2')]
-    expect(cardsLiberados(todos, 'b1', { tipo: 'areas', ids: ['matematica'] }, [m1, m2], ch).map((c) => c.id)).toEqual([c1.id])
-    expect(cardsLiberados(todos, 'b1', { tipo: 'areas', ids: ['matematica', 'fisica'] }, [m1, m2], ch)).toHaveLength(2)
+  it('vários baralhos: qualquer um dos marcados', () => {
+    expect(cardsLiberados(todos, f({ baralhos: ['mat', 'port'] }), ch, vinculos)).toHaveLength(4)
+    expect(ids(cardsLiberados(todos, f({ baralhos: ['port'] }), ch, vinculos))).toEqual([c3.id, solto.id])
   })
 
-  it('filtra por várias tags (qualquer uma delas)', () => {
-    const ch = [checkin('m1'), checkin('m2')]
-    expect(cardsLiberados(todos, 'b1', { tipo: 'tags', tags: ['funcao', 'geral'] }, [m1, m2], ch).map((c) => c.id)).toEqual([c1.id, c3.id])
+  it('objetivo: usa os objetivos do conteúdo (conteúdo compartilhado entra nos dois)', () => {
+    expect(ids(cardsLiberados(todos, f({ objetivos: ['univesp'] }), ch, vinculos))).toEqual([c2.id, c3.id])
+    expect(cardsLiberados(todos, f({ objetivos: ['tjsp'] }), ch, vinculos)).toHaveLength(3)
+  })
+
+  it('combinação: baralho E tag (ex.: só questões de Matemática)', () => {
+    expect(ids(cardsLiberados(todos, f({ baralhos: ['mat'], tags: ['questao'] }), ch, vinculos))).toEqual([c2.id])
+    expect(ids(cardsLiberados(todos, f({ objetivos: ['univesp'], tags: ['card'] }), ch, vinculos))).toEqual([c3.id])
   })
 })
 
@@ -161,5 +174,14 @@ describe('Modo Desenvolvedor: desfazer as revisões de hoje', () => {
     const hoje = responder(c, Rating.Again, agora, null, id, f)
     const { cards } = desfazerRevisoesDeHoje([hoje.card], [hoje.revisao], [antiga.revisao])
     expect(cards[0]).toMatchObject({ state: State.Review, stability: c.stability, reps: c.reps, lapses: 0, last_review: ontem.toISOString() })
+  })
+})
+
+describe('Revisão Livre', () => {
+  it('embaralha de forma estável: mesma semente, mesma ordem; nada se perde', () => {
+    const ids = ['a', 'b', 'c', 'd', 'e', 'f']
+    const um = embaralhar(ids, 's1')
+    expect(embaralhar([...ids].reverse(), 's1')).toEqual(um)
+    expect([...um].sort()).toEqual(ids)
   })
 })

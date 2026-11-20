@@ -6,26 +6,27 @@ import { Seletor, useDialogos } from '../../ui/dialogos'
 import {
   apagarCheckin,
   apagarMicrometa,
-  moverMicrometaDeArea,
+  adicionarConteudoAoObjetivo,
+  mudarBaralhoDoConteudo,
   registrarCheckin,
+  removerConteudoDoObjetivo,
   renomear,
-  useAreas,
   useBaralhos,
   useCardsDaMicrometa,
   useCheckins,
   useMicrometa,
-  useObjetivo,
+  useObjetivos,
   useTudoDeEstudos,
 } from '../dados'
+import { objetivosDoConteudo } from '../modelo'
 
-/** Uma micrometa: check-in de estudo, histórico e cards ligados. */
+/** Um conteúdo: check-in de estudo, histórico, cards, baralho e objetivos em que aparece. */
 export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
   const { abrir, voltar } = useNavegacao()
   const { confirmar } = useDialogos()
   const pedirNome = usePedirNome()
   const micrometa = useMicrometa(id)
-  const objetivo = useObjetivo(micrometa?.objetivo_id ?? '')
-  const areas = useAreas(micrometa?.objetivo_id ?? '')
+  const objetivos = useObjetivos()
   const checkins = useCheckins()
   const cards = useCardsDaMicrometa(id)
   const tudo = useTudoDeEstudos()
@@ -33,16 +34,32 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
   const [nota, setNota] = useRascunho(chave, 'nota', '')
 
   if (micrometa === undefined) return null
-  if (micrometa === null) return <Cabecalho titulo="Micrometa apagada" />
+  if (micrometa === null) return <Cabecalho titulo="Conteúdo apagado" />
 
   const meus = checkins?.filter((c) => c.micrometa_id === id) ?? []
   const nomeBaralho = (bid: string) => baralhos?.find((b) => b.id === bid)?.nome ?? ''
   const resumo = tudo ? resumirConteudo(micrometa, tudo.cards, tudo.checkins, tudo.revisoes, new Date()) : null
+  const meusObjetivos = tudo ? objetivosDoConteudo(id, tudo.vinculos) : []
+  const nomeObjetivo = (oid: string) => objetivos?.find((o) => o.id === oid)?.nome ?? ''
+  const outrosObjetivos = (objetivos ?? []).filter((o) => !meusObjetivos.includes(o.id))
+
+  async function trocarBaralho(baralhoId: string) {
+    const fora = (cards ?? []).filter((c) => baralhoId && c.baralho_id !== baralhoId).length
+    if (fora > 0) {
+      const ok = await confirmar({
+        titulo: 'Mudar o baralho?',
+        mensagem: fora === 1 ? 'O card deste conteúdo vai junto para o novo baralho.' : `Os ${fora} cards deste conteúdo vão junto para o novo baralho.`,
+        confirmar: 'Mudar',
+      })
+      if (!ok) return
+    }
+    await mudarBaralhoDoConteudo(micrometa!, baralhoId || null)
+  }
 
   return (
     <>
       <Cabecalho titulo={micrometa.nome} />
-      <p className="texto-secundario contexto">{objetivo?.nome}</p>
+      <p className="texto-secundario contexto">{meusObjetivos.map(nomeObjetivo).join(' · ')}</p>
 
       {resumo && (
         <Secao titulo="Acompanhamento">
@@ -132,13 +149,40 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
         </div>
       </Secao>
 
-      <Secao titulo="Área">
+      <Secao titulo="Baralho">
         <Seletor
-          rotulo="Área do conteúdo"
-          valor={micrometa.area_id ?? ''}
-          onChange={(v) => void moverMicrometaDeArea(micrometa, v || null)}
-          opcoes={[{ valor: '', rotulo: 'Sem área' }, ...(areas ?? []).map((a) => ({ valor: a.id, rotulo: a.nome }))]}
+          rotulo="Baralho do conteúdo"
+          valor={micrometa.baralho_id ?? ''}
+          onChange={(v) => void trocarBaralho(v)}
+          opcoes={[{ valor: '', rotulo: 'Sem baralho' }, ...(baralhos ?? []).map((b) => ({ valor: b.id, rotulo: b.nome }))]}
         />
+      </Secao>
+
+      <Secao titulo="Objetivos">
+        {meusObjetivos.map((oid) => (
+          <Item
+            key={oid}
+            titulo={nomeObjetivo(oid)}
+            onClick={() => abrir({ tela: 'objetivo', id: oid })}
+            direita={
+              meusObjetivos.length > 1 && (
+                <button className="botao-texto" onClick={() => void removerConteudoDoObjetivo(oid, id)}>
+                  Remover
+                </button>
+              )
+            }
+          />
+        ))}
+        {outrosObjetivos.length > 0 && (
+          <Seletor
+            rotulo="Adicionar a outro objetivo"
+            valor=""
+            onChange={(v) => {
+              if (v) void adicionarConteudoAoObjetivo(v, id)
+            }}
+            opcoes={outrosObjetivos.map((o) => ({ valor: o.id, rotulo: o.nome }))}
+          />
+        )}
       </Secao>
 
       <Acoes>
@@ -157,7 +201,7 @@ export function MicrometaTela({ id, chave }: { id: string; chave: string }) {
           onClick={() =>
             void confirmar({
               titulo: `Apagar "${micrometa.nome}"?`,
-              mensagem: 'Os check-ins dele também são apagados. Os cards continuam nos baralhos, sem conteúdo.',
+              mensagem: 'Ele sai de todos os objetivos, com os check-ins. Os cards continuam no baralho, sem conteúdo.',
               confirmar: 'Apagar',
               perigo: true,
             }).then((ok) => {
