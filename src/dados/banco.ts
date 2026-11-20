@@ -16,7 +16,7 @@ export interface Registro {
 
 export interface Configuracoes extends Registro {
   user_id: string
-  dados: { modo?: 'claro' | 'escuro' | 'foco'; sono?: ConfigSono }
+  dados: { modo?: 'claro' | 'escuro' | 'foco'; sono?: ConfigSono; avisos?: { bomDia: boolean; sol: boolean; dormir: boolean } }
 }
 
 /** Horários-alvo (índice 0 = domingo … 6 = sábado, "HH:MM") e meta de sono. */
@@ -32,9 +32,8 @@ export interface Dia extends Registro {
   peso_kg: number | null
   sono_minutos: number | null
   qualidade: number | null
-  acordou_madrugada: boolean | null
-  prejuizo: boolean | null
-  prejuizo_texto: string | null
+  dormiu_no_horario: boolean | null
+  acordou_no_horario: boolean | null
   sol_em: string | null
   bom_dia_em: string | null
 }

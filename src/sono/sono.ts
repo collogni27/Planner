@@ -19,9 +19,8 @@ export function diaVazio(dia: string): Dia {
     peso_kg: null,
     sono_minutos: null,
     qualidade: null,
-    acordou_madrugada: null,
-    prejuizo: null,
-    prejuizo_texto: null,
+    dormiu_no_horario: null,
+    acordou_no_horario: null,
     sol_em: null,
     bom_dia_em: null,
     updated_at: '',
@@ -73,7 +72,7 @@ export const formatarPeso = (kg: number) => kg.toFixed(1).replace('.', ',')
 
 /** A tela diária já foi respondida neste dia? */
 export const diaPreenchido = (d: Dia | undefined | null) =>
-  !!d && (d.sono_minutos !== null || d.qualidade !== null || d.peso_kg !== null || d.acordou_madrugada !== null)
+  !!d && (d.sono_minutos !== null || d.qualidade !== null || d.peso_kg !== null || d.dormiu_no_horario != null || d.acordou_no_horario != null)
 
 /** "Dormi ao menos a meta?" sai do tempo de sono (null se não informado). */
 export const dormiuMeta = (d: Dia, metaMinutos: number) => (d.sono_minutos === null ? null : d.sono_minutos >= metaMinutos)
@@ -84,8 +83,11 @@ export interface ResumoSono {
   metaAtingida: number
   comTempo: number
   mediaQualidade: number | null
-  madrugada: number
-  prejuizo: number
+  /** Dias em que dormiu / acordou no horário, entre os dias em que respondeu. */
+  dormiuNoHorario: number
+  respondeuDormir: number
+  acordouNoHorario: number
+  respondeuAcordar: number
   sol: number
 }
 
@@ -104,8 +106,10 @@ export function resumirSono(registros: Dia[], metaMinutos: number, hoje: string,
     metaAtingida: tempos.filter((t) => t >= metaMinutos).length,
     comTempo: tempos.length,
     mediaQualidade: media(qualidades),
-    madrugada: janela.filter((d) => d.acordou_madrugada).length,
-    prejuizo: janela.filter((d) => d.prejuizo).length,
+    dormiuNoHorario: janela.filter((d) => d.dormiu_no_horario === true).length,
+    respondeuDormir: janela.filter((d) => d.dormiu_no_horario != null).length,
+    acordouNoHorario: janela.filter((d) => d.acordou_no_horario === true).length,
+    respondeuAcordar: janela.filter((d) => d.acordou_no_horario != null).length,
     sol: janela.filter((d) => d.sol_em).length,
   }
 }

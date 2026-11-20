@@ -42,13 +42,13 @@ describe('sono', () => {
   it('resumo considera só a janela de dias', () => {
     const r = resumirSono(
       [
-        { ...diaVazio('2026-11-20'), sono_minutos: 500, qualidade: 80, acordou_madrugada: true },
-        { ...diaVazio('2026-11-19'), sono_minutos: 420, qualidade: 60, sol_em: 'x' },
+        { ...diaVazio('2026-11-20'), sono_minutos: 500, qualidade: 80, dormiu_no_horario: true, acordou_no_horario: false },
+        { ...diaVazio('2026-11-19'), sono_minutos: 420, qualidade: 60, sol_em: 'x', dormiu_no_horario: false },
         { ...diaVazio('2026-10-01'), sono_minutos: 600 },
       ],
       480,
       '2026-11-20',
     )
-    expect(r).toMatchObject({ diasComRegistro: 2, mediaMinutos: 460, metaAtingida: 1, comTempo: 2, mediaQualidade: 70, madrugada: 1, sol: 1 })
+    expect(r).toMatchObject({ diasComRegistro: 2, mediaMinutos: 460, metaAtingida: 1, comTempo: 2, mediaQualidade: 70, dormiuNoHorario: 1, respondeuDormir: 2, acordouNoHorario: 0, respondeuAcordar: 1, sol: 1 })
   })
 })

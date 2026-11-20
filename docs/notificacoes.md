@@ -47,3 +47,10 @@ Para avisos que não posso ignorar, **deslizar para o lado não resolve**: o avi
 - Validar cedo, no celular real (passo 4 do roadmap).
 - **Botão de teste** de notificação em Configurações.
 - Se faltarem permissões (notificações, alarmes exatos, tela cheia, otimização de bateria), o app avisa e explica como resolver, passo a passo.
+
+## Implementação (0.4.1)
+- **Configurações → Notificações:** ligar/desligar Bom dia, Tomar sol e Hora de dormir; permissões (notificações, alarmes no minuto certo, sem economia de bateria) com botão "Permitir" que abre o ajuste certo do Android; testes (Bom dia e aviso comum em 10 s); próximos avisos. Na web: "Os avisos funcionam só no app Android". Guia do usuário: `guias/notificacoes.md`.
+- **Bom dia:** plugin Android próprio (`android/app/src/main/java/.../AlarmesPlugin.java`, `BomDia.java`, `BomDiaReceiver.java`): alarme de despertador (`setAlarmClock`), som de alarme repetindo, notificação contínua recolocada ao ser deslizada (até 30 min), reagendamento ao reiniciar o celular. Tocar no aviso **ou abrir o app enquanto ele toca** encerra a insistência, registra a hora (`bom_dia_em`) e abre a tela diária.
+- **Hora de dormir e Tomar sol:** `@capacitor/local-notifications` (exatos, com o celular em repouso). Ids 20000+ (dormir) e 30000+ (sol).
+- Reagendamento: ao abrir o app e sempre que mudam horários, avisos ligados, Bom dia aberto ou sol marcado. Lógica em `src/notificacoes/agenda.ts`, com testes.
+- Ainda **não** abre em tela cheia (opção de despertador fica para o passo 6).

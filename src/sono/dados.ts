@@ -1,7 +1,8 @@
 // Leitura e gravação do sono (registros diários e configuração).
 import { useLiveQuery } from 'dexie-react-hooks'
 import { ativo, agoraISO, banco, type ConfigSono, type Dia } from '../dados/banco'
-import { sincronizador, supabase } from '../nuvem/supabase'
+import { salvarConfiguracao } from '../dados/config'
+import { sincronizador } from '../nuvem/supabase'
 import { CONFIG_SONO_PADRAO, diaVazio, idDoDia } from './sono'
 
 async function salvar(d: Dia) {
@@ -36,10 +37,4 @@ export const useConfigSono = () =>
     return conf?.dados.sono ?? CONFIG_SONO_PADRAO
   })
 
-export async function salvarConfigSono(sono: ConfigSono) {
-  const conf = await banco.configuracoes.toCollection().first()
-  const userId = conf?.user_id ?? (await supabase?.auth.getSession())?.data.session?.user.id
-  if (!userId) return
-  await sincronizador.registrar('configuracoes', { user_id: userId, dados: { ...conf?.dados, sono }, updated_at: '' })
-  void sincronizador.sincronizar()
-}
+export const salvarConfigSono = (sono: ConfigSono) => salvarConfiguracao({ sono })

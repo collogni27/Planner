@@ -12,8 +12,11 @@ import { Mais } from '../telas/Mais'
 import { AcompanhamentoTela } from '../estudos/telas/AcompanhamentoTela'
 import { SonoConfigTela } from '../sono/telas/SonoConfigTela'
 import { SonoTela } from '../sono/telas/SonoTela'
+import { SonoHistoricoTela } from '../sono/telas/SonoHistoricoTela'
 import { TelaDiaria } from '../sono/telas/TelaDiaria'
 import { useTelaDiariaAutomatica } from '../sono/automatica'
+import { useAvisosAutomaticos } from '../notificacoes/automatico'
+import { NotificacoesTela } from '../notificacoes/telas/NotificacoesTela'
 import { AjudaIaTela } from '../estudos/telas/AjudaIaTela'
 import { BaralhoTela } from '../estudos/telas/BaralhoTela'
 import { CardTela } from '../estudos/telas/CardTela'
@@ -79,6 +82,7 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
   const [barraAberta, setBarraAberta] = useEstadoSalvo('barra-aberta', true)
   useSincronizacaoAutomatica()
   useTelaDiariaAutomatica(abrir)
+  useAvisosAutomaticos(abrir)
 
   // Configurações salvas (vindas da nuvem ou deste aparelho).
   const conf = useLiveQuery(() => banco.configuracoes.get(userId), [userId])
@@ -128,8 +132,14 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
       case 'exportar':
         conteudo = <ExportarTela chave={rota.chave} baralhoId={rota.baralhoId} />
         break
+      case 'notificacoes':
+        conteudo = <NotificacoesTela />
+        break
       case 'sono':
         conteudo = <SonoTela />
+        break
+      case 'sono-historico':
+        conteudo = <SonoHistoricoTela />
         break
       case 'sono-config':
         conteudo = <SonoConfigTela chave={rota.chave} />
