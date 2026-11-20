@@ -1,7 +1,7 @@
 // Peças de interface reaproveitadas pelas telas (estilos em estilo/base.css).
 import { useState, type ReactNode } from 'react'
 import { useNavegacao } from '../app/navegacao'
-import { Icone } from '../icones/Icone'
+import { Icone, type NomeIcone } from '../icones/Icone'
 import { useDialogos } from './dialogos'
 
 /** Cabeçalho de tela com "Voltar" (e, opcionalmente, um botão à direita). */
@@ -50,14 +50,21 @@ export function Item({
   detalhe,
   onClick,
   direita,
+  icone,
 }: {
   titulo: string
   detalhe?: ReactNode
   onClick?: () => void
   direita?: ReactNode
+  icone?: NomeIcone
 }) {
   return (
     <div className="item">
+      {icone && (
+        <span className="item-icone" aria-hidden="true">
+          <Icone nome={icone} tamanho={18} />
+        </span>
+      )}
       <button className="item-principal" onClick={onClick} disabled={!onClick}>
         <span className="item-titulo">{titulo}</span>
         {detalhe && <span className="item-detalhe">{detalhe}</span>}

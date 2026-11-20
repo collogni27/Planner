@@ -1088,3 +1088,70 @@ code {
 .carga-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+
+/* ---------- Sono e tela diária ---------- */
+
+.campos-lado {
+  display: flex;
+  align-items: center;
+  gap: var(--espaco-2);
+}
+
+.campo-numero {
+  width: 76px;
+  text-align: center;
+  font-family: var(--fonte-pixel);
+  font-size: 20px;
+}
+
+.campo-unidade {
+  font-size: 12px;
+  color: var(--texto-secundario);
+}
+
+.aviso-campo {
+  margin: calc(-1 * var(--espaco-2)) 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto);
+}
+
+.numero-grande {
+  font-family: var(--fonte-pixel);
+  font-size: 40px;
+  line-height: 1;
+}
+
+.tabela-horarios {
+  display: grid;
+  grid-template-columns: 1fr 88px 88px;
+  gap: var(--espaco-2);
+  align-items: center;
+}
+
+.linha-horario {
+  display: contents;
+  font-size: 13px;
+}
+
+.linha-horario[data-erro] > span {
+  font-weight: 700;
+  text-decoration: underline wavy var(--urgente);
+}
+
+.linha-horario[data-erro] > input {
+  border-color: var(--urgente);
+}
+
+.campo-horario {
+  width: 88px;
+  text-align: center;
+  font-family: var(--fonte-pixel);
+  font-size: 18px;
+}
+
+.item-icone {
+  display: flex;
+  color: var(--acao);
+  padding-right: var(--espaco-2);
+}

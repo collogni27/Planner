@@ -24,6 +24,9 @@ export type Rota =
   | { tela: 'sessao'; filtro: Filtro }
   | { tela: 'livre'; filtro: Filtro }
   | { tela: 'configuracoes' }
+  | { tela: 'sono' }
+  | { tela: 'sono-config' }
+  | { tela: 'diaria'; dia: string }
 
 /** Rota + uma chave única (usada para os rascunhos daquela tela). */
 export type RotaAberta = Rota & { chave: string }
