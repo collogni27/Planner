@@ -16,7 +16,27 @@ export interface Registro {
 
 export interface Configuracoes extends Registro {
   user_id: string
-  dados: { modo?: 'claro' | 'escuro' | 'foco' }
+  dados: { modo?: 'claro' | 'escuro' | 'foco'; sono?: ConfigSono }
+}
+
+/** Horários-alvo (índice 0 = domingo … 6 = sábado, "HH:MM") e meta de sono. */
+export interface ConfigSono {
+  horarios: { dormir: string; acordar: string }[]
+  metaMinutos: number
+}
+
+/** Registro de um dia: tela diária (manhã) e "tomei sol". O id é calculado da data. */
+export interface Dia extends Registro {
+  id: string
+  dia: string // "2026-11-20" (São Paulo)
+  peso_kg: number | null
+  sono_minutos: number | null
+  qualidade: number | null
+  acordou_madrugada: boolean | null
+  prejuizo: boolean | null
+  prejuizo_texto: string | null
+  sol_em: string | null
+  bom_dia_em: string | null
 }
 
 // ---------- Estudos (docs/modulos/estudos.md) ----------
@@ -141,6 +161,7 @@ export const TABELAS = {
   revisoes: 'id',
   objetivo_baralhos: 'id',
   objetivo_conteudos: 'id',
+  dias: 'id',
 } as const
 
 export type NomeTabela = keyof typeof TABELAS
@@ -156,6 +177,7 @@ export class BancoPlanner extends Dexie {
   revisoes!: Table<Revisao, string>
   objetivo_baralhos!: Table<ObjetivoBaralho, string>
   objetivo_conteudos!: Table<ObjetivoConteudo, string>
+  dias!: Table<Dia, string>
   fila!: Table<ItemFila, number>
   meta!: Table<Meta, string>
 
@@ -205,6 +227,8 @@ export class BancoPlanner extends Dexie {
           ...fila('objetivo_baralhos', r.vinculosBaralhos),
         ])
       })
+    // Versão 4 (2026-11-20): registros diários (sono, peso, sol). Só acrescenta.
+    this.version(4).stores({ dias: 'id, dia' })
   }
 }
 
