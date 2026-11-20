@@ -1,10 +1,14 @@
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Cabecalho, Rotulo, Secao, Vazio } from '../../ui/componentes'
+import { Cabecalho, Rotulo, Secao, Vazio, dataCurta } from '../../ui/componentes'
+import type { Card } from '../../dados/banco'
+import { horaMinuto } from '../../util/data'
+import { forcaCard, situacaoDoCard } from '../estatisticas'
 import { lerTags } from '../importacao'
+import { NOTAS } from '../revisao'
 import { Seletor, useDialogos } from '../../ui/dialogos'
 import { opcoesBaralhos, opcoesConteudos } from '../opcoes'
-import { apagarCard, salvarCard, useBaralhos, useCard, useObjetivos, useTodasMicrometas, useVinculos } from '../dados'
+import { apagarCard, salvarCard, useBaralhos, useCard, useRevisoesDoCard, useObjetivos, useTodasMicrometas, useVinculos } from '../dados'
 
 interface Formulario {
   baralhoId: string
@@ -126,6 +130,7 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
           </button>
         </form>
       </Secao>
+      {card && <HistoricoCard card={card} />}
       {card && (
         <div className="acoes">
           <button
@@ -141,5 +146,41 @@ export function CardTela({ chave, id, baralhoId, micrometaId }: Props) {
         </div>
       )}
     </>
+  )
+}
+
+/** Situação do card e lista das respostas (mais recentes primeiro). */
+function HistoricoCard({ card }: { card: Card }) {
+  const revisoes = useRevisoesDoCard(card.id)
+  const agora = new Date()
+  const f = forcaCard(card, agora)
+  const rotulo = (nota: number) => NOTAS.find((n) => n.nota === nota)?.rotulo ?? ''
+  return (
+    <Secao titulo="Histórico">
+      <div className="linha-info">
+        <span className="texto-secundario">Situação</span>
+        <span>{situacaoDoCard(card, agora)}</span>
+      </div>
+      {f !== null && (
+        <div className="linha-info">
+          <span className="texto-secundario">Força</span>
+          <span className="numero-destaque">{Math.round(f * 100)}%</span>
+        </div>
+      )}
+      <div className="linha-info">
+        <span className="texto-secundario">Revisões · erros</span>
+        <span className="numero-destaque">
+          {card.reps} · {card.lapses}
+        </span>
+      </div>
+      {revisoes?.slice(0, 20).map((r) => (
+        <div key={r.id} className="linha-info">
+          <span className="texto-secundario">
+            {dataCurta(r.revisado_em)} {horaMinuto(new Date(r.revisado_em))}
+          </span>
+          <span>{rotulo(r.nota)}</span>
+        </div>
+      ))}
+    </Secao>
   )
 }

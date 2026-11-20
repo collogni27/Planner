@@ -1061,3 +1061,30 @@ code {
   font-family: var(--fonte-pixel);
   font-weight: 400;
 }
+
+.grupo-cards {
+  display: flex;
+  flex-direction: column;
+}
+
+.subtitulo {
+  margin: var(--espaco-3) 0 0;
+  padding-bottom: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-secundario);
+  border-bottom: var(--borda) solid var(--borda-card);
+}
+
+.subtitulo-numero {
+  font-family: var(--fonte-pixel);
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.carga-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}

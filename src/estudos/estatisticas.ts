@@ -2,7 +2,7 @@
 // Foco: mostrar onde investir o próximo estudo, não placar.
 import { State } from 'ts-fsrs'
 import type { Card, Checkin, Micrometa, Revisao } from '../dados/banco'
-import { agendador, paraFsrs } from './revisao'
+import { agendador, formatarIntervalo, paraFsrs } from './revisao'
 
 /** Card "maduro": intervalo de 21 dias ou mais (mesma definição do Anki). */
 export const DIAS_MADURO = 21
@@ -136,4 +136,12 @@ export function cardsPorTag(cards: Card[]): { tag: string; cards: number }[] {
   const m = new Map<string, number>()
   for (const c of cards) if (!c.deleted_at) for (const t of c.tags) m.set(t, (m.get(t) ?? 0) + 1)
   return [...m].map(([tag, n]) => ({ tag, cards: n })).sort((a, b) => b.cards - a.cards || a.tag.localeCompare(b.tag, 'pt-BR'))
+}
+
+/** "novo", "jovem · volta em 3d", "maduro · para revisar"… (linha de cada card na lista). */
+export function situacaoDoCard(c: Card, agora: Date): string {
+  if (!foiRevisado(c)) return 'novo'
+  const tipo = c.scheduled_days >= DIAS_MADURO ? 'maduro' : 'jovem'
+  const due = new Date(c.due)
+  return `${tipo} · ${due.getTime() <= agora.getTime() ? 'para revisar' : `volta em ${formatarIntervalo(agora, due)}`}`
 }

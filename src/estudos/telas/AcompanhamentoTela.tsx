@@ -3,7 +3,6 @@ import { Cabecalho, Item, Secao, Vazio } from '../../ui/componentes'
 import { useTudoDeEstudos } from '../dados'
 import {
   carga,
-  cardsPorTag,
   cardsProblema,
   maturidade,
   NOME_SITUACAO,
@@ -11,10 +10,10 @@ import {
   resumirConteudo,
   type Situacao,
 } from '../estatisticas'
+import { objetivosDoConteudo } from '../modelo'
 import { useInicioDoDia, useRelogio } from './RevisarTela'
 
 const DIAS_SEMANA = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb']
-const MAX_TAGS = 20
 
 /** Onde investir o próximo estudo: carga, reforço, cards-problema e visão geral. */
 export function AcompanhamentoTela() {
@@ -28,7 +27,6 @@ export function AcompanhamentoTela() {
   const reforco = precisamReforco(resumos)
   const problema = cardsProblema(d.cards)
   const previsto = carga(d.cards, d.checkins, inicio)
-  const tags = cardsPorTag(d.cards)
   const descreverMedidas = (forca: number | null, acerto: number | null) =>
     [acerto !== null && `acerto ${acerto}%`, forca !== null && `força ${forca}%`].filter(Boolean).join(' · ')
 
@@ -79,7 +77,7 @@ export function AcompanhamentoTela() {
         {d.objetivos.length === 0 && <Vazio>Nenhum objetivo.</Vazio>}
         {d.objetivos.map((o) => {
           const contagem = new Map<Situacao, number>()
-          for (const r of resumos.filter((r) => r.conteudo.objetivo_id === o.id)) contagem.set(r.situacao, (contagem.get(r.situacao) ?? 0) + 1)
+          for (const r of resumos.filter((r) => objetivosDoConteudo(r.conteudo.id, d.vinculos).includes(o.id))) contagem.set(r.situacao, (contagem.get(r.situacao) ?? 0) + 1)
           const detalhe = (['a-estudar', 'estudado', 'em-consolidacao', 'dominado'] as Situacao[])
             .filter((s) => contagem.get(s))
             .map((s) => `${contagem.get(s)} ${NOME_SITUACAO[s]}`)
@@ -103,13 +101,6 @@ export function AcompanhamentoTela() {
         })}
       </Secao>
 
-      {tags.length > 0 && (
-        <Secao titulo="Tags">
-          {tags.slice(0, MAX_TAGS).map((t) => (
-            <Item key={t.tag} titulo={t.tag} detalhe={t.cards === 1 ? '1 card' : `${t.cards} cards`} />
-          ))}
-        </Secao>
-      )}
     </>
   )
 }
