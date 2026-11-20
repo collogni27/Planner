@@ -29,7 +29,7 @@ O Android fecha apps em segundo plano para liberar memória. Isso **vai acontece
 Escolhida por ser a mais simples de manter e com mais documentação:
 - **Frontend:** Vite + React + TypeScript.
 - **App Android:** Capacitor, que empacota o mesmo frontend num APK.
-- **Versão web (PC):** Netlify.
+- **Versão web (PC):** Netlify. Para economizar créditos, o `netlify.toml` só deixa publicar quando a mensagem do commit tem **`[web]`** (o Claude Code põe `[web]` no título do pedido de aprovação quando a versão deve ir para a web; as demais, inclusive as prévias, são puladas).
 - **Banco, autenticação e funções:** Supabase (plano gratuito, região São Paulo). O plano gratuito **pausa o projeto após ~7 dias sem uso**; com uso diário não acontece, e se acontecer basta reativar no painel. O modo local primeiro mantém o app funcionando enquanto isso.
 - **Cache local:** IndexedDB via Dexie.
 - **Repetição espaçada:** FSRS via `ts-fsrs` (não reimplementar).
