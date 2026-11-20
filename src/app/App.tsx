@@ -12,6 +12,7 @@ import { Mais } from '../telas/Mais'
 import { AcompanhamentoTela } from '../estudos/telas/AcompanhamentoTela'
 import { SonoConfigTela } from '../sono/telas/SonoConfigTela'
 import { SonoTela } from '../sono/telas/SonoTela'
+import { SonoHistoricoTela } from '../sono/telas/SonoHistoricoTela'
 import { TelaDiaria } from '../sono/telas/TelaDiaria'
 import { useTelaDiariaAutomatica } from '../sono/automatica'
 import { AjudaIaTela } from '../estudos/telas/AjudaIaTela'
@@ -130,6 +131,9 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
         break
       case 'sono':
         conteudo = <SonoTela />
+        break
+      case 'sono-historico':
+        conteudo = <SonoHistoricoTela />
         break
       case 'sono-config':
         conteudo = <SonoConfigTela chave={rota.chave} />

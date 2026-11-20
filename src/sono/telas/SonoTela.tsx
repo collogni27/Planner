@@ -1,6 +1,6 @@
 import { useNavegacao } from '../../app/navegacao'
 import { Icone } from '../../icones/Icone'
-import { Cabecalho, Item, Medidor, Secao, Vazio, dataCurta } from '../../ui/componentes'
+import { Cabecalho, Item, Medidor, Secao, Vazio } from '../../ui/componentes'
 import { diaLocal } from '../../util/data'
 import { marcarSol, useConfigSono, useDia, useDias } from '../dados'
 import { diaPreenchido, dormiuMeta, formatarPeso, resumirSono, textoDuracao } from '../sono'
@@ -15,7 +15,7 @@ function diasAntes(dia: string, n: number) {
 
 const qtdDias = (n: number) => (n === 1 ? '1 dia' : `${n} dias`)
 
-const resumoDoDia = (d: Dia) =>
+export const resumoDoDia = (d: Dia) =>
   [d.sono_minutos !== null && textoDuracao(d.sono_minutos), d.qualidade !== null && `qualidade ${d.qualidade}`, d.peso_kg !== null && `${formatarPeso(d.peso_kg)} kg`]
     .filter(Boolean)
     .join(' · ')
@@ -57,16 +57,16 @@ export function SonoTela() {
                 <span className="numero-destaque">{formatarPeso(registro!.peso_kg)} kg</span>
               </div>
             )}
-            {registro!.acordou_madrugada !== null && (
+            {registro!.dormiu_no_horario != null && (
               <div className="linha-info">
-                <span className="texto-secundario">Acordei de madrugada</span>
-                <span>{registro!.acordou_madrugada ? 'sim' : 'não'}</span>
+                <span className="texto-secundario">Dormi no horário</span>
+                <span>{registro!.dormiu_no_horario ? 'sim' : 'não'}</span>
               </div>
             )}
-            {registro!.prejuizo !== null && (
+            {registro!.acordou_no_horario != null && (
               <div className="linha-info">
-                <span className="texto-secundario">Prejuízo ao sono</span>
-                <span className="texto-curto">{registro!.prejuizo ? (registro!.prejuizo_texto ?? 'sim') : 'não'}</span>
+                <span className="texto-secundario">Acordei no horário</span>
+                <span>{registro!.acordou_no_horario ? 'sim' : 'não'}</span>
               </div>
             )}
             <button className="botao-secundario" onClick={() => abrir({ tela: 'diaria', dia: hoje })}>
@@ -111,14 +111,22 @@ export function SonoTela() {
                 <span className="numero-destaque">{r.mediaQualidade}</span>
               </div>
             )}
-            <div className="linha-info">
-              <span className="texto-secundario">Acordei de madrugada</span>
-              <span>{qtdDias(r.madrugada)}</span>
-            </div>
-            <div className="linha-info">
-              <span className="texto-secundario">Prejuízo ao sono</span>
-              <span>{qtdDias(r.prejuizo)}</span>
-            </div>
+            {r.respondeuDormir > 0 && (
+              <div className="linha-info">
+                <span className="texto-secundario">Dormi no horário</span>
+                <span>
+                  {r.dormiuNoHorario} de {qtdDias(r.respondeuDormir)}
+                </span>
+              </div>
+            )}
+            {r.respondeuAcordar > 0 && (
+              <div className="linha-info">
+                <span className="texto-secundario">Acordei no horário</span>
+                <span>
+                  {r.acordouNoHorario} de {qtdDias(r.respondeuAcordar)}
+                </span>
+              </div>
+            )}
             <div className="linha-info">
               <span className="texto-secundario">Tomei sol</span>
               <span>{qtdDias(r.sol)}</span>
@@ -127,17 +135,8 @@ export function SonoTela() {
         )}
       </Secao>
 
-      <Secao titulo="Histórico">
-        {dias.filter(diaPreenchido).length === 0 && <Vazio>Sem registros ainda.</Vazio>}
-        {dias
-          .filter((d) => diaPreenchido(d) && d.dia !== hoje)
-          .slice(0, 14)
-          .map((d) => (
-            <Item key={d.id} titulo={dataCurta(`${d.dia}T12:00:00`)} detalhe={resumoDoDia(d)} onClick={() => abrir({ tela: 'diaria', dia: d.dia })} />
-          ))}
-      </Secao>
-
       <Secao>
+        <Item titulo="Histórico" onClick={() => abrir({ tela: 'sono-historico' })} />
         <Item titulo="Horários e meta" onClick={() => abrir({ tela: 'sono-config' })} />
       </Secao>
     </>

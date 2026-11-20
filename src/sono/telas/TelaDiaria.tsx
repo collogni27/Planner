@@ -10,9 +10,8 @@ interface Formulario {
   minutos: string
   qualidade: string
   peso: string
-  madrugada: boolean | null
-  prejuizo: boolean | null
-  prejuizoTexto: string
+  dormiu: boolean | null
+  acordou: boolean | null
 }
 
 /** Sim/Não em dois botões. */
@@ -29,7 +28,7 @@ function SimNao({ valor, onChange, rotulo }: { valor: boolean | null; onChange: 
 }
 
 /**
- * Tela diária (manhã): tempo de sono, qualidade, peso e duas perguntas rápidas.
+ * Tela diária (manhã): tempo de sono, qualidade, peso e se dormiu/acordou no horário.
  * Feita para responder logo ao acordar: poucos campos, botões grandes.
  */
 export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
@@ -43,9 +42,8 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
     minutos: registro?.sono_minutos != null ? String(registro.sono_minutos % 60) : '',
     qualidade: registro?.qualidade != null ? String(registro.qualidade) : '',
     peso: registro?.peso_kg != null ? formatarPeso(registro.peso_kg) : '',
-    madrugada: registro?.acordou_madrugada ?? null,
-    prejuizo: registro?.prejuizo ?? null,
-    prejuizoTexto: registro?.prejuizo_texto ?? '',
+    dormiu: registro?.dormiu_no_horario ?? null,
+    acordou: registro?.acordou_no_horario ?? null,
   }
   const f = rascunho ?? inicial
   const mudar = <K extends keyof Formulario>(campo: K, valor: Formulario[K]) => setRascunho({ ...f, [campo]: valor })
@@ -64,9 +62,8 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
       sono_minutos: temSono ? (horas ?? 0) * 60 + (minutos ?? 0) : null,
       qualidade: qualidade ?? null,
       peso_kg: peso ?? null,
-      acordou_madrugada: f.madrugada,
-      prejuizo: f.prejuizo,
-      prejuizo_texto: f.prejuizo && f.prejuizoTexto.trim() ? f.prejuizoTexto.trim() : null,
+      dormiu_no_horario: f.dormiu,
+      acordou_no_horario: f.acordou,
     })
     voltar()
   }
@@ -103,23 +100,13 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
           </Rotulo>
           {peso === undefined && <p className="aviso-campo">Peso inválido.</p>}
 
-          <Rotulo texto="Acordei de madrugada?">
-            <SimNao rotulo="Acordei de madrugada?" valor={f.madrugada} onChange={(v) => mudar('madrugada', v)} />
+          <Rotulo texto="Dormi no horário esperado?">
+            <SimNao rotulo="Dormi no horário esperado?" valor={f.dormiu} onChange={(v) => mudar('dormiu', v)} />
           </Rotulo>
 
-          <Rotulo texto="Tive algum prejuízo ao sono?">
-            <SimNao rotulo="Tive algum prejuízo ao sono?" valor={f.prejuizo} onChange={(v) => mudar('prejuizo', v)} />
+          <Rotulo texto="Acordei no horário esperado?">
+            <SimNao rotulo="Acordei no horário esperado?" valor={f.acordou} onChange={(v) => mudar('acordou', v)} />
           </Rotulo>
-          {f.prejuizo && (
-            <textarea
-              className="campo-entrada area-texto"
-              rows={2}
-              placeholder="O quê? (opcional)"
-              aria-label="Prejuízo ao sono"
-              value={f.prejuizoTexto}
-              onChange={(e) => mudar('prejuizoTexto', e.target.value)}
-            />
-          )}
 
           <button className="botao-principal botao-grande" type="submit" disabled={!valido}>
             Salvar

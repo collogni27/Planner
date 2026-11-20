@@ -32,3 +32,8 @@ export function useTelaDiariaAutomatica(abrir: (rota: Rota) => void) {
     }
   }, [abrir])
 }
+
+/** Modo Desenvolvedor: faz o app agir como se ainda não tivesse sido aberto hoje. */
+export function esquecerAberturaDeHoje() {
+  gravar(CHAVE, '')
+}

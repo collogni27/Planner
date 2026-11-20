@@ -26,6 +26,7 @@ export type Rota =
   | { tela: 'configuracoes' }
   | { tela: 'sono' }
   | { tela: 'sono-config' }
+  | { tela: 'sono-historico' }
   | { tela: 'diaria'; dia: string }
 
 /** Rota + uma chave única (usada para os rascunhos daquela tela). */

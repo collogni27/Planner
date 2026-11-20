@@ -89,6 +89,55 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
         </Secao>
       )}
 
+      <Secao titulo="Adicionar baralho">
+        <Seletor
+          rotulo="Baralho"
+          valor=""
+          onChange={(v) => void vincular(v)}
+          opcoes={[...naoVinculados.map((b) => ({ valor: b.id, rotulo: b.nome })), { valor: NOVO_BARALHO, rotulo: 'Novo baralho…' }]}
+        />
+      </Secao>
+
+      <Secao titulo="Novo conteúdo">
+        <form
+          className="formulario"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void adicionarConteudo()
+          }}
+        >
+          <input
+            className="campo-entrada"
+            placeholder="Nome"
+            aria-label="Nome do conteúdo"
+            value={nomeNovo}
+            onChange={(e) => setNomeNovo(e.target.value)}
+          />
+          <Seletor
+            rotulo="Baralho do conteúdo"
+            valor={baralhoNovo}
+            onChange={setBaralhoNovo}
+            opcoes={[{ valor: '', rotulo: 'Sem baralho' }, ...vinculados.map((b) => ({ valor: b.id, rotulo: b.nome }))]}
+          />
+          <button className="botao-principal" type="submit" disabled={!nomeNovo.trim()}>
+            Adicionar conteúdo
+          </button>
+        </form>
+      </Secao>
+
+      {opcoesFora.length > 0 && (
+        <Secao titulo="Conteúdo de outro objetivo">
+          <Seletor
+            rotulo="Conteúdo"
+            valor=""
+            onChange={(v) => {
+              if (v) void adicionarConteudoAoObjetivo(id, v)
+            }}
+            opcoes={opcoesFora}
+          />
+        </Secao>
+      )}
+
       {grupos.map((g, gi) => (
         <Secao
           key={g.baralho?.id ?? 'sem-baralho'}
@@ -152,55 +201,6 @@ export function ObjetivoTela({ id, chave }: { id: string; chave: string }) {
           ))}
         </Secao>
       ))}
-
-      <Secao titulo="Adicionar baralho">
-        <Seletor
-          rotulo="Baralho"
-          valor=""
-          onChange={(v) => void vincular(v)}
-          opcoes={[...naoVinculados.map((b) => ({ valor: b.id, rotulo: b.nome })), { valor: NOVO_BARALHO, rotulo: 'Novo baralho…' }]}
-        />
-      </Secao>
-
-      <Secao titulo="Novo conteúdo">
-        <form
-          className="formulario"
-          onSubmit={(e) => {
-            e.preventDefault()
-            void adicionarConteudo()
-          }}
-        >
-          <input
-            className="campo-entrada"
-            placeholder="Nome"
-            aria-label="Nome do conteúdo"
-            value={nomeNovo}
-            onChange={(e) => setNomeNovo(e.target.value)}
-          />
-          <Seletor
-            rotulo="Baralho do conteúdo"
-            valor={baralhoNovo}
-            onChange={setBaralhoNovo}
-            opcoes={[{ valor: '', rotulo: 'Sem baralho' }, ...vinculados.map((b) => ({ valor: b.id, rotulo: b.nome }))]}
-          />
-          <button className="botao-principal" type="submit" disabled={!nomeNovo.trim()}>
-            Adicionar conteúdo
-          </button>
-        </form>
-      </Secao>
-
-      {opcoesFora.length > 0 && (
-        <Secao titulo="Conteúdo de outro objetivo">
-          <Seletor
-            rotulo="Conteúdo"
-            valor=""
-            onChange={(v) => {
-              if (v) void adicionarConteudoAoObjetivo(id, v)
-            }}
-            opcoes={opcoesFora}
-          />
-        </Secao>
-      )}
 
       <Acoes>
         <button
