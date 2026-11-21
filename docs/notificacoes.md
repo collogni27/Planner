@@ -53,4 +53,10 @@ Para avisos que não posso ignorar, **deslizar para o lado não resolve**: o avi
 - **Bom dia:** plugin Android próprio (`android/app/src/main/java/.../AlarmesPlugin.java`, `BomDia.java`, `BomDiaReceiver.java`): alarme de despertador (`setAlarmClock`), som de alarme repetindo, notificação contínua recolocada ao ser deslizada (até 30 min), reagendamento ao reiniciar o celular. Tocar no aviso **ou abrir o app enquanto ele toca** encerra a insistência, registra a hora (`bom_dia_em`) e abre a tela diária.
 - **Hora de dormir e Tomar sol:** `@capacitor/local-notifications` (exatos, com o celular em repouso). Ids 20000+ (dormir) e 30000+ (sol).
 - Reagendamento: ao abrir o app e sempre que mudam horários, avisos ligados, Bom dia aberto ou sol marcado. Lógica em `src/notificacoes/agenda.ts`, com testes.
-- Ainda **não** abre em tela cheia (opção de despertador fica para o passo 6).
+- Ainda **não** abre em tela cheia (opção de despertador fica para o passo "Bom dia + mascote").
+
+## Som (0.4.2)
+- A Xiaomi (HyperOS) silencia/abafa o som de notificações de apps instalados fora da loja. Por isso:
+  - **Bom dia:** o app toca o **próprio alarme** por um serviço (`BomDiaServico`): som `res/raw/bom_dia.wav` (arpejo 8-bit) em repetição no **volume de alarme**, com vibração, até atender ou 30 min. A notificação é silenciosa (canal `bom_dia_v2`) e continua voltando ao ser deslizada.
+  - **Avisos comuns:** canal novo `avisos_v2` com som próprio `res/raw/aviso.wav` e vibração (canais não mudam depois de criados; o antigo é apagado). Na Xiaomi pode ser preciso ligar Som/Vibração/Flutuante do canal "Avisos" — atalhos em Notificações → Permissões.
+- Sons gerados por `scripts/gerar-sons.py` (onda quadrada, combinando com o visual pixel).

@@ -46,7 +46,9 @@ Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, bot
 - O **amarelo `#FEF156` é reservado** para o sol, para o que é urgente ("tem que ser hoje") e para o botão que **confirma uma ação perigosa** (apagar etc.). É raro de propósito: se aparece na tela, significa atenção. Não usar em outros lugares.
 - Água-marinha (`#5FE9DE`) nunca como texto sobre fundo claro.
 - O modo **foco** é um escuro em cinza neutro, com exatamente as mesmas formas e posições dos outros dois.
-- O usuário escolhe o modo em Configurações.
+- O usuário escolhe em **Mais → Modo Visual** (2026-11-21):
+  - **Modo Visual Fixo:** claro, escuro ou foco.
+  - **Modo Visual Variável:** cada modo tem um horário de início ("HH:MM"); um modo vale até o próximo começar "por cima" (de madrugada, continua o último do dia anterior). Pode desligar no máximo 1 dos 3 (usar só 2). Escolher um modo fixo desliga o variável.
 
 ## Mascote
 - Pixel art, corpo retangular com braços e pernas, olhos água-marinha. **Versão azul por padrão:** corpo `#0A7A73` no modo claro e `#13958C` nos modos escuro e foco, olhos `#5FE9DE`.

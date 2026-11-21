@@ -12,14 +12,15 @@
 4. **Sono + tela diária e primeira notificação ponta a ponta**:
    - 0.4.0: horários-alvo e meta, tela diária automática (tempo, qualidade, peso, 2 perguntas), tela do Sono com "tomei sol", resumo e histórico;
    - 0.4.1: perguntas da tela diária corrigidas (dormi/acordei no horário), histórico do sono em tela própria, Dia Reset no Modo Desenvolvedor; avisos Bom dia (insistente, abre a tela diária), Tomar sol (+30/+60 da abertura do Bom dia) e Hora de dormir (60, 30 min antes e na hora); permissões e botão de teste. Validar no celular real o agendamento, o deep link, a insistência e a chegada no horário exato.
+   - 0.4.2: **som** — o Bom dia toca o próprio alarme (som 8-bit em repetição no volume de alarme + vibração, por um serviço), independente do som da notificação (que a Xiaomi silencia); avisos comuns com som próprio num canal novo; atalhos para os ajustes da Xiaomi. Mais reorganizado (Configurações, Notificações, Modo Visual, Modo Desenvolvedor) e **Modo Visual Variável** por horário.
 5. **Rotina:** hábitos, agenda, nota diária.
 6. **Tarefas:** horário/gatilho, prioridade, realizadas, não planejadas.
-7. **"Bom dia"** (resumo + animação provisória; opção de tela cheia).
+7. **Bom dia + mascote** (versão dedicada): tela "Bom dia" com o mascote animado e o resumo do dia, novas poses/variações do mascote (aprovadas antes), animações da barra, e opção de abrir em tela cheia como despertador.
 8. **Treino:** rotinas com exercícios e cargas, registro na academia, peso, modos restrito e livre, planejador semanal, cardio e notificação de treino.
 9. **Dieta** com versões.
 10. **Tela Início completa.**
 11. Estatísticas, backup completo e revisão da sincronização offline.
-12. Logo, ícone do app, variações do mascote e animação do "Bom dia" (a base visual já é usada desde o passo 1).
+12. Revisão visual geral e versão de PC (layout próprio, deixando livre o canto do selo do Netlify).
 
 ## Fora do escopo da v1
 - Imagens, áudio, cloze e importação `.apkg` nos flashcards.
