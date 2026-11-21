@@ -25,6 +25,7 @@ export type Rota =
   | { tela: 'livre'; filtro: Filtro }
   | { tela: 'configuracoes' }
   | { tela: 'notificacoes' }
+  | { tela: 'modo-visual' }
   | { tela: 'sono' }
   | { tela: 'sono-config' }
   | { tela: 'sono-historico' }

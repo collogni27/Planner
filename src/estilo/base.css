@@ -1155,3 +1155,22 @@ code {
   color: var(--acao);
   padding-right: var(--espaco-2);
 }
+
+/* ---------- Modo Visual ---------- */
+
+.tabela-modos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+}
+
+.linha-modo {
+  display: grid;
+  grid-template-columns: 1fr 88px;
+  gap: var(--espaco-2);
+  align-items: center;
+}
+
+.campo-horario:disabled {
+  opacity: 0.4;
+}

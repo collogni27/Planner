@@ -14,6 +14,7 @@ interface Permissoes {
   notificacoes: boolean
   alarmesExatos: boolean
   semOtimizacaoBateria: boolean
+  fabricante: string
 }
 
 const NOMES: Record<keyof ConfigAvisos, string> = { bomDia: 'Bom dia', sol: 'Tomar sol', dormir: 'Hora de dormir' }
@@ -103,6 +104,26 @@ export function NotificacoesTela() {
           })}
           {linhaPermissao('Alarmes no minuto certo', permissoes.alarmesExatos, () => Alarmes.abrirAjusteAlarmes())}
           {linhaPermissao('Sem economia de bateria', permissoes.semOtimizacaoBateria, () => Alarmes.abrirAjusteBateria())}
+          <div className="linha-info">
+            <span className="texto-secundario">Som e vibração dos avisos</span>
+            <button className="botao-texto" onClick={() => void Alarmes.abrirAjusteNotificacoes()}>
+              Abrir
+            </button>
+          </div>
+          {/xiaomi|redmi|poco/i.test(permissoes.fabricante) && (
+            <>
+              <div className="linha-info">
+                <span className="texto-secundario">Início automático</span>
+                <button className="botao-texto" onClick={() => void Alarmes.abrirInicioAutomatico()}>
+                  Abrir
+                </button>
+              </div>
+              <p className="texto-secundario nota-rodape">
+                Na Xiaomi, ligue o Início automático do Planner e, em "Som e vibração dos avisos", ative Som, Vibração e Notificações flutuantes em
+                "Avisos".
+              </p>
+            </>
+          )}
         </Secao>
       )}
 

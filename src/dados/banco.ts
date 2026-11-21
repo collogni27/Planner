@@ -3,6 +3,7 @@
 // Mudanças de formato = nova versão com migração (nunca apagar dados).
 import Dexie, { type Table } from 'dexie'
 import { idFixo } from './ids'
+import type { ConfigModoVisual } from '../visual/modoVisual'
 
 export { idFixo }
 
@@ -16,7 +17,7 @@ export interface Registro {
 
 export interface Configuracoes extends Registro {
   user_id: string
-  dados: { modo?: 'claro' | 'escuro' | 'foco'; sono?: ConfigSono; avisos?: { bomDia: boolean; sol: boolean; dormir: boolean } }
+  dados: { modo?: 'claro' | 'escuro' | 'foco'; sono?: ConfigSono; avisos?: { bomDia: boolean; sol: boolean; dormir: boolean }; modoVisual?: ConfigModoVisual }
 }
 
 /** Horários-alvo (índice 0 = domingo … 6 = sábado, "HH:MM") e meta de sono. */

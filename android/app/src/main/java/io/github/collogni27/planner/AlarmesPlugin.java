@@ -92,6 +92,7 @@ public class AlarmesPlugin extends Plugin {
         r.put("alarmesExatos", Build.VERSION.SDK_INT < Build.VERSION_CODES.S || am.canScheduleExactAlarms());
         PowerManager pm = (PowerManager) c.getSystemService(Context.POWER_SERVICE);
         r.put("semOtimizacaoBateria", pm.isIgnoringBatteryOptimizations(c.getPackageName()));
+        r.put("fabricante", Build.MANUFACTURER);
         call.resolve(r);
     }
 
@@ -106,6 +107,15 @@ public class AlarmesPlugin extends Plugin {
     @PluginMethod
     public void abrirAjusteBateria(PluginCall call) {
         abrir(new Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + getContext().getPackageName())));
+        call.resolve();
+    }
+
+    /** Xiaomi/Redmi/Poco: tela de "Início automático" (necessária para avisos com o app fechado). */
+    @PluginMethod
+    public void abrirInicioAutomatico(PluginCall call) {
+        Intent i = new Intent().setComponent(new android.content.ComponentName(
+            "com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity"));
+        abrir(i);
         call.resolve();
     }
 
