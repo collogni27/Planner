@@ -8,9 +8,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Build;
 import androidx.core.app.NotificationCompat;
 import org.json.JSONArray;
@@ -25,7 +22,9 @@ import org.json.JSONArray;
  */
 public final class BomDia {
     static final String PREFS = "planner_bom_dia";
-    static final String CANAL = "bom_dia";
+    // Canal novo (v2): silencioso, porque o som e a vibração vêm do BomDiaServico.
+    // (Canais não mudam depois de criados; por isso um id novo.)
+    static final String CANAL = "bom_dia_v2";
     static final int ID_NOTIFICACAO = 4242;
     static final long DURACAO_MS = 30L * 60L * 1000L;
 
@@ -79,10 +78,14 @@ public final class BomDia {
         }
     }
 
-    /** Começa a tocar: marca o início e mostra a notificação. */
+    /** Começa a tocar: marca o início e liga o serviço que toca o alarme. */
     static void disparar(Context c) {
         prefs(c).edit().putLong("inicio", System.currentTimeMillis()).putBoolean("atendido", false).apply();
-        mostrar(c);
+        androidx.core.content.ContextCompat.startForegroundService(c, new Intent(c, BomDiaServico.class));
+    }
+
+    static long restanteMs(Context c) {
+        return DURACAO_MS - (System.currentTimeMillis() - prefs(c).getLong("inicio", 0));
     }
 
     /** Ainda tocando? (não foi atendido e não passaram 30 minutos) */
@@ -95,20 +98,24 @@ public final class BomDia {
     /** Tocou na notificação (ou abriu o app): para de insistir. */
     static void encerrar(Context c) {
         prefs(c).edit().putBoolean("atendido", true).apply();
+        c.stopService(new Intent(c, BomDiaServico.class));
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
         nm.cancel(ID_NOTIFICACAO);
     }
 
+    /** Notificação deslizada: volta na hora (o som continua tocando pelo serviço). */
     static void mostrar(Context c) {
         if (!tocando(c)) return;
         NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
-        criarCanal(nm);
-        long restante = DURACAO_MS - (System.currentTimeMillis() - prefs(c).getLong("inicio", 0));
+        nm.notify(ID_NOTIFICACAO, construir(c));
+    }
 
+    static Notification construir(Context c) {
+        NotificationManager nm = (NotificationManager) c.getSystemService(Context.NOTIFICATION_SERVICE);
+        criarCanal(nm);
         PendingIntent abrir = PendingIntent.getActivity(c, 8000, intentAbrir(c), flags());
         PendingIntent repor = PendingIntent.getBroadcast(c, 8001, new Intent(c, BomDiaReceiver.class).setAction(ACAO_REPOR), flags());
-
-        Notification n = new NotificationCompat.Builder(c, CANAL)
+        return new NotificationCompat.Builder(c, CANAL)
             .setSmallIcon(R.drawable.ic_stat_planner)
             .setContentTitle("Bom dia")
             .setContentText("Toque para começar o dia.")
@@ -116,24 +123,20 @@ public final class BomDia {
             .setCategory(NotificationCompat.CATEGORY_ALARM)
             .setOngoing(true)
             .setAutoCancel(true)
+            .setSilent(true)
             .setContentIntent(abrir)
             .setDeleteIntent(repor)
-            .setTimeoutAfter(Math.max(1000, restante))
-            .setVibrate(new long[] {0, 800, 600, 800})
+            .setTimeoutAfter(Math.max(1000, restanteMs(c)))
             .build();
-        n.flags |= Notification.FLAG_INSISTENT; // o som repete até ser atendido
-        nm.notify(ID_NOTIFICACAO, n);
     }
 
     static void criarCanal(NotificationManager nm) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || nm.getNotificationChannel(CANAL) != null) return;
+        nm.deleteNotificationChannel("bom_dia"); // canal antigo (0.4.1)
         NotificationChannel canal = new NotificationChannel(CANAL, "Bom dia", NotificationManager.IMPORTANCE_HIGH);
         canal.setDescription("Aviso insistente do horário de acordar");
-        Uri som = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
-        AudioAttributes atributos = new AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM).build();
-        canal.setSound(som, atributos);
-        canal.enableVibration(true);
-        canal.setVibrationPattern(new long[] {0, 800, 600, 800});
+        canal.setSound(null, null); // o som vem do BomDiaServico
+        canal.enableVibration(false);
         canal.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
         nm.createNotificationChannel(canal);
     }
