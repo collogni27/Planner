@@ -43,7 +43,7 @@
 
 Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, botões da barra, botão marcado etc.) foram extraídos da referência e ficam em `src/estilo/tokens.css`, que é a fonte de verdade das cores no código.
 
-- O **amarelo `#FEF156` é reservado** para o sol, para o que é urgente ("tem que ser hoje") e para o botão que **confirma uma ação perigosa** (apagar etc.). É raro de propósito: se aparece na tela, significa atenção. Não usar em outros lugares.
+- O **amarelo `#FEF156` é reservado** para o sol, para o que é urgente ("tem que ser hoje", tarefa da Agenda que passou do horário ou do dia) e para o botão que **confirma uma ação perigosa** (apagar etc.). É raro de propósito: se aparece na tela, significa atenção. Não usar em outros lugares.
 - Água-marinha (`#5FE9DE`) nunca como texto sobre fundo claro.
 - O modo **foco** é um escuro em cinza neutro, com exatamente as mesmas formas e posições dos outros dois.
 - O usuário escolhe em **Mais → Modo Visual** (2026-11-21):
@@ -69,6 +69,6 @@ Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, bot
 - O visual da barra acompanha a aba atual (o mascote pode mudar de variação por aba).
 
 ## Navegação inferior (abas ainda indefinidas)
-- A primeira aba é **"Início"** (ícone de sol em pixel). As demais estão como **"(XXXXX)"** com ícone de ponto de interrogação no protótipo: **quais serão as abas principais será decidido aos poucos com o usuário.** Definidas até agora: **Início** e **Estudos** (2026-11-19). Candidata mencionada: Tarefas.
+- A primeira aba é **"Início"** (ícone de sol em pixel). As demais estão como **"(XXXXX)"** com ícone de ponto de interrogação no protótipo: **quais serão as abas principais será decidido aos poucos com o usuário.** Definidas até agora, nesta ordem: **Início**, **Rotina** (ícone de calendário, 2026-11-22) e **Estudos** (2026-11-19), mais a provisória **Mais**. Candidata mencionada: Tarefas.
 - Na versão web, o Netlify (plano gratuito) mostra um selo "Powered by Netlify" fixo no **canto inferior direito**, que não pode ser removido. Layouts de PC devem deixar esse canto livre. No APK o selo não existe.
 - Não decidir sozinho quais módulos viram abas. Enquanto isso, os módulos ficam numa tela provisória **"Mais"**, e o Claude Code pergunta quando a decisão for necessária.

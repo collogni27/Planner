@@ -5,6 +5,7 @@ import { useNavegacao, type Aba } from './navegacao'
 // "Mais" é provisória e guarda o que ainda não virou aba.
 const ABAS: { id: Aba; rotulo: string; icone: NomeIcone }[] = [
   { id: 'inicio', rotulo: 'Início', icone: 'sol' },
+  { id: 'rotina', rotulo: 'Rotina', icone: 'calendario' },
   { id: 'estudos', rotulo: 'Estudos', icone: 'livro' },
   { id: 'mais', rotulo: 'Mais', icone: 'mais' },
 ]

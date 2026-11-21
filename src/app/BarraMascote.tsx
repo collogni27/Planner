@@ -6,6 +6,8 @@ import { dataPorExtenso, saudacao } from '../util/data'
 import { NOME_USUARIO } from '../config'
 import { useModoDev } from '../estado/modoDev'
 import { BotaoDev } from './ModoDev'
+import { useNavegacao } from './navegacao'
+import { diaLocal } from '../util/data'
 
 interface Props {
   modo: Modo
@@ -27,6 +29,7 @@ function useAgora() {
 export function BarraMascote({ modo, aberta, onAlternar }: Props) {
   const agora = useAgora()
   const modoDev = useModoDev()
+  const { abrir } = useNavegacao()
 
   return (
     <div className="barra-area">
@@ -49,12 +52,12 @@ export function BarraMascote({ modo, aberta, onAlternar }: Props) {
               </button>
             </div>
             <div className="barra-acoes">
-              {/* As notas chegam no passo 5 (docs/modulos/notas.md). */}
-              <button className="barra-botao" disabled title="Em breve">
+              {/* Nota diária (docs/modulos/notas.md). */}
+              <button className="barra-botao" onClick={() => abrir({ tela: 'notas' })}>
                 <Icone nome="notas" tamanho={14} />
                 <span>Notas anteriores</span>
               </button>
-              <button className="barra-botao" disabled title="Em breve">
+              <button className="barra-botao" onClick={() => abrir({ tela: 'nota', dia: diaLocal(new Date()) })}>
                 <Icone nome="lapis" tamanho={14} />
                 <span>Editar nota atual</span>
               </button>

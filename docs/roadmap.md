@@ -13,8 +13,8 @@
    - 0.4.0: horários-alvo e meta, tela diária automática (tempo, qualidade, peso, 2 perguntas), tela do Sono com "tomei sol", resumo e histórico;
    - 0.4.1: perguntas da tela diária corrigidas (dormi/acordei no horário), histórico do sono em tela própria, Dia Reset no Modo Desenvolvedor; avisos Bom dia (insistente, abre a tela diária), Tomar sol (+30/+60 da abertura do Bom dia) e Hora de dormir (60, 30 min antes e na hora); permissões e botão de teste. Validar no celular real o agendamento, o deep link, a insistência e a chegada no horário exato.
    - 0.4.2: **som** — o Bom dia toca o próprio alarme (som 8-bit em repetição no volume de alarme + vibração, por um serviço), independente do som da notificação (que a Xiaomi silencia); avisos comuns com som próprio num canal novo; atalhos para os ajustes da Xiaomi. Mais reorganizado (Configurações, Notificações, Modo Visual, Modo Desenvolvedor) e **Modo Visual Variável** por horário.
-5. **Rotina:** hábitos, agenda, nota diária.
-6. **Tarefas:** horário/gatilho, prioridade, realizadas, não planejadas.
+5. **Rotina** (0.5.0): aba principal "Rotina" com hábitos (dias, horário com aviso ou gatilho, ordem) e Agenda de tarefas (data, horário com aviso ou gatilho em texto/tarefa/hábito, próximo passo, amarelo quando atrasada, concluídas); nota diária ("Editar nota atual", "Notas anteriores" em calendário, nota de ontem na tela diária).
+6. **Extras da Agenda:** prioridade, tarefa não planejada (ver `modulos/tarefas.md`).
 7. **Bom dia + mascote** (versão dedicada): tela "Bom dia" com o mascote animado e o resumo do dia, novas poses/variações do mascote (aprovadas antes), animações da barra, e opção de abrir em tela cheia como despertador.
 8. **Treino:** rotinas com exercícios e cargas, registro na academia, peso, modos restrito e livre, planejador semanal, cardio e notificação de treino.
 9. **Dieta** com versões.
@@ -30,13 +30,12 @@
 - Publicação na Play Store (o APK é instalado direto).
 - Versão para iPhone.
 - Notificações na versão web (PC), se forem trabalhosas.
-- Encadeamento de tarefas e vínculo com projetos (futuro, ver `modulos/tarefas.md`).
+- Vínculo de tarefas com projetos (futuro, ver `modulos/tarefas.md`).
 
 ## Decisões em aberto (perguntar quando chegar a hora)
 - Pode haver duas sessões de treino no mesmo dia?
 - O cardio tem regra de espaçamento, ou é só a meta semanal?
 - Fórmula exata da contagem de "encaixes" na rotina livre (passo 8).
 - Horário padrão da notificação de treino.
-- A "nota para amanhã" (escrita na véspera) continua existindo ao lado da nota diária, ou o "Bom dia" mostra a nota de ontem?
 - Como a tela diária se encaixa no "Bom dia" (antes, dentro ou depois).
 - Quais módulos viram abas principais na navegação inferior.

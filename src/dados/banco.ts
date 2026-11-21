@@ -17,7 +17,12 @@ export interface Registro {
 
 export interface Configuracoes extends Registro {
   user_id: string
-  dados: { modo?: 'claro' | 'escuro' | 'foco'; sono?: ConfigSono; avisos?: { bomDia: boolean; sol: boolean; dormir: boolean }; modoVisual?: ConfigModoVisual }
+  dados: {
+    modo?: 'claro' | 'escuro' | 'foco'
+    sono?: ConfigSono
+    avisos?: { bomDia: boolean; sol: boolean; dormir: boolean }
+    modoVisual?: ConfigModoVisual
+  }
 }
 
 /** Horários-alvo (índice 0 = domingo … 6 = sábado, "HH:MM") e meta de sono. */
@@ -37,6 +42,56 @@ export interface Dia extends Registro {
   acordou_no_horario: boolean | null
   sol_em: string | null
   bom_dia_em: string | null
+}
+
+// ---------- Rotina e nota diária (docs/modulos/rotina.md, notas.md) ----------
+
+/** Nota de um dia. O id é calculado da data. */
+export interface Nota extends Registro {
+  id: string
+  dia: string
+  texto: string
+}
+
+/** Hábito. "Quando" é um horário (com aviso opcional), um gatilho ou nada. */
+export interface Habito extends Registro {
+  id: string
+  nome: string
+  descricao: string | null
+  dias: number[] // 0 = domingo … 6 = sábado
+  horario: string | null // "HH:MM"
+  avisar: boolean
+  gatilho_texto: string | null
+  gatilho_tarefa_id: string | null
+  ordem: number | null // null = ordem padrão
+  created_at?: string
+}
+
+/** Hábito marcado num dia. O id é calculado do hábito + dia. */
+export interface HabitoFeito extends Registro {
+  id: string
+  habito_id: string
+  dia: string
+  feito: boolean
+}
+
+/** Campos que definem uma tarefa (também usados no modelo do "próximo passo"). */
+export interface DadosTarefa {
+  nome: string
+  descricao: string | null
+  data: string | null // "2026-11-22"
+  horario: string | null
+  avisar: boolean
+  gatilho_texto: string | null
+  gatilho_tarefa_id: string | null
+  gatilho_habito_id: string | null
+}
+
+export interface Tarefa extends Registro, DadosTarefa {
+  id: string
+  proximo: DadosTarefa | null
+  proximo_criado_id: string | null
+  concluida_em: string | null
 }
 
 // ---------- Estudos (docs/modulos/estudos.md) ----------
@@ -162,6 +217,10 @@ export const TABELAS = {
   objetivo_baralhos: 'id',
   objetivo_conteudos: 'id',
   dias: 'id',
+  notas: 'id',
+  habitos: 'id',
+  habitos_feitos: 'id',
+  tarefas: 'id',
 } as const
 
 export type NomeTabela = keyof typeof TABELAS
@@ -178,6 +237,10 @@ export class BancoPlanner extends Dexie {
   objetivo_baralhos!: Table<ObjetivoBaralho, string>
   objetivo_conteudos!: Table<ObjetivoConteudo, string>
   dias!: Table<Dia, string>
+  notas!: Table<Nota, string>
+  habitos!: Table<Habito, string>
+  habitos_feitos!: Table<HabitoFeito, string>
+  tarefas!: Table<Tarefa, string>
   fila!: Table<ItemFila, number>
   meta!: Table<Meta, string>
 
@@ -221,14 +284,18 @@ export class BancoPlanner extends Dexie {
             criadoEm: registro.updated_at,
             tentativas: 0,
           }))
-        await tx.table('fila').bulkAdd([
-          ...fila('micrometas', r.micrometas),
-          ...fila('objetivo_conteudos', r.vinculosConteudos),
-          ...fila('objetivo_baralhos', r.vinculosBaralhos),
-        ])
+        await tx
+          .table('fila')
+          .bulkAdd([
+            ...fila('micrometas', r.micrometas),
+            ...fila('objetivo_conteudos', r.vinculosConteudos),
+            ...fila('objetivo_baralhos', r.vinculosBaralhos),
+          ])
       })
     // Versão 4 (2026-11-20): registros diários (sono, peso, sol). Só acrescenta.
     this.version(4).stores({ dias: 'id, dia' })
+    // Versão 5 (2026-11-22): Rotina (hábitos, agenda) e nota diária. Só acrescenta.
+    this.version(5).stores({ notas: 'id, dia', habitos: 'id', habitos_feitos: 'id, habito_id, dia', tarefas: 'id, data' })
   }
 }
 
@@ -250,7 +317,8 @@ export function converterParaVinculos(micrometas: Micrometa[], cards: Card[], ag
   const pares = new Map<string, ObjetivoBaralho>()
   for (const m of ativos) {
     const contagem = new Map<string, number>()
-    for (const c of cards) if (!c.deleted_at && c.micrometa_id === m.id) contagem.set(c.baralho_id, (contagem.get(c.baralho_id) ?? 0) + 1)
+    for (const c of cards)
+      if (!c.deleted_at && c.micrometa_id === m.id) contagem.set(c.baralho_id, (contagem.get(c.baralho_id) ?? 0) + 1)
     const baralho = [...contagem].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ?? null
     atualizados.push({ ...m, baralho_id: baralho, updated_at: agora })
     if (baralho && !pares.has(`${m.objetivo_id}:${baralho}`)) {

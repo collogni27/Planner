@@ -1174,3 +1174,142 @@ code {
 .campo-horario:disabled {
   opacity: 0.4;
 }
+
+/* ---------- Rotina (hábitos, agenda) e notas ---------- */
+
+.item-check {
+  gap: 0;
+}
+
+.botao-check {
+  width: var(--toque-minimo);
+  min-height: var(--toque-minimo);
+  flex: none;
+  margin-left: calc(-1 * var(--espaco-2));
+  border: none;
+  background: transparent;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-feito {
+  color: var(--texto-secundario);
+}
+
+/* Tarefa que passou do horário (ou do dia): amarelo de atenção. */
+.item-urgente {
+  margin: 2px calc(-1 * var(--espaco-2));
+  padding-right: var(--espaco-2);
+  border-radius: var(--raio-interno);
+  background: var(--urgente);
+  color: var(--texto-sobre-urgente);
+}
+
+.item-urgente + .item,
+.item + .item-urgente {
+  border-top-color: transparent;
+}
+
+.item-urgente .botao-check {
+  margin-left: 0;
+}
+
+.item-urgente .item-principal,
+.item-urgente .item-detalhe {
+  color: var(--texto-sobre-urgente);
+}
+
+.item-urgente .checkbox {
+  border-color: var(--texto-sobre-urgente);
+}
+
+.grupo-agenda {
+  display: flex;
+  flex-direction: column;
+}
+
+.grupo-agenda + .grupo-agenda {
+  margin-top: var(--espaco-2);
+}
+
+.dias-semana {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.dias-semana .ficha {
+  padding: 0;
+  min-height: var(--toque-minimo);
+}
+
+.proximo-passo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-3);
+  padding-left: var(--espaco-3);
+  border-left: var(--borda) solid var(--borda-card);
+}
+
+.area-nota {
+  min-height: 50vh;
+  font-size: 13px;
+}
+
+.texto-nota {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.calendario-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.calendario-mes {
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.calendario {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.calendario-semana {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-secundario);
+}
+
+.calendario-dia {
+  min-height: var(--toque-minimo);
+  border-radius: var(--raio-interno);
+  border: var(--borda) solid transparent;
+  background: transparent;
+  color: var(--texto-secundario);
+  font-family: var(--fonte-pixel);
+  font-size: 14px;
+}
+
+.calendario-dia[data-nota='sim'] {
+  border-color: var(--botao-marcado-borda);
+  background: var(--botao-marcado-fundo);
+  color: var(--texto);
+}
+
+.calendario-dia[aria-current='date'] {
+  border-color: var(--acao);
+}
+
+.calendario-dia:disabled {
+  opacity: 0.3;
+}

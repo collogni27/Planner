@@ -2,6 +2,7 @@ import { LocalNotifications } from '@capacitor/local-notifications'
 import { useCallback, useEffect, useState } from 'react'
 import { useConfiguracao, salvarConfiguracao } from '../../dados/config'
 import { Icone } from '../../icones/Icone'
+import { useFeitos, useHabitos, useTarefas } from '../../rotina/dados'
 import { useDia } from '../../sono/dados'
 import { CONFIG_SONO_PADRAO } from '../../sono/sono'
 import { Cabecalho, Secao, Vazio, dataCurta } from '../../ui/componentes'
@@ -23,6 +24,9 @@ const NOMES: Record<keyof ConfigAvisos, string> = { bomDia: 'Bom dia', sol: 'Tom
 export function NotificacoesTela() {
   const config = useConfiguracao()
   const hoje = useDia(diaLocal(new Date()))
+  const habitos = useHabitos()
+  const feitos = useFeitos(diaLocal(new Date()))
+  const tarefas = useTarefas()
   const [permissoes, setPermissoes] = useState<Permissoes | null>(null)
   const [mensagem, setMensagem] = useState<string | null>(null)
 
@@ -50,14 +54,21 @@ export function NotificacoesTela() {
       </>
     )
   }
-  if (!config || hoje === undefined) return null
+  if (!config || hoje === undefined || !habitos || !feitos || !tarefas) return null
 
   const avisos = config.avisos ?? AVISOS_PADRAO
   const sono = config.sono ?? CONFIG_SONO_PADRAO
   const agora = new Date()
   const proximos = [
-    ...(avisos.bomDia ? horariosBomDia(sono, agora).slice(0, 1).map((q) => ({ titulo: 'Bom dia', quando: q })) : []),
-    ...avisosComuns(sono, avisos, hoje ?? null, agora).map((a) => ({ titulo: a.titulo, quando: a.quando })),
+    ...(avisos.bomDia
+      ? horariosBomDia(sono, agora)
+          .slice(0, 1)
+          .map((q) => ({ titulo: 'Bom dia', quando: q }))
+      : []),
+    ...avisosComuns(sono, avisos, hoje ?? null, agora, { habitos, feitos, tarefas }).map((a) => ({
+      titulo: a.titulo,
+      quando: a.quando,
+    })),
   ]
     .sort((a, b) => a.quando.getTime() - b.quando.getTime())
     .slice(0, 5)
@@ -119,8 +130,8 @@ export function NotificacoesTela() {
                 </button>
               </div>
               <p className="texto-secundario nota-rodape">
-                Na Xiaomi, ligue o Início automático do Planner e, em "Som e vibração dos avisos", ative Som, Vibração e Notificações flutuantes em
-                "Avisos".
+                Na Xiaomi, ligue o Início automático do Planner e, em "Som e vibração dos avisos", ative Som, Vibração e
+                Notificações flutuantes em "Avisos".
               </p>
             </>
           )}
@@ -135,7 +146,10 @@ export function NotificacoesTela() {
           >
             Bom dia
           </button>
-          <button className="botao-secundario" onClick={() => void testarAvisoComum(10).then(() => setMensagem('O aviso chega em 10 segundos.'))}>
+          <button
+            className="botao-secundario"
+            onClick={() => void testarAvisoComum(10).then(() => setMensagem('O aviso chega em 10 segundos.'))}
+          >
             Aviso comum
           </button>
         </div>

@@ -7,7 +7,7 @@ import type { Filtro } from '../estudos/revisao'
 import { removerRascunhos, useEstadoSalvo } from '../estado/preferencias'
 import { fecharUltimaCaixa } from '../ui/dialogos'
 
-export type Aba = 'inicio' | 'estudos' | 'mais'
+export type Aba = 'inicio' | 'rotina' | 'estudos' | 'mais'
 
 /** Telas abertas por cima da tela principal de cada aba. */
 export type Rota =
@@ -30,6 +30,13 @@ export type Rota =
   | { tela: 'sono-config' }
   | { tela: 'sono-historico' }
   | { tela: 'diaria'; dia: string }
+  | { tela: 'habitos' }
+  | { tela: 'habito'; id: string | null }
+  | { tela: 'agenda' }
+  | { tela: 'tarefa'; id: string | null }
+  | { tela: 'concluidas' }
+  | { tela: 'nota'; dia: string }
+  | { tela: 'notas' }
 
 /** Rota + uma chave única (usada para os rascunhos daquela tela). */
 export type RotaAberta = Rota & { chave: string }
@@ -39,7 +46,10 @@ interface Estado {
   pilhas: Record<Aba, RotaAberta[]>
 }
 
-const INICIAL: Estado = { aba: 'inicio', pilhas: { inicio: [], estudos: [], mais: [] } }
+const INICIAL: Estado = { aba: 'inicio', pilhas: { inicio: [], rotina: [], estudos: [], mais: [] } }
+
+/** Completa abas que não existiam quando o estado foi salvo (ex.: Rotina, na 0.5.0). */
+const completar = (e: Estado): Estado => ({ ...e, pilhas: { ...INICIAL.pilhas, ...e.pilhas } })
 
 interface Navegacao {
   aba: Aba
@@ -52,7 +62,9 @@ interface Navegacao {
 const Contexto = createContext<Navegacao | null>(null)
 
 export function ProvedorNavegacao({ children }: { children: ReactNode }) {
-  const [estado, setEstado] = useEstadoSalvo<Estado>('navegacao:v3', INICIAL)
+  const [salvo, setSalvo] = useEstadoSalvo<Estado>('navegacao:v3', INICIAL)
+  const estado = completar(salvo)
+  const setEstado = useCallback((f: (e: Estado) => Estado) => setSalvo((e) => f(completar(e))), [setSalvo])
   const pilha = estado.pilhas[estado.aba] ?? []
 
   const abrir = useCallback(
