@@ -31,6 +31,12 @@ import { RevisarTela } from '../estudos/telas/RevisarTela'
 import { SessaoTela } from '../estudos/telas/SessaoTela'
 import { RevisaoLivreTela } from '../estudos/telas/RevisaoLivreTela'
 import { TodosTela } from '../estudos/telas/TodosTela'
+import { AgendaTela, ConcluidasTela } from '../rotina/telas/AgendaTela'
+import { HabitoTela } from '../rotina/telas/HabitoTela'
+import { HabitosTela } from '../rotina/telas/HabitosTela'
+import { NotaTela, NotasTela } from '../rotina/telas/NotasTelas'
+import { RotinaInicio } from '../rotina/telas/RotinaInicio'
+import { TarefaTela } from '../rotina/telas/TarefaTela'
 import { ProvedorNavegacao, useNavegacao } from './navegacao'
 import { ProvedorDialogos } from '../ui/dialogos'
 import { BarraMascote } from './BarraMascote'
@@ -181,10 +187,33 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
       case 'todos':
         conteudo = <TodosTela tipo={rota.tipo} />
         break
+      case 'habitos':
+        conteudo = <HabitosTela chave={rota.chave} />
+        break
+      case 'habito':
+        conteudo = <HabitoTela id={rota.id} chave={rota.chave} />
+        break
+      case 'agenda':
+        conteudo = <AgendaTela />
+        break
+      case 'concluidas':
+        conteudo = <ConcluidasTela />
+        break
+      case 'tarefa':
+        conteudo = <TarefaTela id={rota.id} chave={rota.chave} />
+        break
+      case 'nota':
+        conteudo = <NotaTela dia={rota.dia} chave={rota.chave} />
+        break
+      case 'notas':
+        conteudo = <NotasTela chave={rota.chave} />
+        break
       case 'ajuda-ia':
         conteudo = <AjudaIaTela chave={rota.chave} micrometaId={rota.micrometaId} baralhoId={rota.baralhoId} />
         break
     }
+  } else if (aba === 'rotina') {
+    conteudo = <RotinaInicio />
   } else if (aba === 'estudos') {
     conteudo = <EstudosInicio />
   } else if (aba === 'mais') {

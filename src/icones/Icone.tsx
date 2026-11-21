@@ -11,6 +11,7 @@ const PIXEL = {
   mais: 'M3 7h2v2h-2z M7 7h2v2h-2z M11 7h2v2h-2z',
   terminal: 'M2 4h2v2h-2z M4 6h2v2h-2z M6 8h2v2h-2z M4 10h2v2h-2z M2 12h2v2h-2z M9 12h5v2h-5z',
   livro: 'M1 3h6v10h-6z M9 3h6v10h-6z M7 12h2v2h-2z',
+  calendario: 'M1 3h14v3h-14z M1 6h2v9h-2z M13 6h2v9h-2z M3 13h10v2h-10z M4 1h2v3h-2z M10 1h2v3h-2z M5 8h2v2h-2z M9 8h2v2h-2z M5 11h2v1h-2z M9 11h2v1h-2z',
 } as const
 
 // Setas e "check" da referência (traço, não pixel).

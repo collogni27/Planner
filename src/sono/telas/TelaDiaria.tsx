@@ -1,3 +1,5 @@
+import { useNota } from '../../rotina/dados'
+import { somarDias } from '../../rotina/rotina'
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
 import { Cabecalho, Rotulo, Secao, dataCurta } from '../../ui/componentes'
@@ -19,7 +21,14 @@ function SimNao({ valor, onChange, rotulo }: { valor: boolean | null; onChange: 
   return (
     <div className="opcoes opcoes-2" role="radiogroup" aria-label={rotulo}>
       {[true, false].map((v) => (
-        <button key={String(v)} type="button" role="radio" aria-checked={valor === v} className="botao-marcavel botao-largo" onClick={() => onChange(v)}>
+        <button
+          key={String(v)}
+          type="button"
+          role="radio"
+          aria-checked={valor === v}
+          className="botao-marcavel botao-largo"
+          onClick={() => onChange(v)}
+        >
           {v ? 'Sim' : 'Não'}
         </button>
       ))}
@@ -34,8 +43,10 @@ function SimNao({ valor, onChange, rotulo }: { valor: boolean | null; onChange: 
 export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
   const { voltar } = useNavegacao()
   const registro = useDia(dia)
+  // A nota escrita ontem "fica para hoje": aparece aqui de manhã (docs/modulos/notas.md).
+  const notaDeOntem = useNota(somarDias(dia, -1))
   const [rascunho, setRascunho] = useRascunho<Formulario | null>(chave, 'diaria', null)
-  if (registro === undefined) return null
+  if (registro === undefined || notaDeOntem === undefined) return null
 
   const inicial: Formulario = {
     horas: registro?.sono_minutos != null ? String(Math.floor(registro.sono_minutos / 60)) : '',
@@ -72,6 +83,11 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
   return (
     <>
       <Cabecalho titulo={hoje ? 'Hoje' : dataCurta(`${dia}T12:00:00`)} />
+      {notaDeOntem?.texto.trim() && (
+        <Secao titulo="Nota de ontem">
+          <p className="texto-nota">{notaDeOntem.texto}</p>
+        </Secao>
+      )}
       <Secao>
         <form
           className="formulario"
@@ -82,21 +98,45 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
         >
           <Rotulo texto="Tempo de sono">
             <div className="campos-lado">
-              <input className="campo-entrada campo-numero" inputMode="numeric" aria-label="Horas" placeholder="h" value={f.horas} onChange={(e) => mudar('horas', e.target.value)} />
+              <input
+                className="campo-entrada campo-numero"
+                inputMode="numeric"
+                aria-label="Horas"
+                placeholder="h"
+                value={f.horas}
+                onChange={(e) => mudar('horas', e.target.value)}
+              />
               <span className="campo-unidade">h</span>
-              <input className="campo-entrada campo-numero" inputMode="numeric" aria-label="Minutos" placeholder="min" value={f.minutos} onChange={(e) => mudar('minutos', e.target.value)} />
+              <input
+                className="campo-entrada campo-numero"
+                inputMode="numeric"
+                aria-label="Minutos"
+                placeholder="min"
+                value={f.minutos}
+                onChange={(e) => mudar('minutos', e.target.value)}
+              />
               <span className="campo-unidade">min</span>
             </div>
           </Rotulo>
           {erroSono && <p className="aviso-campo">Tempo inválido.</p>}
 
           <Rotulo texto="Qualidade (00 a 99)">
-            <input className="campo-entrada campo-numero" inputMode="numeric" value={f.qualidade} onChange={(e) => mudar('qualidade', e.target.value)} />
+            <input
+              className="campo-entrada campo-numero"
+              inputMode="numeric"
+              value={f.qualidade}
+              onChange={(e) => mudar('qualidade', e.target.value)}
+            />
           </Rotulo>
           {qualidade === undefined && <p className="aviso-campo">Use um número de 0 a 99.</p>}
 
           <Rotulo texto="Peso (kg)">
-            <input className="campo-entrada campo-numero" inputMode="decimal" value={f.peso} onChange={(e) => mudar('peso', e.target.value)} />
+            <input
+              className="campo-entrada campo-numero"
+              inputMode="decimal"
+              value={f.peso}
+              onChange={(e) => mudar('peso', e.target.value)}
+            />
           </Rotulo>
           {peso === undefined && <p className="aviso-campo">Peso inválido.</p>}
 
