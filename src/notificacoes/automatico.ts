@@ -7,6 +7,7 @@ import { useConfiguracao } from '../dados/config'
 import { marcarAberturaDeHoje } from '../sono/automatica'
 import { salvarDia, useDia } from '../sono/dados'
 import { CONFIG_SONO_PADRAO, idDoDia } from '../sono/sono'
+import { useFeitos, useHabitos, useTarefas } from '../rotina/dados'
 import { diaLocal } from '../util/data'
 import { AVISOS_PADRAO } from './agenda'
 import { Alarmes } from './alarmes'
@@ -25,15 +26,26 @@ async function atenderBomDia(abrir: (r: Rota) => void) {
 
 export function useAvisosAutomaticos(abrir: (r: Rota) => void) {
   const config = useConfiguracao()
-  const hoje = useDia(diaLocal(new Date()))
+  const dia = diaLocal(new Date())
+  const hoje = useDia(dia)
+  const habitos = useHabitos()
+  const feitos = useFeitos(dia)
+  const tarefas = useTarefas()
   const sono = config?.sono ?? CONFIG_SONO_PADRAO
   const avisos = config?.avisos ?? AVISOS_PADRAO
 
   // Reagenda sempre que horários, avisos ligados, Bom dia aberto ou sol mudarem.
-  const chave = JSON.stringify([sono, avisos, hoje?.dia, hoje?.bom_dia_em, hoje?.sol_em])
+  // Também: hábitos e tarefas com horário (o que muda o aviso deles).
+  const rotina = habitos && feitos && tarefas ? { habitos, feitos, tarefas } : undefined
+  const chaveRotina = rotina && [
+    habitos!.map((h) => [h.id, h.nome, h.horario, h.avisar, h.dias]),
+    feitos!.map((f) => [f.id, f.feito]),
+    tarefas!.filter((t) => t.horario).map((t) => [t.id, t.nome, t.data, t.horario, t.avisar, t.concluida_em]),
+  ]
+  const chave = JSON.stringify([sono, avisos, hoje?.dia, hoje?.bom_dia_em, hoje?.sol_em, chaveRotina])
   useEffect(() => {
-    if (!avisosDisponiveis() || config === undefined || hoje === undefined) return
-    void reagendar(sono, avisos, hoje ?? null)
+    if (!avisosDisponiveis() || config === undefined || hoje === undefined || !rotina) return
+    void reagendar(sono, avisos, hoje ?? null, rotina)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave])
 
@@ -43,6 +55,8 @@ export function useAvisosAutomaticos(abrir: (r: Rota) => void) {
     const tratar = (destino: string | null | undefined) => {
       if (destino === 'bom-dia') void atenderBomDia(abrir)
       else if (destino === 'sono') abrir({ tela: 'sono' })
+      else if (destino?.startsWith('habito:')) abrir({ tela: 'habito', id: destino.slice(7) })
+      else if (destino?.startsWith('tarefa:')) abrir({ tela: 'tarefa', id: destino.slice(7) })
     }
     const verificarTocando = async () => {
       if ((await Alarmes.estadoBomDia()).tocando) void atenderBomDia(abrir)

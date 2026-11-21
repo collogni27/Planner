@@ -2,9 +2,20 @@
 // sempre que algo relevante muda (horários, avisos ligados, Bom dia aberto, sol marcado).
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
-import type { ConfigSono, Dia } from '../dados/banco'
+import type { ConfigSono, Dia, Habito, HabitoFeito, Tarefa } from '../dados/banco'
+import type { AvisoGatilho } from '../rotina/rotina'
 import { Alarmes } from './alarmes'
-import { AVISOS_PADRAO, avisosDormir, avisosSol, ehNossoAviso, horariosBomDia, type Aviso, type ConfigAvisos } from './agenda'
+import {
+  AVISOS_PADRAO,
+  avisosDormir,
+  avisosRotina,
+  avisosSol,
+  ehNossoAviso,
+  horariosBomDia,
+  idDeGatilho,
+  type Aviso,
+  type ConfigAvisos,
+} from './agenda'
 
 export const avisosDisponiveis = () => Capacitor.isNativePlatform()
 
@@ -21,15 +32,28 @@ export async function prepararAvisos() {
   await LocalNotifications.createChannel({ id: CANAL, name: 'Avisos', importance: 5, visibility: 1, vibration: true, sound: SOM })
 }
 
-/** Quais avisos (comuns) entram agora: hora de dormir e sol. */
-export function avisosComuns(sono: ConfigSono, avisos: ConfigAvisos, hoje: Dia | null, agora: Date): Aviso[] {
+export interface DadosRotina {
+  habitos: Habito[]
+  feitos: HabitoFeito[]
+  tarefas: Tarefa[]
+}
+
+/** Quais avisos (comuns) entram agora: hora de dormir, sol, hábitos e tarefas. */
+export function avisosComuns(
+  sono: ConfigSono,
+  avisos: ConfigAvisos,
+  hoje: Dia | null,
+  agora: Date,
+  rotina?: DadosRotina,
+): Aviso[] {
   return [
     ...(avisos.dormir ? avisosDormir(sono, agora) : []),
     ...(avisos.sol ? avisosSol(hoje?.bom_dia_em ?? null, hoje?.sol_em ?? null, agora) : []),
+    ...(rotina ? avisosRotina(rotina.habitos, rotina.feitos, rotina.tarefas, agora) : []),
   ]
 }
 
-export async function reagendar(sono: ConfigSono, avisos: ConfigAvisos = AVISOS_PADRAO, hoje: Dia | null) {
+export async function reagendar(sono: ConfigSono, avisos: ConfigAvisos = AVISOS_PADRAO, hoje: Dia | null, rotina?: DadosRotina) {
   if (!avisosDisponiveis()) return
   const agora = new Date()
 
@@ -41,7 +65,7 @@ export async function reagendar(sono: ConfigSono, avisos: ConfigAvisos = AVISOS_
   const pendentes = await LocalNotifications.getPending()
   const nossos = pendentes.notifications.filter((n) => ehNossoAviso(n.id))
   if (nossos.length) await LocalNotifications.cancel({ notifications: nossos.map((n) => ({ id: n.id })) })
-  const lista = avisosComuns(sono, avisos, hoje, agora)
+  const lista = avisosComuns(sono, avisos, hoje, agora, rotina)
   if (lista.length === 0) return
   await LocalNotifications.schedule({
     notifications: lista.map((a) => ({
@@ -51,6 +75,23 @@ export async function reagendar(sono: ConfigSono, avisos: ConfigAvisos = AVISOS_
       channelId: CANAL,
       sound: SOM,
       schedule: { at: a.quando, allowWhileIdle: true },
+      extra: { destino: a.destino },
+    })),
+  })
+}
+
+/** Avisos de gatilho: saem na hora (ex.: concluí a tarefa que dispara um hábito). */
+export async function avisarAgora(lista: AvisoGatilho[]) {
+  if (!avisosDisponiveis() || lista.length === 0) return
+  const base = Date.now()
+  await LocalNotifications.schedule({
+    notifications: lista.map((a, i) => ({
+      id: idDeGatilho(Math.floor(base / 1000) + i),
+      title: a.titulo,
+      body: a.texto,
+      channelId: CANAL,
+      sound: SOM,
+      schedule: { at: new Date(base + 1500 + i * 500), allowWhileIdle: true },
       extra: { destino: a.destino },
     })),
   })
