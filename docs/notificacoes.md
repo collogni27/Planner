@@ -14,7 +14,9 @@ No Android, as notificações são **locais**: o próprio app as agenda no siste
 | **Tomar sol** | +30 min e +60 min **a partir da abertura do "Bom dia"** (sem abrir, não há aviso de sol) | só se "tomei sol" ainda não foi marcado hoje |
 | **Hora de dormir** | **60 min antes, 30 min antes e na hora** do horário-alvo de dormir do dia (para "desacelerar" e encerrar atividades a tempo) | sempre (se ativo) |
 | **Treino** | horário configurável (ex.: manhã) | quando o planejador indicar "tem que ser hoje" (rotina livre) ou houver treino no dia (rotina restrita), com texto diferente para cada |
-| **Lembrete de agenda** | X min antes do compromisso | se o compromisso tiver lembrete |
+| **Hábito com horário** | **15 min antes e na hora** | se "avisar" estiver ligado, nos dias do hábito, e ele ainda não foi marcado no dia |
+| **Tarefa com horário** | **15 min antes e na hora** | se "avisar" estiver ligado e a tarefa não foi concluída |
+| **Gatilho** | na hora em que a tarefa/hábito ligado é concluído/marcado | hábito válido hoje e não marcado; tarefa não concluída |
 | **Revisar cards** (opcional) | horário configurável | se houver cards pendentes |
 
 - Os horários de acordar e dormir são **puxados da configuração do dia da semana** correspondente.
@@ -29,7 +31,7 @@ Cada notificação abre o app **direto na tela correspondente**. Se o app já es
 | Tomar sol | "Bom dia" ou tela de sono, com o check de sol em evidência |
 | Hora de dormir | tela de sono / nota do dia |
 | Treino | tela de treino da semana |
-| Agenda | o compromisso |
+| Hábito / tarefa | o hábito / a tarefa |
 | Revisar cards | tela de revisão |
 
 ## Notificações insistentes (⚑)
@@ -60,3 +62,8 @@ Para avisos que não posso ignorar, **deslizar para o lado não resolve**: o avi
   - **Bom dia:** o app toca o **próprio alarme** por um serviço (`BomDiaServico`): som `res/raw/bom_dia.wav` (arpejo 8-bit) em repetição no **volume de alarme**, com vibração, até atender ou 30 min. A notificação é silenciosa (canal `bom_dia_v2`) e continua voltando ao ser deslizada.
   - **Avisos comuns:** canal novo `avisos_v2` com som próprio `res/raw/aviso.wav` e vibração (canais não mudam depois de criados; o antigo é apagado). Na Xiaomi pode ser preciso ligar Som/Vibração/Flutuante do canal "Avisos" — atalhos em Notificações → Permissões.
 - Sons gerados por `scripts/gerar-sons.py` (onda quadrada, combinando com o visual pixel).
+
+## Rotina (0.5.0)
+- Hábitos e tarefas com horário e "avisar": 15 min antes e na hora, pelo canal `avisos_v2` (som próprio), ids 40000–49999, até 300 por vez, reagendados junto com os outros (ao abrir o app e quando hábitos, marcas ou tarefas mudam). Lógica em `agenda.ts` (`avisosRotina`), com testes.
+- Gatilhos (concluir tarefa / marcar hábito): aviso na hora, ids 50000+ (não são cancelados ao reagendar). Lógica em `rotina/rotina.ts`.
+- Tocar abre o hábito ou a tarefa.
