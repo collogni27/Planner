@@ -27,6 +27,8 @@ export function Mais() {
       </Secao>
       <Secao>
         <Item titulo="Configurações" onClick={() => abrir({ tela: 'configuracoes' })} />
+        <Item titulo="Notificações" onClick={() => abrir({ tela: 'notificacoes' })} />
+        <Item titulo="Modo Visual" onClick={() => abrir({ tela: 'modo-visual' })} />
         <Item
           titulo="Modo Desenvolvedor"
           detalhe={modoDev ? 'Ativo' : (aviso ?? undefined)}

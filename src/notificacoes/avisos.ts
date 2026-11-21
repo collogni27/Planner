@@ -8,13 +8,17 @@ import { AVISOS_PADRAO, avisosDormir, avisosSol, ehNossoAviso, horariosBomDia, t
 
 export const avisosDisponiveis = () => Capacitor.isNativePlatform()
 
-const CANAL = 'avisos'
+// Canal novo (v2) com som próprio (android/app/src/main/res/raw/aviso.wav). Canais não
+// mudam depois de criados; o antigo ("avisos", da 0.4.1) é apagado.
+const CANAL = 'avisos_v2'
+const SOM = 'aviso.wav'
 
 export async function prepararAvisos() {
   if (!avisosDisponiveis()) return
   const p = await LocalNotifications.checkPermissions()
   if (p.display === 'prompt' || p.display === 'prompt-with-rationale') await LocalNotifications.requestPermissions()
-  await LocalNotifications.createChannel({ id: CANAL, name: 'Avisos', importance: 4, visibility: 1, vibration: true })
+  await LocalNotifications.deleteChannel({ id: 'avisos' }).catch(() => undefined)
+  await LocalNotifications.createChannel({ id: CANAL, name: 'Avisos', importance: 5, visibility: 1, vibration: true, sound: SOM })
 }
 
 /** Quais avisos (comuns) entram agora: hora de dormir e sol. */
@@ -45,6 +49,7 @@ export async function reagendar(sono: ConfigSono, avisos: ConfigAvisos = AVISOS_
       title: a.titulo,
       body: a.texto,
       channelId: CANAL,
+      sound: SOM,
       schedule: { at: a.quando, allowWhileIdle: true },
       extra: { destino: a.destino },
     })),
@@ -60,6 +65,7 @@ export async function testarAvisoComum(segundos = 10) {
         title: 'Teste do Planner',
         body: 'Os avisos estão funcionando.',
         channelId: CANAL,
+        sound: SOM,
         schedule: { at: new Date(Date.now() + segundos * 1000), allowWhileIdle: true },
         extra: { destino: 'sono' },
       },

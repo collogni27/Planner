@@ -1,24 +1,12 @@
 import { VERSAO } from '../config'
 import { useSituacaoSincronizacao } from '../dados/useSincronizacao'
-import { MODOS, type Modo } from '../estado/preferencias'
-import { Icone } from '../icones/Icone'
-import { useNavegacao } from '../app/navegacao'
-import { Cabecalho, Item, Secao } from '../ui/componentes'
+import { Cabecalho } from '../ui/componentes'
 import { useDialogos } from '../ui/dialogos'
 import { supabase } from '../nuvem/supabase'
 
-const NOMES: Record<Modo, string> = { claro: 'Claro', escuro: 'Escuro', foco: 'Foco' }
-
-interface Props {
-  modo: Modo
-  email: string
-  onModo: (modo: Modo) => void
-}
-
-export function Configuracoes({ modo, email, onModo }: Props) {
+export function Configuracoes({ email }: { email: string }) {
   const { online, pendentes } = useSituacaoSincronizacao()
   const { confirmar } = useDialogos()
-  const { abrir } = useNavegacao()
 
   let situacao = 'Tudo sincronizado.'
   if (!online) situacao = 'Sem internet. O que você registrar fica salvo no aparelho e é enviado quando a conexão voltar.'
@@ -43,30 +31,6 @@ export function Configuracoes({ modo, email, onModo }: Props) {
   return (
     <>
       <Cabecalho titulo="Configurações" />
-
-      <Secao>
-        <Item titulo="Notificações" onClick={() => abrir({ tela: 'notificacoes' })} />
-      </Secao>
-
-      <section className="card">
-        <h2 className="card-titulo">Modo de cor</h2>
-        <div className="opcoes" role="radiogroup" aria-label="Modo de cor">
-          {MODOS.map((m) => (
-            <button
-              key={m}
-              role="radio"
-              aria-checked={m === modo}
-              className="botao-marcavel"
-              onClick={() => onModo(m)}
-            >
-              <span className="checkbox" aria-hidden="true">
-                {m === modo && <Icone nome="check" tamanho={10} />}
-              </span>
-              {NOMES[m]}
-            </button>
-          ))}
-        </div>
-      </section>
 
       <section className="card">
         <h2 className="card-titulo">Conta</h2>

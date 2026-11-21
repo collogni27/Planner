@@ -17,6 +17,8 @@ import { TelaDiaria } from '../sono/telas/TelaDiaria'
 import { useTelaDiariaAutomatica } from '../sono/automatica'
 import { useAvisosAutomaticos } from '../notificacoes/automatico'
 import { NotificacoesTela } from '../notificacoes/telas/NotificacoesTela'
+import { ModoVisualTela } from '../visual/ModoVisualTela'
+import { MODO_VISUAL_PADRAO, minutosAgora, modoDoHorario } from '../visual/modoVisual'
 import { AjudaIaTela } from '../estudos/telas/AjudaIaTela'
 import { BaralhoTela } from '../estudos/telas/BaralhoTela'
 import { CardTela } from '../estudos/telas/CardTela'
@@ -87,15 +89,29 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
   // Configurações salvas (vindas da nuvem ou deste aparelho).
   const conf = useLiveQuery(() => banco.configuracoes.get(userId), [userId])
   const modoSalvo = conf?.dados.modo
+  const modoVisual = conf?.dados.modoVisual ?? MODO_VISUAL_PADRAO
+  const chaveVisual = JSON.stringify(modoVisual)
   useEffect(() => {
+    if (modoVisual.tipo === 'variavel') {
+      // Modo Visual Variável: confere o horário a cada minuto.
+      const aplicar = () => {
+        const m = modoDoHorario(modoVisual.inicio, minutosAgora(new Date()))
+        if (m) setModo(m)
+      }
+      aplicar()
+      const id = setInterval(aplicar, 60_000)
+      return () => clearInterval(id)
+    }
     if (modoSalvo) setModo(modoSalvo) // ex.: modo trocado no PC aparece no celular
-  }, [modoSalvo, setModo])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modoSalvo, chaveVisual, setModo])
 
+  /** Modo Visual Fixo: escolhe o modo e desliga o Variável. */
   async function escolherModo(m: Modo) {
     setModo(m) // muda na hora
     await sincronizador.registrar('configuracoes', {
       user_id: userId,
-      dados: { ...conf?.dados, modo: m },
+      dados: { ...conf?.dados, modo: m, modoVisual: { ...modoVisual, tipo: 'fixo' } },
       updated_at: '',
     })
     void sincronizador.sincronizar()
@@ -112,7 +128,10 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
   if (rota) {
     switch (rota.tela) {
       case 'configuracoes':
-        conteudo = <Configuracoes modo={modo} email={email} onModo={escolherModo} />
+        conteudo = <Configuracoes email={email} />
+        break
+      case 'modo-visual':
+        conteudo = <ModoVisualTela chave={rota.chave} modo={modo} onFixo={escolherModo} />
         break
       case 'objetivo':
         conteudo = <ObjetivoTela id={rota.id} chave={rota.chave} />

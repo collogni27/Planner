@@ -8,7 +8,8 @@ export interface Alarmes {
   estadoBomDia(): Promise<{ tocando: boolean }>
   encerrarBomDia(): Promise<void>
   destinoPendente(): Promise<{ destino: string | null }>
-  permissoes(): Promise<{ alarmesExatos: boolean; semOtimizacaoBateria: boolean }>
+  permissoes(): Promise<{ alarmesExatos: boolean; semOtimizacaoBateria: boolean; fabricante: string }>
+  abrirInicioAutomatico(): Promise<void>
   abrirAjusteAlarmes(): Promise<void>
   abrirAjusteBateria(): Promise<void>
   abrirAjusteNotificacoes(): Promise<void>
