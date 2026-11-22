@@ -67,3 +67,4 @@ Para avisos que não posso ignorar, **deslizar para o lado não resolve**: o avi
 - Hábitos e tarefas com horário e "avisar": 15 min antes e na hora, pelo canal `avisos_v2` (som próprio), ids 40000–49999, até 300 por vez, reagendados junto com os outros (ao abrir o app e quando hábitos, marcas ou tarefas mudam). Lógica em `agenda.ts` (`avisosRotina`), com testes.
 - Gatilhos (concluir tarefa / marcar hábito): aviso na hora, ids 50000+ (não são cancelados ao reagendar). Lógica em `rotina/rotina.ts`.
 - Tocar abre o hábito ou a tarefa.
+- 0.6.0: gatilho só no dia do item ligado; tarefa de outro dia ligada a uma tarefa já concluída avisa no **horário de acordar** do dia dela (agendado com os outros, ids 40000+); apagar um item avisa na hora o que estava ligado a ele ("Está sem gatilho vinculado agora").

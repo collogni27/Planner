@@ -43,7 +43,7 @@
 
 Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, botões da barra, botão marcado etc.) foram extraídos da referência e ficam em `src/estilo/tokens.css`, que é a fonte de verdade das cores no código.
 
-- O **amarelo `#FEF156` é reservado** para o sol, para o que é urgente ("tem que ser hoje", tarefa da Agenda que passou do horário ou do dia) e para o botão que **confirma uma ação perigosa** (apagar etc.). É raro de propósito: se aparece na tela, significa atenção. Não usar em outros lugares.
+- O **amarelo `#FEF156` é reservado** para o sol, para o que é urgente ("tem que ser hoje", tarefa da Agenda que passou do horário ou do dia, hábito não marcado depois do horário), para a **bolinha de prioridade** das tarefas importantes/urgentes (níveis 3 e 4) e para o botão que **confirma uma ação perigosa** (apagar etc.). É raro de propósito: se aparece na tela, significa atenção. Não usar em outros lugares.
 - Água-marinha (`#5FE9DE`) nunca como texto sobre fundo claro.
 - O modo **foco** é um escuro em cinza neutro, com exatamente as mesmas formas e posições dos outros dois.
 - O usuário escolhe em **Mais → Modo Visual** (2026-11-21):
