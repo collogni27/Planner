@@ -4,6 +4,7 @@
 import Dexie, { type Table } from 'dexie'
 import { idFixo } from './ids'
 import type { ConfigModoVisual } from '../visual/modoVisual'
+import type { ConfigAgenda } from '../rotina/rotina'
 
 export { idFixo }
 
@@ -22,6 +23,7 @@ export interface Configuracoes extends Registro {
     sono?: ConfigSono
     avisos?: { bomDia: boolean; sol: boolean; dormir: boolean }
     modoVisual?: ConfigModoVisual
+    agenda?: ConfigAgenda
   }
 }
 
@@ -63,6 +65,7 @@ export interface Habito extends Registro {
   avisar: boolean
   gatilho_texto: string | null
   gatilho_tarefa_id: string | null
+  gatilho_habito_id: string | null
   ordem: number | null // null = ordem padrão
   created_at?: string
 }
@@ -85,10 +88,14 @@ export interface DadosTarefa {
   gatilho_texto: string | null
   gatilho_tarefa_id: string | null
   gatilho_habito_id: string | null
+  /** 1 = nem importante nem urgente, 2 = urgente, 3 = importante, 4 = importante e urgente. */
+  prioridade: number
 }
 
 export interface Tarefa extends Registro, DadosTarefa {
   id: string
+  fixada: boolean
+  nao_planejada: boolean
   proximo: DadosTarefa | null
   proximo_criado_id: string | null
   concluida_em: string | null
