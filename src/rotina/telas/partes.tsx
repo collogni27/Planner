@@ -1,12 +1,13 @@
 import type React from 'react'
 // Peças compartilhadas das telas da Rotina: linhas com check e campos de "quando" e data.
+import type { Rota } from '../../app/navegacao'
 import type { DadosTarefa, Habito, Tarefa } from '../../dados/banco'
 import { Icone } from '../../icones/Icone'
 import { lerHorario } from '../../sono/sono'
 import { Rotulo } from '../../ui/componentes'
 import { Seletor } from '../../ui/dialogos'
 import { diaLocal } from '../../util/data'
-import { dataBr, lerData, somarDias, tarefaAtrasada } from '../rotina'
+import { ehImportante, ehUrgente, nivelDePrioridade, dataBr, lerData, somarDias, tarefaAtrasada, tituloDoDia } from '../rotina'
 
 // ---------- Linhas ----------
 
@@ -16,6 +17,7 @@ export function LinhaCheck({
   detalhe,
   marcado,
   urgente,
+  prioridade,
   onMarcar,
   onAbrir,
 }: {
@@ -23,6 +25,8 @@ export function LinhaCheck({
   detalhe?: string
   marcado: boolean
   urgente?: boolean
+  /** Nível 1 a 4: bolinha à direita (só nas tarefas). */
+  prioridade?: number
   onMarcar: () => void
   onAbrir: () => void
 }) {
@@ -42,6 +46,9 @@ export function LinhaCheck({
         <span className={`item-titulo${marcado ? ' item-feito' : ''}`}>{titulo}</span>
         {detalhe && <span className="item-detalhe">{detalhe}</span>}
       </button>
+      {prioridade && (
+        <span className="ponto-prioridade" data-nivel={prioridade} role="img" aria-label={`Prioridade ${prioridade}`} />
+      )}
     </div>
   )
 }
@@ -66,6 +73,7 @@ export function LinhaTarefa({
   tarefas,
   habitos,
   agora,
+  mostrarData,
   onMarcar,
   onAbrir,
 }: {
@@ -73,20 +81,31 @@ export function LinhaTarefa({
   tarefas: Tarefa[]
   habitos: Habito[]
   agora: Date
+  /** Na lista sem grupos por dia (ordem por prioridade), mostra o dia no detalhe. */
+  mostrarData?: boolean
   onMarcar: () => void
   onAbrir: () => void
 }) {
+  const dia = mostrarData && tarefa.data ? tituloDoDia(tarefa.data, diaLocal(agora)) : undefined
+  const detalhe = [tarefa.nao_planejada ? 'Não planejada' : undefined, dia, textoQuando(tarefa, tarefas, habitos)]
+    .filter(Boolean)
+    .join(' · ')
   return (
     <LinhaCheck
       titulo={tarefa.nome}
-      detalhe={textoQuando(tarefa, tarefas, habitos)}
+      detalhe={detalhe || undefined}
       marcado={!!tarefa.concluida_em}
       urgente={tarefaAtrasada(tarefa, agora)}
+      prioridade={tarefa.prioridade}
       onMarcar={onMarcar}
       onAbrir={onAbrir}
     />
   )
 }
+
+/** Tarefa comum abre o formulário completo; não planejada abre o dela. */
+export const rotaDaTarefa = (t: Tarefa): Rota =>
+  t.nao_planejada ? { tela: 'nao-planejada', id: t.id } : { tela: 'tarefa', id: t.id }
 
 // ---------- Fichas de escolha única ----------
 
@@ -160,7 +179,8 @@ export function quandoParaForm(
   if (q.horario) return { ...base, tipo: 'horario', horario: q.horario, avisar: q.avisar }
   if (q.gatilho_tarefa_id) return { ...base, tipo: 'gatilho', gatilho: 'tarefa', tarefaId: q.gatilho_tarefa_id }
   if (q.gatilho_habito_id) return { ...base, tipo: 'gatilho', gatilho: 'habito', habitoId: q.gatilho_habito_id }
-  if (q.gatilho_texto) return { ...base, tipo: 'gatilho', texto: q.gatilho_texto }
+  // Texto vazio = vínculo que deixou de existir: continua "gatilho em texto".
+  if (q.gatilho_texto !== null) return { ...base, tipo: 'gatilho', texto: q.gatilho_texto }
   return base
 }
 
@@ -180,7 +200,7 @@ export function lerQuando(f: FormQuando): CamposQuando | null {
     const h = lerHorario(f.horario)
     return h ? { ...vazio, horario: h, avisar: f.avisar } : null
   }
-  if (f.gatilho === 'texto') return f.texto.trim() ? { ...vazio, gatilho_texto: f.texto.trim() } : null
+  if (f.gatilho === 'texto') return { ...vazio, gatilho_texto: f.texto.trim() }
   if (f.gatilho === 'tarefa') return f.tarefaId ? { ...vazio, gatilho_tarefa_id: f.tarefaId } : null
   return f.habitoId ? { ...vazio, gatilho_habito_id: f.habitoId } : null
 }
@@ -195,14 +215,13 @@ export function CamposQuando({
   f: FormQuando
   onChange: (f: FormQuando) => void
   tarefas: Tarefa[]
-  /** Só nas tarefas: o gatilho pode ser um hábito. */
-  habitos?: Habito[]
+  habitos: Habito[]
   erro?: string | null
 }) {
   const tiposGatilho: [FormQuando['gatilho'], string][] = [
     ['texto', 'Texto'],
     ['tarefa', 'Tarefa'],
-    ...(habitos ? ([['habito', 'Hábito']] as [FormQuando['gatilho'], string][]) : []),
+    ['habito', 'Hábito'],
   ]
   return (
     <>
@@ -256,7 +275,7 @@ export function CamposQuando({
               opcoes={tarefas.map((t) => ({ valor: t.id, rotulo: t.nome }))}
             />
           )}
-          {f.gatilho === 'habito' && habitos && (
+          {f.gatilho === 'habito' && (
             <Seletor
               rotulo="Hábito"
               valor={f.habitoId}
@@ -268,6 +287,22 @@ export function CamposQuando({
       )}
       {erro && <p className="aviso-campo">{erro}</p>}
     </>
+  )
+}
+
+// ---------- Prioridade ----------
+
+/** Importante? Urgente? O nível (1 a 4) sai das duas respostas. */
+export function CamposPrioridade({ nivel, onChange }: { nivel: number; onChange: (nivel: number) => void }) {
+  const importante = ehImportante(nivel)
+  const urgente = ehUrgente(nivel)
+  return (
+    <Campo texto="Prioridade">
+      <div className="opcoes opcoes-2 com-ponto">
+        <Marcavel texto="Importante" marcado={importante} onChange={(v) => onChange(nivelDePrioridade(v, urgente))} />
+        <Marcavel texto="Urgente" marcado={urgente} onChange={(v) => onChange(nivelDePrioridade(importante, v))} />
+      </div>
+    </Campo>
   )
 }
 

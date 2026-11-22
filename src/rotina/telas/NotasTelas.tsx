@@ -1,11 +1,10 @@
 import { useEffect, useRef } from 'react'
 import { useNavegacao } from '../../app/navegacao'
 import { useRascunho } from '../../estado/preferencias'
-import { Icone } from '../../icones/Icone'
 import { Cabecalho, Secao, Vazio } from '../../ui/componentes'
 import { dataPorExtenso, diaLocal } from '../../util/data'
+import { Calendario } from './Calendario'
 import { salvarNota, useDiasComNota, useNota } from '../dados'
-import { LETRAS_DIAS, somarDias } from '../rotina'
 
 const porExtenso = (dia: string) => dataPorExtenso(new Date(`${dia}T12:00:00-03:00`))
 
@@ -68,14 +67,6 @@ export function NotaTela({ dia, chave }: { dia: string; chave: string }) {
   )
 }
 
-const NOME_MES = new Intl.DateTimeFormat('pt-BR', { timeZone: 'UTC', month: 'long', year: 'numeric' })
-
-function mudarMes(mes: string, delta: number) {
-  const d = new Date(`${mes}-15T12:00:00Z`)
-  d.setUTCMonth(d.getUTCMonth() + delta)
-  return d.toISOString().slice(0, 7)
-}
-
 /** Notas anteriores: calendário do mês; dias com nota aparecem marcados. */
 export function NotasTela({ chave }: { chave: string }) {
   const { abrir } = useNavegacao()
@@ -83,54 +74,18 @@ export function NotasTela({ chave }: { chave: string }) {
   const [mes, setMes] = useRascunho(chave, 'mes', hoje.slice(0, 7))
   const comNota = useDiasComNota()
   if (!comNota) return null
-
-  const primeiro = `${mes}-01`
-  const inicio = somarDias(primeiro, -new Date(`${primeiro}T12:00:00Z`).getUTCDay()) // domingo da 1ª semana
-  const dias = Array.from({ length: 42 }, (_, i) => somarDias(inicio, i))
-  const semanas = dias[35].slice(0, 7) === mes ? 6 : 5
-
   return (
     <>
       <Cabecalho titulo="Notas anteriores" />
       <Secao>
-        <div className="calendario-topo">
-          <button className="botao-icone" aria-label="Mês anterior" onClick={() => setMes(mudarMes(mes, -1))}>
-            <Icone nome="esquerda" tamanho={14} />
-          </button>
-          <span className="calendario-mes">{NOME_MES.format(new Date(`${mes}-15T12:00:00Z`))}</span>
-          <button
-            className="botao-icone"
-            aria-label="Próximo mês"
-            disabled={mes >= hoje.slice(0, 7)}
-            onClick={() => setMes(mudarMes(mes, 1))}
-          >
-            <Icone nome="direita" tamanho={14} />
-          </button>
-        </div>
-        <div className="calendario">
-          {LETRAS_DIAS.map((l, i) => (
-            <span key={i} className="calendario-semana">
-              {l}
-            </span>
-          ))}
-          {dias.slice(0, semanas * 7).map((d) => {
-            const doMes = d.slice(0, 7) === mes
-            if (!doMes) return <span key={d} />
-            return (
-              <button
-                key={d}
-                className="calendario-dia"
-                data-nota={comNota.has(d) ? 'sim' : undefined}
-                aria-current={d === hoje ? 'date' : undefined}
-                aria-label={`${porExtenso(d)}${comNota.has(d) ? '' : ', sem nota'}`}
-                disabled={d > hoje}
-                onClick={() => abrir({ tela: 'nota', dia: d })}
-              >
-                {Number(d.slice(8))}
-              </button>
-            )
-          })}
-        </div>
+        <Calendario
+          mes={mes}
+          onMes={setMes}
+          hoje={hoje}
+          marcados={comNota}
+          rotuloDia={(d) => `${porExtenso(d)}${comNota.has(d) ? '' : ', sem nota'}`}
+          onDia={(d) => abrir({ tela: 'nota', dia: d })}
+        />
       </Secao>
     </>
   )

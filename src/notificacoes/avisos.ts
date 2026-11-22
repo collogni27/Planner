@@ -49,7 +49,7 @@ export function avisosComuns(
   return [
     ...(avisos.dormir ? avisosDormir(sono, agora) : []),
     ...(avisos.sol ? avisosSol(hoje?.bom_dia_em ?? null, hoje?.sol_em ?? null, agora) : []),
-    ...(rotina ? avisosRotina(rotina.habitos, rotina.feitos, rotina.tarefas, agora) : []),
+    ...(rotina ? avisosRotina(rotina.habitos, rotina.feitos, rotina.tarefas, agora, sono) : []),
   ]
 }
 

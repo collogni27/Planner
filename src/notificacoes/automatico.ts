@@ -7,7 +7,7 @@ import { useConfiguracao } from '../dados/config'
 import { marcarAberturaDeHoje } from '../sono/automatica'
 import { salvarDia, useDia } from '../sono/dados'
 import { CONFIG_SONO_PADRAO, idDoDia } from '../sono/sono'
-import { useFeitos, useHabitos, useTarefas } from '../rotina/dados'
+import { soltarVinculosVencidos, useFeitos, useHabitos, useTarefas } from '../rotina/dados'
 import { diaLocal } from '../util/data'
 import { AVISOS_PADRAO } from './agenda'
 import { Alarmes } from './alarmes'
@@ -46,6 +46,7 @@ export function useAvisosAutomaticos(abrir: (r: Rota) => void) {
   useEffect(() => {
     if (!avisosDisponiveis() || config === undefined || hoje === undefined || !rotina) return
     void reagendar(sono, avisos, hoje ?? null, rotina)
+    void soltarVinculosVencidos()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chave])
 

@@ -1,17 +1,18 @@
 import { useNavegacao } from '../../app/navegacao'
 import { Cabecalho, Item, Secao, Vazio } from '../../ui/componentes'
-import { concluirTarefa, useHabitos, useTarefas } from '../dados'
+import { concluirTarefa, salvarConfigAgenda, useConfigAgenda, useHabitos, useTarefas } from '../dados'
 import { agruparAgenda } from '../rotina'
-import { LinhaTarefa } from './partes'
+import { Campo, Fichas, LinhaTarefa, rotaDaTarefa } from './partes'
 
-/** Agenda completa: pendentes, cada dia, sem data; concluídas em outra tela. */
+/** Agenda completa: fixadas, pendentes, cada dia, sem data; ordem; concluídas em outra tela. */
 export function AgendaTela() {
   const { abrir } = useNavegacao()
   const agora = new Date()
   const tarefas = useTarefas()
   const habitos = useHabitos()
-  if (!tarefas || !habitos) return null
-  const grupos = agruparAgenda(tarefas, agora)
+  const config = useConfigAgenda()
+  if (!tarefas || !habitos || !config) return null
+  const grupos = agruparAgenda(tarefas, agora, config)
 
   return (
     <>
@@ -22,7 +23,7 @@ export function AgendaTela() {
         </Secao>
       )}
       {grupos.map((g) => (
-        <Secao key={g.chave} titulo={g.titulo}>
+        <Secao key={g.chave} titulo={g.titulo || undefined}>
           {g.tarefas.map((t) => (
             <LinhaTarefa
               key={t.id}
@@ -30,15 +31,43 @@ export function AgendaTela() {
               tarefas={tarefas}
               habitos={habitos}
               agora={agora}
+              mostrarData={config.ordem === 'prioridade' || g.chave === 'fixadas'}
               onMarcar={() => void concluirTarefa(t, !t.concluida_em)}
-              onAbrir={() => abrir({ tela: 'tarefa', id: t.id })}
+              onAbrir={() => abrir(rotaDaTarefa(t))}
             />
           ))}
         </Secao>
       ))}
-      <button className="botao-principal botao-grande" onClick={() => abrir({ tela: 'tarefa', id: null })}>
-        Nova tarefa
-      </button>
+      <div className="acoes">
+        <button className="botao-secundario" onClick={() => abrir({ tela: 'nao-planejada', id: null })}>
+          Não planejada
+        </button>
+        <button className="botao-principal" onClick={() => abrir({ tela: 'tarefa', id: null })}>
+          Nova tarefa
+        </button>
+      </div>
+      <Secao titulo="Ordem">
+        <Campo texto="Ordenar por">
+          <Fichas
+            rotulo="Ordenar por"
+            valor={config.ordem}
+            onChange={(ordem) => void salvarConfigAgenda({ ...config, ordem })}
+            opcoes={[
+              ['ocorrencia', 'Ocorrência'],
+              ['prioridade', 'Prioridade'],
+            ]}
+          />
+        </Campo>
+        <Fichas
+          rotulo="Sentido"
+          valor={config.sentido}
+          onChange={(sentido) => void salvarConfigAgenda({ ...config, sentido })}
+          opcoes={[
+            ['crescente', 'Crescente'],
+            ['decrescente', 'Decrescente'],
+          ]}
+        />
+      </Secao>
       <Secao>
         <Item titulo="Concluídas" onClick={() => abrir({ tela: 'concluidas' })} />
       </Secao>
@@ -46,7 +75,7 @@ export function AgendaTela() {
   )
 }
 
-/** Tarefas concluídas, da mais recente para a mais antiga (dá para desfazer). */
+/** Tarefas concluídas (e não planejadas), da mais recente para a mais antiga. */
 export function ConcluidasTela() {
   const { abrir } = useNavegacao()
   const agora = new Date()
@@ -67,8 +96,9 @@ export function ConcluidasTela() {
             tarefas={tarefas}
             habitos={habitos}
             agora={agora}
+            mostrarData
             onMarcar={() => void concluirTarefa(t, false)}
-            onAbrir={() => abrir({ tela: 'tarefa', id: t.id })}
+            onAbrir={() => abrir(rotaDaTarefa(t))}
           />
         ))}
       </Secao>

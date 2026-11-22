@@ -1,13 +1,13 @@
 import { useNavegacao } from '../../app/navegacao'
 import { Secao, Vazio } from '../../ui/componentes'
 import { diaLocal } from '../../util/data'
-import { concluirTarefa, marcarHabito, useFeitos, useHabitos, useTarefas } from '../dados'
-import { feitoNoDia, habitoValeNoDia, tarefasDoBloco } from '../rotina'
-import { LinhaCheck, LinhaTarefa, textoQuando } from './partes'
+import { concluirTarefa, marcarHabito, useConfigAgenda, useFeitos, useHabitos, useTarefas } from '../dados'
+import { feitoNoDia, habitoAtrasado, habitoValeNoDia, tarefasDoBloco } from '../rotina'
+import { LinhaCheck, LinhaTarefa, rotaDaTarefa, textoQuando } from './partes'
 
 const LIMITE_HABITOS = 6
 
-/** Aba Rotina: hábitos de hoje e agenda de hoje e amanhã. */
+/** Aba Rotina: hábitos de hoje e agenda (fixadas, pendentes, hoje e amanhã). */
 export function RotinaInicio() {
   const { abrir } = useNavegacao()
   const agora = new Date()
@@ -15,10 +15,11 @@ export function RotinaInicio() {
   const habitos = useHabitos()
   const feitos = useFeitos(hoje)
   const tarefas = useTarefas()
-  if (!habitos || !feitos || !tarefas) return null
+  const config = useConfigAgenda()
+  if (!habitos || !feitos || !tarefas || !config) return null
 
   const deHoje = habitos.filter((h) => habitoValeNoDia(h, hoje))
-  const grupos = tarefasDoBloco(tarefas, agora)
+  const grupos = tarefasDoBloco(tarefas, agora, config)
 
   const mais = (onClick: () => void) => (
     <button className="botao-texto ver-todos" onClick={onClick}>
@@ -36,8 +37,9 @@ export function RotinaInicio() {
             <LinhaCheck
               key={h.id}
               titulo={h.nome}
-              detalhe={textoQuando({ ...h, gatilho_habito_id: null }, tarefas, habitos)}
+              detalhe={textoQuando(h, tarefas, habitos)}
               marcado={feito}
+              urgente={habitoAtrasado(h, feitos, agora)}
               onMarcar={() => void marcarHabito(h, hoje, !feito)}
               onAbrir={() => abrir({ tela: 'habito', id: h.id })}
             />
@@ -50,7 +52,7 @@ export function RotinaInicio() {
         {grupos.length === 0 && <Vazio>Nada para hoje e amanhã.</Vazio>}
         {grupos.map((g) => (
           <div key={g.chave} className="grupo-agenda">
-            <span className="campo-rotulo">{g.titulo}</span>
+            {g.titulo && <span className="campo-rotulo">{g.titulo}</span>}
             {g.tarefas.map((t) => (
               <LinhaTarefa
                 key={t.id}
@@ -58,14 +60,19 @@ export function RotinaInicio() {
                 tarefas={tarefas}
                 habitos={habitos}
                 agora={agora}
+                mostrarData={config.ordem === 'prioridade' || g.chave === 'fixadas'}
                 onMarcar={() => void concluirTarefa(t, !t.concluida_em)}
-                onAbrir={() => abrir({ tela: 'tarefa', id: t.id })}
+                onAbrir={() => abrir(rotaDaTarefa(t))}
               />
             ))}
           </div>
         ))}
         {mais(() => abrir({ tela: 'agenda' }))}
       </Secao>
+
+      <button className="botao-secundario botao-largo" onClick={() => abrir({ tela: 'nao-planejada', id: null })}>
+        Tarefa não planejada
+      </button>
     </>
   )
 }

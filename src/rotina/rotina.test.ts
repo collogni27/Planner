@@ -4,6 +4,11 @@ import { avisosRotina } from '../notificacoes/agenda'
 import {
   agruparAgenda,
   criarProximoPasso,
+  desligarDe,
+  habitoAtrasado,
+  nivelDePrioridade,
+  ordenarTarefas,
+  vinculosVencidos,
   gatilhosDaTarefa,
   gatilhosDoHabito,
   lerData,
@@ -28,6 +33,7 @@ const habito = (id: string, campos: Partial<Habito> = {}): Habito => ({
   avisar: false,
   gatilho_texto: null,
   gatilho_tarefa_id: null,
+  gatilho_habito_id: null,
   ordem: null,
   created_at: '2026-11-01T00:00:00Z',
   updated_at: '',
@@ -41,6 +47,8 @@ const tarefa = (id: string, campos: Partial<Tarefa> = {}): Tarefa => ({
   proximo: null,
   proximo_criado_id: null,
   concluida_em: null,
+  fixada: false,
+  nao_planejada: false,
   updated_at: '',
   ...campos,
 })
@@ -142,9 +150,11 @@ describe('tarefas', () => {
     const tarefas = [tarefa('ligada', { gatilho_tarefa_id: 't' }), tarefa('ja', { gatilho_tarefa_id: 't', concluida_em: 'x' })]
     const r = gatilhosDaTarefa(t, habitos, [feito('feito', '2026-11-20')], tarefas, '2026-11-20')
     expect(r.map((a) => a.destino)).toEqual(['habito:ligado', 'tarefa:ligada'])
-    expect(gatilhosDoHabito(habito('h'), [tarefa('x', { gatilho_habito_id: 'h' }), tarefa('y')]).map((a) => a.destino)).toEqual([
-      'tarefa:x',
-    ])
+    expect(
+      gatilhosDoHabito(habito('h'), [], [], [tarefa('x', { gatilho_habito_id: 'h' }), tarefa('y')], '2026-11-20').map(
+        (a) => a.destino,
+      ),
+    ).toEqual(['tarefa:x'])
   })
 })
 
@@ -174,5 +184,107 @@ describe('avisos da rotina', () => {
     ])
     expect(new Set(a.map((x) => x.id)).size).toBe(2)
     expect(a.every((x) => x.id >= 40_000 && x.id < 50_000)).toBe(true)
+  })
+})
+
+describe('0.6.0: prioridade, ordem, gatilhos por dia, vínculos', () => {
+  it('importante/urgente → nível 1 a 4', () => {
+    expect([
+      nivelDePrioridade(false, false),
+      nivelDePrioridade(false, true),
+      nivelDePrioridade(true, false),
+      nivelDePrioridade(true, true),
+    ]).toEqual([1, 2, 3, 4])
+  })
+
+  it('ordem por ocorrência: horário mais próximo; mesmo horário → maior prioridade antes; decrescente inverte', () => {
+    const lista = [
+      tarefa('b', { data: '2026-11-20', horario: '10:00', prioridade: 1 }),
+      tarefa('a', { data: '2026-11-20', horario: '10:00', prioridade: 4 }),
+      tarefa('c', { data: '2026-11-20', horario: '08:00' }),
+      tarefa('d', { data: '2026-11-20' }),
+    ]
+    expect(ordenarTarefas(lista, { ordem: 'ocorrencia', sentido: 'crescente' }).map((t) => t.id)).toEqual(['c', 'a', 'b', 'd'])
+    expect(ordenarTarefas(lista, { ordem: 'ocorrencia', sentido: 'decrescente' }).map((t) => t.id)).toEqual(['a', 'b', 'c', 'd'])
+  })
+
+  it('ordem por prioridade: mesmo nível → horário mais próximo antes', () => {
+    const lista = [
+      tarefa('x', { prioridade: 4, data: '2026-11-22' }),
+      tarefa('y', { prioridade: 4, data: '2026-11-21' }),
+      tarefa('z', { prioridade: 2, data: '2026-11-20' }),
+    ]
+    expect(ordenarTarefas(lista, { ordem: 'prioridade', sentido: 'decrescente' }).map((t) => t.id)).toEqual(['y', 'x', 'z'])
+    expect(ordenarTarefas(lista, { ordem: 'prioridade', sentido: 'crescente' }).map((t) => t.id)).toEqual(['z', 'y', 'x'])
+  })
+
+  it('fixadas no topo; bloco mostra fixadas de qualquer dia', () => {
+    const lista = [
+      tarefa('hoje', { data: '2026-11-20' }),
+      tarefa('fixa', { data: '2026-12-25', fixada: true }),
+      tarefa('longe', { data: '2026-12-01' }),
+    ]
+    expect(agruparAgenda(lista, agora).map((g) => g.chave)).toEqual(['fixadas', '2026-11-20', '2026-12-01'])
+    expect(tarefasDoBloco(lista, agora).map((g) => [g.chave, g.tarefas.map((t) => t.id)])).toEqual([
+      ['fixadas', ['fixa']],
+      ['2026-11-20', ['hoje']],
+    ])
+    expect(agruparAgenda(lista, agora, { ordem: 'prioridade', sentido: 'decrescente' }).map((g) => g.chave)).toEqual([
+      'fixadas',
+      'todas',
+    ])
+  })
+
+  it('gatilho só acontece no dia: tarefa de amanhã não avisa hoje; hábito ligado a hábito avisa', () => {
+    const t = tarefa('t')
+    const amanha = tarefa('amanha', { gatilho_tarefa_id: 't', data: '2026-11-21' })
+    const hojeT = tarefa('hoje', { gatilho_tarefa_id: 't', data: '2026-11-20' })
+    expect(gatilhosDaTarefa(t, [], [], [amanha, hojeT], '2026-11-20').map((a) => a.destino)).toEqual(['tarefa:hoje'])
+    const h = habito('h')
+    const depois = habito('depois', { gatilho_habito_id: 'h' })
+    const tAmanha = tarefa('ta', { gatilho_habito_id: 'h', data: '2026-11-21' })
+    expect(gatilhosDoHabito(h, [h, depois], [], [tAmanha], '2026-11-20').map((a) => a.destino)).toEqual(['habito:depois'])
+  })
+
+  it('gatilho adiado: tarefa de amanhã ligada a tarefa concluída hoje avisa amanhã no horário de acordar', () => {
+    const sono = { horarios: Array.from({ length: 7 }, () => ({ dormir: '23:00', acordar: '07:00' })), metaMinutos: 480 }
+    const a = tarefa('a', { concluida_em: '2026-11-20T17:00:00Z' })
+    const b = tarefa('b', { gatilho_tarefa_id: 'a', data: '2026-11-21' })
+    expect(avisosRotina([], [], [a, b], agora, sono).map((x) => [sp(x.quando), x.destino])).toEqual([['sáb., 07:00', 'tarefa:b']])
+    expect(avisosRotina([], [], [a, { ...b, data: '2026-11-20' }], agora, sono)).toEqual([])
+  })
+
+  it('apagar: o que estava ligado fica com gatilho em texto vazio e avisa', () => {
+    const r = desligarDe(
+      'x',
+      [habito('h', { gatilho_habito_id: 'x' }), habito('solto')],
+      [tarefa('t', { gatilho_tarefa_id: 'x', data: '2026-12-01' })],
+    )
+    expect(r.habitos.map((h) => [h.id, h.gatilho_texto, h.gatilho_habito_id])).toEqual([['h', '', null]])
+    expect(r.tarefas.map((t) => [t.id, t.gatilho_texto, t.gatilho_tarefa_id])).toEqual([['t', '', null]])
+    expect(r.avisos.map((a) => [a.destino, a.texto])).toEqual([
+      ['habito:h', 'Está sem gatilho vinculado agora.'],
+      ['tarefa:t', 'Está sem gatilho vinculado agora.'],
+    ])
+  })
+
+  it('hábito ligado a tarefa concluída em dia passado perde o vínculo', () => {
+    const tarefas = [
+      tarefa('ontem', { concluida_em: '2026-11-19T15:00:00Z' }),
+      tarefa('hoje', { concluida_em: '2026-11-20T15:00:00Z' }),
+    ]
+    const r = vinculosVencidos(
+      [habito('a', { gatilho_tarefa_id: 'ontem' }), habito('b', { gatilho_tarefa_id: 'hoje' })],
+      tarefas,
+      '2026-11-20',
+    )
+    expect(r.map((h) => [h.id, h.gatilho_texto])).toEqual([['a', '']])
+  })
+
+  it('hábito com horário não marcado fica amarelo depois do horário', () => {
+    expect(habitoAtrasado(habito('a', { horario: '14:00' }), [], agora)).toBe(true)
+    expect(habitoAtrasado(habito('b', { horario: '16:00' }), [], agora)).toBe(false)
+    expect(habitoAtrasado(habito('c', { horario: '14:00' }), [feito('c', '2026-11-20')], agora)).toBe(false)
+    expect(habitoAtrasado(habito('d'), [], agora)).toBe(false)
   })
 })

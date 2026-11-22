@@ -97,7 +97,13 @@ const LIMITE_ROTINA = 300
  * Hábitos e tarefas com horário e "avisar" ligado, nos próximos 7 dias. O hábito de
  * hoje que já foi marcado e a tarefa concluída não avisam.
  */
-export function avisosRotina(habitos: Habito[], feitos: HabitoFeito[], tarefas: Tarefa[], agora: Date): Aviso[] {
+export function avisosRotina(
+  habitos: Habito[],
+  feitos: HabitoFeito[],
+  tarefas: Tarefa[],
+  agora: Date,
+  sono?: ConfigSono,
+): Aviso[] {
   const hoje = diaLocal(agora)
   const limite = emSaoPaulo(somarDias(hoje, DIAS_AGENDADOS), '00:00')
   const lista: Omit<Aviso, 'id'>[] = []
@@ -120,6 +126,19 @@ export function avisosRotina(habitos: Habito[], feitos: HabitoFeito[], tarefas: 
   for (const t of tarefas) {
     if (t.deleted_at || t.concluida_em || !t.avisar || !t.horario || !t.data) continue
     adicionar(t.data, t.horario, t.nome, `tarefa:${t.id}`)
+  }
+  // Gatilho adiado: tarefa de um dia futuro ligada a uma tarefa já concluída antes
+  // desse dia "descobre" no dia dela, no horário de acordar.
+  if (sono) {
+    const porId = new Map(tarefas.map((t) => [t.id, t]))
+    for (const t of tarefas) {
+      if (t.deleted_at || t.concluida_em || t.horario || !t.data || !t.gatilho_tarefa_id) continue
+      const g = porId.get(t.gatilho_tarefa_id)
+      if (!g || g.deleted_at || !g.concluida_em || diaLocal(new Date(g.concluida_em)) >= t.data) continue
+      const quando = emSaoPaulo(t.data, sono.horarios[diaDaSemana(t.data)].acordar)
+      if (quando > agora && quando < limite)
+        lista.push({ quando, titulo: t.nome, texto: 'Hora desta tarefa.', destino: `tarefa:${t.id}` })
+    }
   }
   return lista
     .sort((a, b) => a.quando.getTime() - b.quando.getTime())
