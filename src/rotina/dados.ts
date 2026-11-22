@@ -14,7 +14,21 @@ import {
 import { sincronizador } from '../nuvem/supabase'
 import { avisarAgora } from '../notificacoes/avisos'
 import { diaLocal } from '../util/data'
-import { criarProximoPasso, gatilhosDaTarefa, gatilhosDoHabito, idDaNota, idDoFeito, ordenarHabitos } from './rotina'
+import { salvarConfiguracao, useConfiguracao } from '../dados/config'
+import {
+  AGENDA_PADRAO,
+  completarHabito,
+  completarTarefa,
+  criarProximoPasso,
+  desligarDe,
+  gatilhosDaTarefa,
+  gatilhosDoHabito,
+  idDaNota,
+  idDoFeito,
+  ordenarHabitos,
+  vinculosVencidos,
+  type ConfigAgenda,
+} from './rotina'
 
 const enviar = () => void sincronizador.sincronizar()
 
@@ -40,13 +54,23 @@ export async function salvarNota(dia: string, texto: string) {
 
 // ---------- Hábitos ----------
 
-export const useHabitos = () => useLiveQuery(async () => ordenarHabitos((await banco.habitos.toArray()).filter(ativo)))
+const lerHabitos = async () => (await banco.habitos.toArray()).filter(ativo).map(completarHabito)
+const lerTarefas = async () => (await banco.tarefas.toArray()).filter(ativo).map(completarTarefa)
+
+export const useHabitos = () => useLiveQuery(async () => ordenarHabitos(await lerHabitos()))
 
 export const useHabito = (id: string) =>
   useLiveQuery(async () => {
     const h = await banco.habitos.get(id)
-    return ativo(h) ? h : null
+    return ativo(h) ? completarHabito(h) : null
   }, [id])
+
+/** Todas as marcas de um hábito (histórico). */
+export const useFeitosDoHabito = (id: string) =>
+  useLiveQuery(
+    async () => (await banco.habitos_feitos.where('habito_id').equals(id).toArray()).filter((f) => ativo(f) && f.feito),
+    [id],
+  )
 
 /** Marcas de hábitos a partir de uma data (inclusive). */
 export const useFeitos = (desde: string) =>
@@ -57,10 +81,18 @@ export async function salvarHabito(h: Habito) {
   enviar()
 }
 
-export async function apagarHabito(h: Habito) {
-  await sincronizador.registrar('habitos', { ...h, deleted_at: agoraISO() })
+/** Apaga e solta o que estava ligado a ele (com aviso). */
+async function apagarComVinculos(apagado: { habitos?: Habito[]; tarefas?: Tarefa[] }, id: string) {
+  const r = desligarDe(id, await lerHabitos(), await lerTarefas())
+  const habitos = [...(apagado.habitos ?? []), ...r.habitos.filter((h) => h.id !== id)]
+  const tarefas = [...(apagado.tarefas ?? []), ...r.tarefas.filter((t) => t.id !== id)]
+  await sincronizador.registrarVarios('habitos', habitos)
+  await sincronizador.registrarVarios('tarefas', tarefas)
   enviar()
+  void avisarAgora(r.avisos)
 }
+
+export const apagarHabito = (h: Habito) => apagarComVinculos({ habitos: [{ ...h, deleted_at: agoraISO() }] }, h.id)
 
 /** Grava a ordem escolhida à mão (lista inteira, já na ordem nova). */
 export async function salvarOrdemHabitos(lista: Habito[]) {
@@ -80,31 +112,55 @@ export async function ordemPadraoHabitos(lista: Habito[]) {
   enviar()
 }
 
-/** Marca ou desmarca um hábito no dia. Ao marcar, avisa as tarefas ligadas a ele. */
+/** Marca ou desmarca um hábito no dia. Ao marcar hoje, avisa o que está ligado a ele. */
 export async function marcarHabito(h: Habito, dia: string, feito: boolean) {
   const marca: HabitoFeito = { id: idDoFeito(h.id, dia), habito_id: h.id, dia, feito, updated_at: '' }
   await sincronizador.registrar('habitos_feitos', marca)
   enviar()
-  if (feito) void avisarAgora(gatilhosDoHabito(h, (await banco.tarefas.toArray()).filter(ativo)))
+  if (!feito || dia !== diaLocal(new Date())) return
+  const feitos = (await banco.habitos_feitos.where('dia').equals(dia).toArray()).filter(ativo)
+  void avisarAgora(gatilhosDoHabito(h, await lerHabitos(), feitos, await lerTarefas(), dia))
+}
+
+/** Hábitos ligados a tarefas que já "sumiram" ficam sem vínculo (rodado ao abrir o app). */
+export async function soltarVinculosVencidos() {
+  const lista = vinculosVencidos(await lerHabitos(), (await banco.tarefas.toArray()).map(completarTarefa), diaLocal(new Date()))
+  if (lista.length === 0) return
+  await sincronizador.registrarVarios('habitos', lista)
+  enviar()
 }
 
 // ---------- Tarefas ----------
 
-export const useTarefas = () => useLiveQuery(async () => (await banco.tarefas.toArray()).filter(ativo))
+export const useTarefas = () => useLiveQuery(lerTarefas)
 
 export const useTarefa = (id: string) =>
   useLiveQuery(async () => {
     const t = await banco.tarefas.get(id)
-    return ativo(t) ? t : null
+    return ativo(t) ? completarTarefa(t) : null
   }, [id])
 
-export async function salvarTarefa(id: string | null, dados: DadosTarefa, proximo: DadosTarefa | null) {
+/** Ordem da Agenda (por ocorrência ou prioridade), guardada nas configurações. */
+export function useConfigAgenda(): ConfigAgenda | undefined {
+  const config = useConfiguracao()
+  return config && { ...AGENDA_PADRAO, ...config.agenda }
+}
+export const salvarConfigAgenda = (agenda: ConfigAgenda) => salvarConfiguracao({ agenda })
+
+export async function salvarTarefa(
+  id: string | null,
+  dados: DadosTarefa,
+  proximo: DadosTarefa | null,
+  extra: { fixada: boolean },
+) {
   const atual = id ? await banco.tarefas.get(id) : undefined
   const t: Tarefa = {
     proximo_criado_id: null,
     concluida_em: null,
-    ...(ativo(atual) ? atual : {}),
+    nao_planejada: false,
+    ...(ativo(atual) ? completarTarefa(atual) : {}),
     ...dados,
+    ...extra,
     id: id ?? novoId(),
     proximo,
     created_at: atual?.created_at ?? agoraISO(),
@@ -115,8 +171,61 @@ export async function salvarTarefa(id: string | null, dados: DadosTarefa, proxim
   return t.id
 }
 
-export async function apagarTarefa(t: Tarefa) {
-  await sincronizador.registrar('tarefas', { ...t, deleted_at: agoraISO() })
+/**
+ * Tarefa não planejada: registrada já feita (vai para as concluídas). Se tiver próximo
+ * passo, ele é criado na hora, na agenda.
+ */
+export async function salvarNaoPlanejada(
+  id: string | null,
+  campos: { nome: string; descricao: string | null; realizadaEm: string },
+  proximo: DadosTarefa | null,
+) {
+  const atual = id ? await banco.tarefas.get(id) : undefined
+  const base: Tarefa = ativo(atual)
+    ? completarTarefa(atual)
+    : {
+        id: novoId(),
+        ...tarefaSimples(),
+        proximo: null,
+        proximo_criado_id: null,
+        concluida_em: null,
+        fixada: false,
+        nao_planejada: true,
+        updated_at: '',
+      }
+  const t: Tarefa = {
+    ...base,
+    nome: campos.nome,
+    descricao: campos.descricao,
+    data: diaLocal(new Date(campos.realizadaEm)),
+    concluida_em: campos.realizadaEm,
+    proximo,
+    created_at: base.created_at ?? agoraISO(),
+    updated_at: '',
+  }
+  const passo = !t.proximo_criado_id ? criarProximoPasso(t, novoId(), new Date()) : null
+  if (passo) t.proximo_criado_id = passo.id
+  await sincronizador.registrarVarios('tarefas', passo ? [t, { ...passo, created_at: agoraISO() }] : [t])
+  enviar()
+}
+
+const tarefaSimples = (): DadosTarefa => ({
+  nome: '',
+  descricao: null,
+  data: null,
+  horario: null,
+  avisar: false,
+  gatilho_texto: null,
+  gatilho_tarefa_id: null,
+  gatilho_habito_id: null,
+  prioridade: 1,
+})
+
+export const apagarTarefa = (t: Tarefa) => apagarComVinculos({ tarefas: [{ ...t, deleted_at: agoraISO() }] }, t.id)
+
+/** Fixar no topo (ou soltar). */
+export async function fixarTarefa(t: Tarefa, fixada: boolean) {
+  await sincronizador.registrar('tarefas', { ...t, fixada })
   enviar()
 }
 
@@ -136,9 +245,9 @@ export async function concluirTarefa(t: Tarefa, concluida: boolean) {
   await sincronizador.registrarVarios('tarefas', proximo ? [atualizada, { ...proximo, created_at: agoraISO() }] : [atualizada])
   enviar()
   const [habitos, feitos, tarefas] = await Promise.all([
-    banco.habitos.toArray(),
+    lerHabitos(),
     banco.habitos_feitos.where('dia').equals(diaLocal(agora)).toArray(),
-    banco.tarefas.toArray(),
+    lerTarefas(),
   ])
-  void avisarAgora(gatilhosDaTarefa(t, habitos.filter(ativo), feitos.filter(ativo), tarefas.filter(ativo), diaLocal(agora)))
+  void avisarAgora(gatilhosDaTarefa(t, habitos, feitos.filter(ativo), tarefas, diaLocal(agora)))
 }
