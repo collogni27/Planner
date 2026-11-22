@@ -4,8 +4,19 @@ import { novoId, type Habito } from '../../dados/banco'
 import { useRascunho } from '../../estado/preferencias'
 import { Acoes, Cabecalho, Rotulo, Secao } from '../../ui/componentes'
 import { useDialogos } from '../../ui/dialogos'
-import { apagarHabito, salvarHabito, useHabito, useTarefas } from '../dados'
-import { DIARIAMENTE, DIAS_DE_SEMANA, FINS_DE_SEMANA, LETRAS_DIAS, tipoDosDias, type TipoDias } from '../rotina'
+import { apagarHabito, salvarHabito, useFeitosDoHabito, useHabito, useHabitos, useTarefas } from '../dados'
+import { Calendario } from './Calendario'
+import { diaLocal } from '../../util/data'
+import {
+  habitoValeNoDia,
+  somarDias,
+  DIARIAMENTE,
+  DIAS_DE_SEMANA,
+  FINS_DE_SEMANA,
+  LETRAS_DIAS,
+  tipoDosDias,
+  type TipoDias,
+} from '../rotina'
 import { Campo, CamposQuando, Fichas, lerQuando, quandoParaForm, type FormQuando } from './partes'
 
 interface Formulario {
@@ -28,9 +39,10 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
   const { confirmar } = useDialogos()
   const habito = useHabito(id ?? '')
   const tarefas = useTarefas()
+  const habitos = useHabitos()
   const [rascunho, setRascunho] = useRascunho<Formulario | null>(chave, 'habito', null)
   const [tentou, setTentou] = useState(false)
-  if ((id && habito === undefined) || !tarefas) return null
+  if ((id && habito === undefined) || !tarefas || !habitos) return null
   if (id && !habito) return <Cabecalho titulo="Hábito" />
 
   const f: Formulario = rascunho ?? {
@@ -39,7 +51,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
     tipoDias: habito ? tipoDosDias(habito.dias) : 'diariamente',
     dias: habito?.dias ?? DIARIAMENTE,
     quando: habito
-      ? quandoParaForm({ ...habito, gatilho_habito_id: null })
+      ? quandoParaForm(habito)
       : quandoParaForm({ horario: null, avisar: true, gatilho_texto: null, gatilho_tarefa_id: null, gatilho_habito_id: null }),
   }
   const mudar = (campos: Partial<Formulario>) => setRascunho({ ...f, ...campos })
@@ -49,6 +61,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
   const valido = !!f.nome.trim() && dias.length > 0 && !!quando
   // Gatilho: tarefas ainda abertas (e a que já está ligada, mesmo se concluída).
   const opcoesTarefas = tarefas.filter((t) => !t.concluida_em || t.id === habito?.gatilho_tarefa_id)
+  const opcoesHabitos = habitos.filter((h) => h.id !== id)
 
   async function salvar() {
     setTentou(true)
@@ -64,6 +77,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
       avisar: quando!.avisar,
       gatilho_texto: quando!.gatilho_texto,
       gatilho_tarefa_id: quando!.gatilho_tarefa_id,
+      gatilho_habito_id: quando!.gatilho_habito_id,
       updated_at: '',
     }
     await salvarHabito(novo)
@@ -138,6 +152,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
             f={f.quando}
             onChange={(q) => mudar({ quando: q })}
             tarefas={opcoesTarefas}
+            habitos={opcoesHabitos}
             erro={tentou && !quando ? 'Complete o horário ou o gatilho.' : null}
           />
           <button className="botao-principal botao-grande" type="submit">
@@ -145,6 +160,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
           </button>
         </form>
       </Secao>
+      {habito && <HistoricoHabito habito={habito} chave={chave} />}
       {habito && (
         <Acoes>
           <button className="botao-secundario" onClick={() => void apagar()}>
@@ -153,5 +169,37 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
         </Acoes>
       )}
     </>
+  )
+}
+
+/** Histórico: calendário com os dias feitos e "x de y dias" nas últimas 4 semanas. */
+function HistoricoHabito({ habito, chave }: { habito: Habito; chave: string }) {
+  const hoje = diaLocal(new Date())
+  const [mes, setMes] = useRascunho(chave, 'mes', hoje.slice(0, 7))
+  const feitos = useFeitosDoHabito(habito.id)
+  if (!feitos) return null
+  const dias = new Set(feitos.map((f) => f.dia))
+  // Últimas 4 semanas (desde que o hábito existe), só os dias em que ele vale.
+  const criado = habito.created_at ? diaLocal(new Date(habito.created_at)) : hoje
+  const periodo = Array.from({ length: 28 }, (_, i) => somarDias(hoje, -i)).filter(
+    (d) => d >= criado && habitoValeNoDia(habito, d),
+  )
+  const feitosNoPeriodo = periodo.filter((d) => dias.has(d)).length
+  return (
+    <Secao titulo="Histórico">
+      <div className="historico-resumo">
+        <span className="texto-secundario">Últimas 4 semanas</span>
+        <span>
+          {feitosNoPeriodo} de {periodo.length === 1 ? '1 dia' : `${periodo.length} dias`}
+        </span>
+      </div>
+      <Calendario
+        mes={mes}
+        onMes={setMes}
+        hoje={hoje}
+        marcados={dias}
+        rotuloDia={(d) => `${d.slice(8)}/${d.slice(5, 7)}${dias.has(d) ? ', feito' : ''}`}
+      />
+    </Secao>
   )
 }

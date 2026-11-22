@@ -5,7 +5,7 @@ import { Icone } from '../../icones/Icone'
 import { Cabecalho, Item, Secao, Vazio } from '../../ui/componentes'
 import { diaLocal } from '../../util/data'
 import { marcarHabito, ordemPadraoHabitos, salvarOrdemHabitos, useFeitos, useHabitos, useTarefas } from '../dados'
-import { feitoNoDia, habitoValeNoDia, textoDosDias } from '../rotina'
+import { habitoAtrasado, feitoNoDia, habitoValeNoDia, textoDosDias } from '../rotina'
 import { LinhaCheck, textoQuando } from './partes'
 
 /** Todos os hábitos: os de hoje (com check), os de outros dias, criar e mudar a ordem. */
@@ -18,8 +18,7 @@ export function HabitosTela({ chave }: { chave: string }) {
   const [ordenando, setOrdenando] = useRascunho(chave, 'ordenando', false)
   if (!habitos || !feitos || !tarefas) return null
 
-  const detalhe = (h: Habito) =>
-    [textoQuando({ ...h, gatilho_habito_id: null }, tarefas, habitos), textoDosDias(h.dias)].filter(Boolean).join(' · ')
+  const detalhe = (h: Habito) => [textoQuando(h, tarefas, habitos), textoDosDias(h.dias)].filter(Boolean).join(' · ')
 
   const mover = (i: number, delta: number) => {
     const lista = [...habitos]
@@ -83,6 +82,7 @@ export function HabitosTela({ chave }: { chave: string }) {
               titulo={h.nome}
               detalhe={detalhe(h)}
               marcado={feito}
+              urgente={habitoAtrasado(h, feitos, new Date())}
               onMarcar={() => void marcarHabito(h, hoje, !feito)}
               onAbrir={() => abrir({ tela: 'habito', id: h.id })}
             />

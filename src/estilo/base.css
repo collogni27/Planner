@@ -1313,3 +1313,50 @@ code {
 .calendario-dia:disabled {
   opacity: 0.3;
 }
+
+span.calendario-dia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendario-dia[data-futuro='sim'] {
+  opacity: 0.3;
+}
+
+/* Prioridade da tarefa (1 a 4): bolinha à direita. */
+.ponto-prioridade {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  margin: 0 var(--espaco-1);
+  border-radius: 50%;
+}
+
+.ponto-prioridade[data-nivel='1'] {
+  background: var(--prioridade-1);
+}
+
+.ponto-prioridade[data-nivel='2'] {
+  background: var(--prioridade-ciano);
+}
+
+/* Metade ciano, metade amarelo (corte reto, não degradê). */
+.ponto-prioridade[data-nivel='3'] {
+  background: linear-gradient(90deg, var(--prioridade-ciano) 50%, var(--urgente) 50%);
+}
+
+.ponto-prioridade[data-nivel='4'] {
+  background: var(--urgente);
+}
+
+/* Na linha amarela (atrasada), a bolinha ganha contorno para não sumir. */
+.item-urgente .ponto-prioridade {
+  box-shadow: 0 0 0 2px var(--texto-sobre-urgente);
+}
+
+.historico-resumo {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}

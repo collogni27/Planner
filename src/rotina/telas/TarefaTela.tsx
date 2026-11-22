@@ -7,6 +7,7 @@ import { useDialogos } from '../../ui/dialogos'
 import { diaLocal } from '../../util/data'
 import { apagarTarefa, concluirTarefa, salvarTarefa, useHabitos, useTarefa, useTarefas } from '../dados'
 import { tarefaVazia } from '../rotina'
+import { CamposPrioridade } from './partes'
 import {
   CamposData,
   CamposQuando,
@@ -19,27 +20,30 @@ import {
   type FormQuando,
 } from './partes'
 
-interface FormBase {
+export interface FormBase {
   nome: string
   descricao: string
   data: FormData
   quando: FormQuando
+  prioridade: number
 }
 
 interface Formulario extends FormBase {
+  fixada: boolean
   temProximo: boolean
   proximo: FormBase
 }
 
-const paraForm = (t: DadosTarefa, hoje: string): FormBase => ({
+export const paraForm = (t: DadosTarefa, hoje: string): FormBase => ({
   nome: t.nome,
   descricao: t.descricao ?? '',
   data: dataParaForm(t.data, hoje),
   quando: quandoParaForm(t),
+  prioridade: t.prioridade ?? 1,
 })
 
 /** Lê o formulário: os dados da tarefa, ou a lista do que falta. */
-function lerBase(f: FormBase): { dados?: DadosTarefa; erros: { nome?: boolean; data?: boolean; quando?: string } } {
+export function lerBase(f: FormBase): { dados?: DadosTarefa; erros: { nome?: boolean; data?: boolean; quando?: string } } {
   const data = lerFormData(f.data)
   const quando = lerQuando(f.quando)
   const erros = {
@@ -52,10 +56,13 @@ function lerBase(f: FormBase): { dados?: DadosTarefa; erros: { nome?: boolean; d
         : undefined,
   }
   if (erros.nome || erros.data || erros.quando) return { erros }
-  return { dados: { nome: f.nome.trim(), descricao: f.descricao.trim() || null, data: data!, ...quando! }, erros }
+  return {
+    dados: { nome: f.nome.trim(), descricao: f.descricao.trim() || null, data: data!, ...quando!, prioridade: f.prioridade ?? 1 },
+    erros,
+  }
 }
 
-function CamposTarefa({
+export function CamposTarefa({
   f,
   onChange,
   tentou,
@@ -90,6 +97,7 @@ function CamposTarefa({
         habitos={habitos}
         erro={tentou ? erros.quando : null}
       />
+      <CamposPrioridade nivel={f.prioridade ?? 1} onChange={(prioridade) => onChange({ ...f, prioridade })} />
     </>
   )
 }
@@ -109,6 +117,7 @@ export function TarefaTela({ id, chave }: { id: string | null; chave: string }) 
   const hoje = diaLocal(new Date())
   const f: Formulario = rascunho ?? {
     ...paraForm(tarefa ?? { ...tarefaVazia(), avisar: true }, hoje),
+    fixada: tarefa?.fixada ?? false,
     temProximo: !!tarefa?.proximo,
     proximo: paraForm(tarefa?.proximo ?? { ...tarefaVazia(), avisar: true }, hoje),
   }
@@ -123,7 +132,7 @@ export function TarefaTela({ id, chave }: { id: string | null; chave: string }) 
   async function salvar() {
     setTentou(true)
     if (!principal.dados || (proximo && !proximo.dados)) return
-    await salvarTarefa(id, principal.dados, proximo?.dados ?? null)
+    await salvarTarefa(id, principal.dados, proximo?.dados ?? null, { fixada: f.fixada ?? false })
     voltar()
   }
 
@@ -160,6 +169,7 @@ export function TarefaTela({ id, chave }: { id: string | null; chave: string }) 
             tarefas={opcoesTarefas}
             habitos={habitos}
           />
+          <Marcavel texto="Fixar no topo" marcado={f.fixada ?? false} onChange={(fixada) => setRascunho({ ...f, fixada })} />
           <Marcavel texto="Próximo passo" marcado={f.temProximo} onChange={(temProximo) => setRascunho({ ...f, temProximo })} />
           {f.temProximo && (
             <div className="proximo-passo">

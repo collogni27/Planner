@@ -27,6 +27,9 @@
   /* Amarelo reservado: sol e urgente ("tem que ser hoje"). Igual nos três modos. */
   --urgente: #FEF156;
   --texto-sobre-urgente: #102A2F;
+
+  /* Prioridade das tarefas: nível 2 ciano, 3 ciano + amarelo, 4 amarelo. */
+  --prioridade-ciano: #5FE9DE;
 }
 
 :root,
@@ -54,6 +57,7 @@
   --botao-marcado-borda: #0A7A73;
 
   --caixa-neutra: #E6F4F3;
+  --prioridade-1: #2B3638;
 
   --nav-fundo: #FFFFFF;
   --nav-borda: #D3E7E6;
@@ -87,6 +91,7 @@
   --botao-marcado-borda: #5FE9DE;
 
   --caixa-neutra: #1E4249;
+  --prioridade-1: #FFFFFF;
 
   --nav-fundo: #0D2327;
   --nav-borda: #1E4048;
@@ -120,6 +125,7 @@
   --botao-marcado-borda: #5FE9DE;
 
   --caixa-neutra: #262D2E;
+  --prioridade-1: #FFFFFF;
 
   --nav-fundo: #181C1D;
   --nav-borda: #262D2E;

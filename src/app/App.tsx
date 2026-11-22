@@ -37,6 +37,7 @@ import { HabitosTela } from '../rotina/telas/HabitosTela'
 import { NotaTela, NotasTela } from '../rotina/telas/NotasTelas'
 import { RotinaInicio } from '../rotina/telas/RotinaInicio'
 import { TarefaTela } from '../rotina/telas/TarefaTela'
+import { NaoPlanejadaTela } from '../rotina/telas/NaoPlanejadaTela'
 import { ProvedorNavegacao, useNavegacao } from './navegacao'
 import { ProvedorDialogos } from '../ui/dialogos'
 import { BarraMascote } from './BarraMascote'
@@ -201,6 +202,9 @@ function Conteudo({ userId, email, modo, setModo }: PropsConectado) {
         break
       case 'tarefa':
         conteudo = <TarefaTela id={rota.id} chave={rota.chave} />
+        break
+      case 'nao-planejada':
+        conteudo = <NaoPlanejadaTela id={rota.id} chave={rota.chave} />
         break
       case 'nota':
         conteudo = <NotaTela dia={rota.dia} chave={rota.chave} />

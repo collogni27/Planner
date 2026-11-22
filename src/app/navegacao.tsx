@@ -34,6 +34,7 @@ export type Rota =
   | { tela: 'habito'; id: string | null }
   | { tela: 'agenda' }
   | { tela: 'tarefa'; id: string | null }
+  | { tela: 'nao-planejada'; id: string | null }
   | { tela: 'concluidas' }
   | { tela: 'nota'; dia: string }
   | { tela: 'notas' }
