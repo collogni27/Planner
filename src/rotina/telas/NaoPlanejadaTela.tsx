@@ -5,9 +5,9 @@ import { lerHorario } from '../../sono/sono'
 import { Acoes, Cabecalho, Rotulo, Secao } from '../../ui/componentes'
 import { useDialogos } from '../../ui/dialogos'
 import { diaLocal, horaMinuto } from '../../util/data'
-import { apagarTarefa, salvarNaoPlanejada, useHabitos, useTarefa, useTarefas } from '../dados'
+import { apagarTarefa, salvarNaoPlanejada, useHabitos, useProjetos, useTarefa, useTarefas } from '../dados'
 import { dataBr, emSaoPaulo, lerData, tarefaVazia } from '../rotina'
-import { Marcavel } from './partes'
+import { CamposProjetos, Marcavel } from './partes'
 import { CamposTarefa, lerBase, paraForm, type FormBase } from './TarefaTela'
 
 interface Formulario {
@@ -15,6 +15,7 @@ interface Formulario {
   descricao: string
   data: string // "dd/mm/aaaa"
   hora: string // "HH:MM"
+  projetos: string[]
   temProximo: boolean
   proximo: FormBase
 }
@@ -26,9 +27,10 @@ export function NaoPlanejadaTela({ id, chave }: { id: string | null; chave: stri
   const tarefa = useTarefa(id ?? '')
   const tarefas = useTarefas()
   const habitos = useHabitos()
+  const projetos = useProjetos()
   const [rascunho, setRascunho] = useRascunho<Formulario | null>(chave, 'nao-planejada', null)
   const [tentou, setTentou] = useState(false)
-  if ((id && tarefa === undefined) || !tarefas || !habitos) return null
+  if ((id && tarefa === undefined) || !tarefas || !habitos || !projetos) return null
   if (id && !tarefa) return <Cabecalho titulo="Tarefa não planejada" />
 
   const agora = new Date()
@@ -39,6 +41,7 @@ export function NaoPlanejadaTela({ id, chave }: { id: string | null; chave: stri
     descricao: tarefa?.descricao ?? '',
     data: dataBr(diaLocal(realizada)),
     hora: horaMinuto(realizada),
+    projetos: tarefa?.projeto_ids ?? [],
     temProximo: !!tarefa?.proximo,
     proximo: paraForm(tarefa?.proximo ?? { ...tarefaVazia(), avisar: true }, hoje),
   }
@@ -55,7 +58,12 @@ export function NaoPlanejadaTela({ id, chave }: { id: string | null; chave: stri
     if (!f.nome.trim() || erroQuando || (proximo && !proximo.dados)) return
     await salvarNaoPlanejada(
       id,
-      { nome: f.nome.trim(), descricao: f.descricao.trim() || null, realizadaEm: quando!.toISOString() },
+      {
+        nome: f.nome.trim(),
+        descricao: f.descricao.trim() || null,
+        realizadaEm: quando!.toISOString(),
+        projeto_ids: f.projetos ?? [],
+      },
       proximo?.dados ?? null,
     )
     voltar()
@@ -111,6 +119,7 @@ export function NaoPlanejadaTela({ id, chave }: { id: string | null; chave: stri
             </Rotulo>
           </div>
           {tentou && erroQuando && <p className="aviso-campo">{erroQuando}</p>}
+          <CamposProjetos ids={f.projetos ?? []} onChange={(projetos) => mudar({ projetos })} projetos={projetos} />
           <Marcavel texto="Próximo passo" marcado={f.temProximo} onChange={(temProximo) => mudar({ temProximo })} />
           {f.temProximo && (
             <div className="proximo-passo">
@@ -121,6 +130,7 @@ export function NaoPlanejadaTela({ id, chave }: { id: string | null; chave: stri
                 tentou={tentou}
                 tarefas={tarefas.filter((t) => t.id !== id && !t.concluida_em)}
                 habitos={habitos}
+                projetos={projetos}
               />
             </div>
           )}

@@ -76,7 +76,13 @@ export function BotaoDev() {
   }
 
   async function routine() {
-    if (!(await confirmarVezes(2, 'Routine Reset', 'Todos os hábitos e as tarefas em aberto são apagados. O histórico fica.')))
+    if (
+      !(await confirmarVezes(
+        2,
+        'Routine Reset',
+        'Todos os projetos, hábitos e as tarefas em aberto são apagados. O histórico fica.',
+      ))
+    )
       return
     await routineReset()
     void sincronizador.sincronizar()
@@ -84,7 +90,8 @@ export function BotaoDev() {
   }
 
   async function routineMax() {
-    if (!(await confirmarVezes(3, 'Routine Max Reset', 'Todos os hábitos, tarefas e o histórico deles são apagados.'))) return
+    if (!(await confirmarVezes(3, 'Routine Max Reset', 'Todos os projetos, hábitos, tarefas e o histórico deles são apagados.')))
+      return
     await routineMaxReset()
     void sincronizador.sincronizar()
     feito('Rotina apagada.')
@@ -131,12 +138,12 @@ export function BotaoDev() {
   }
 
   const ferramentas: [string, () => Promise<void>][] = [
-    ['Revision Reset', revisionReset],
     ['Day Reset', dayReset],
+    ['Day Max Reset', dayMax],
+    ['Revision Reset', revisionReset],
+    ['Revision Max Reset', revisionMax],
     ['Routine Reset', routine],
     ['Routine Max Reset', routineMax],
-    ['Revision Max Reset', revisionMax],
-    ['Day Max Reset', dayMax],
     ['All Max Reset', allMax],
   ]
 

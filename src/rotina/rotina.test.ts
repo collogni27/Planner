@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import type { Habito, HabitoFeito, Tarefa } from '../dados/banco'
-import { avisosRotina } from '../notificacoes/agenda'
+import type { Habito, HabitoFeito, Projeto, Tarefa } from '../dados/banco'
+import { avisosDormir, avisosRotina, avisosSol, lerAvisos } from '../notificacoes/agenda'
 import {
   agruparAgenda,
   criarProximoPasso,
   desligarDe,
   habitoAtrasado,
   nivelDePrioridade,
+  ordenarProjetos,
   ordenarTarefas,
+  progressoDoProjeto,
   vinculosVencidos,
   gatilhosDaTarefa,
   gatilhosDoHabito,
@@ -34,6 +36,7 @@ const habito = (id: string, campos: Partial<Habito> = {}): Habito => ({
   gatilho_texto: null,
   gatilho_tarefa_id: null,
   gatilho_habito_id: null,
+  projeto_ids: [],
   ordem: null,
   created_at: '2026-11-01T00:00:00Z',
   updated_at: '',
@@ -286,5 +289,55 @@ describe('0.6.0: prioridade, ordem, gatilhos por dia, vínculos', () => {
     expect(habitoAtrasado(habito('b', { horario: '16:00' }), [], agora)).toBe(false)
     expect(habitoAtrasado(habito('c', { horario: '14:00' }), [feito('c', '2026-11-20')], agora)).toBe(false)
     expect(habitoAtrasado(habito('d'), [], agora)).toBe(false)
+  })
+})
+
+describe('0.6.1: projetos', () => {
+  const projeto = (id: string, encerramento: string | null, created_at = '2026-11-01'): Projeto => ({
+    id,
+    nome: id,
+    descricao: null,
+    encerramento,
+    created_at,
+    updated_at: '',
+  })
+
+  it('ordem: encerramento mais próximo primeiro; sem data no fim', () => {
+    const lista = [projeto('sem', null), projeto('dez', '2026-12-20'), projeto('nov', '2026-11-30')]
+    expect(ordenarProjetos(lista).map((p) => p.id)).toEqual(['nov', 'dez', 'sem'])
+  })
+
+  it('progresso: sem tarefas = 100%; senão, concluídas/total para cima', () => {
+    const tarefas = [
+      tarefa('a', { projeto_ids: ['p'], concluida_em: 'x' }),
+      tarefa('b', { projeto_ids: ['p', 'q'] }),
+      tarefa('c', { projeto_ids: ['p'] }),
+      tarefa('d', { projeto_ids: ['p'], deleted_at: 'x' }),
+    ]
+    expect(progressoDoProjeto('p', tarefas)).toBe(34) // 1 de 3 = 33,3… → 34
+    expect(progressoDoProjeto('q', tarefas)).toBe(0)
+    expect(progressoDoProjeto('vazio', tarefas)).toBe(100)
+  })
+})
+
+describe('0.6.1: avisos ligados um a um', () => {
+  it('configuração antiga (sol/dormir) vira a nova; cada aviso pode ser desligado', () => {
+    expect(lerAvisos({ bomDia: true, sol: false, dormir: true })).toEqual({
+      bomDia: true,
+      sol30: false,
+      sol60: false,
+      dormir60: true,
+      dormir30: true,
+      dormir0: true,
+    })
+    const sono = { horarios: Array.from({ length: 7 }, () => ({ dormir: '22:30', acordar: '07:00' })), metaMinutos: 480 }
+    expect(
+      avisosDormir(sono, agora, [60])
+        .slice(0, 2)
+        .map((a) => sp(a.quando)),
+    ).toEqual(['sex., 21:30', 'sáb., 21:30'])
+    expect(avisosSol('2026-11-20T10:00:00Z', null, new Date('2026-11-20T10:05:00Z'), [60]).map((a) => sp(a.quando))).toEqual([
+      'sex., 08:00',
+    ])
   })
 })

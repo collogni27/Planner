@@ -1,11 +1,13 @@
 import { useNavegacao } from '../../app/navegacao'
-import { Secao, Vazio } from '../../ui/componentes'
+import { Item, Secao, Vazio } from '../../ui/componentes'
+import { detalheProjeto } from './ProjetosTelas'
 import { diaLocal } from '../../util/data'
-import { concluirTarefa, marcarHabito, useConfigAgenda, useFeitos, useHabitos, useTarefas } from '../dados'
+import { concluirTarefa, marcarHabito, useConfigAgenda, useFeitos, useHabitos, useProjetos, useTarefas } from '../dados'
 import { feitoNoDia, habitoAtrasado, habitoValeNoDia, tarefasDoBloco } from '../rotina'
 import { LinhaCheck, LinhaTarefa, rotaDaTarefa, textoQuando } from './partes'
 
 const LIMITE_HABITOS = 6
+const LIMITE_PROJETOS = 6
 
 /** Aba Rotina: hábitos de hoje e agenda (fixadas, pendentes, hoje e amanhã). */
 export function RotinaInicio() {
@@ -16,7 +18,8 @@ export function RotinaInicio() {
   const feitos = useFeitos(hoje)
   const tarefas = useTarefas()
   const config = useConfigAgenda()
-  if (!habitos || !feitos || !tarefas || !config) return null
+  const projetos = useProjetos()
+  if (!habitos || !feitos || !tarefas || !config || !projetos) return null
 
   const deHoje = habitos.filter((h) => habitoValeNoDia(h, hoje))
   const grupos = tarefasDoBloco(tarefas, agora, config)
@@ -73,6 +76,19 @@ export function RotinaInicio() {
       <button className="botao-secundario botao-largo" onClick={() => abrir({ tela: 'nao-planejada', id: null })}>
         Tarefa não planejada
       </button>
+
+      <Secao titulo="Projetos">
+        {projetos.length === 0 && <Vazio>Nenhum projeto.</Vazio>}
+        {projetos.slice(0, LIMITE_PROJETOS).map((p) => (
+          <Item
+            key={p.id}
+            titulo={p.nome}
+            detalhe={detalheProjeto(p, tarefas)}
+            onClick={() => abrir({ tela: 'projeto', id: p.id })}
+          />
+        ))}
+        {mais(() => abrir({ tela: 'projetos' }))}
+      </Secao>
     </>
   )
 }

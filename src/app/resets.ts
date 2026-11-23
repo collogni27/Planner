@@ -29,12 +29,14 @@ const ESTUDOS: NomeTabela[] = [
 
 /** Routine Reset: hábitos e tarefas em aberto (o histórico fica: marcas e concluídas). */
 export async function routineReset() {
+  await apagar('projetos')
   await apagar('habitos')
   await apagar<{ concluida_em: string | null } & Registro>('tarefas', (t) => !t.concluida_em)
 }
 
 /** Routine Max Reset: hábitos, tarefas e todo o histórico deles. */
 export async function routineMaxReset() {
+  await apagar('projetos')
   await apagar('habitos')
   await apagar('tarefas')
   await apagar('habitos_feitos')
@@ -53,7 +55,8 @@ export async function dayMaxReset() {
 
 /** All Max Reset: todos os dados da conta e deste aparelho, como no primeiro uso (o login continua). */
 export async function allMaxReset() {
-  for (const t of ['notas', 'habitos_feitos', 'tarefas', 'habitos', 'dias', ...ESTUDOS] as NomeTabela[]) await apagar(t)
+  for (const t of ['notas', 'habitos_feitos', 'tarefas', 'habitos', 'projetos', 'dias', ...ESTUDOS] as NomeTabela[])
+    await apagar(t)
   const conf = await banco.configuracoes.toCollection().first()
   if (conf) await sincronizador.registrar('configuracoes', { ...conf, dados: {} })
   // Preferências deste aparelho (tela aberta, modo, rascunhos, Modo Desenvolvedor…).

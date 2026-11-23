@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useNavegacao } from '../../app/navegacao'
-import type { DadosTarefa, Habito, Tarefa } from '../../dados/banco'
+import type { DadosTarefa, Habito, Projeto, Tarefa } from '../../dados/banco'
 import { useRascunho } from '../../estado/preferencias'
 import { Acoes, Cabecalho, Rotulo, Secao } from '../../ui/componentes'
 import { useDialogos } from '../../ui/dialogos'
 import { diaLocal } from '../../util/data'
-import { apagarTarefa, concluirTarefa, salvarTarefa, useHabitos, useTarefa, useTarefas } from '../dados'
+import { apagarTarefa, concluirTarefa, salvarTarefa, useHabitos, useProjetos, useTarefa, useTarefas } from '../dados'
 import { tarefaVazia } from '../rotina'
-import { CamposPrioridade } from './partes'
+import { CamposPrioridade, CamposProjetos } from './partes'
 import {
   CamposData,
   CamposQuando,
@@ -26,6 +26,7 @@ export interface FormBase {
   data: FormData
   quando: FormQuando
   prioridade: number
+  projetos: string[]
 }
 
 interface Formulario extends FormBase {
@@ -40,6 +41,7 @@ export const paraForm = (t: DadosTarefa, hoje: string): FormBase => ({
   data: dataParaForm(t.data, hoje),
   quando: quandoParaForm(t),
   prioridade: t.prioridade ?? 1,
+  projetos: t.projeto_ids ?? [],
 })
 
 /** Lê o formulário: os dados da tarefa, ou a lista do que falta. */
@@ -57,7 +59,14 @@ export function lerBase(f: FormBase): { dados?: DadosTarefa; erros: { nome?: boo
   }
   if (erros.nome || erros.data || erros.quando) return { erros }
   return {
-    dados: { nome: f.nome.trim(), descricao: f.descricao.trim() || null, data: data!, ...quando!, prioridade: f.prioridade ?? 1 },
+    dados: {
+      nome: f.nome.trim(),
+      descricao: f.descricao.trim() || null,
+      data: data!,
+      ...quando!,
+      prioridade: f.prioridade ?? 1,
+      projeto_ids: f.projetos ?? [],
+    },
     erros,
   }
 }
@@ -68,12 +77,14 @@ export function CamposTarefa({
   tentou,
   tarefas,
   habitos,
+  projetos,
 }: {
   f: FormBase
   onChange: (f: FormBase) => void
   tentou: boolean
   tarefas: Tarefa[]
   habitos: Habito[]
+  projetos: Projeto[]
 }) {
   const { erros } = lerBase(f)
   return (
@@ -98,6 +109,7 @@ export function CamposTarefa({
         erro={tentou ? erros.quando : null}
       />
       <CamposPrioridade nivel={f.prioridade ?? 1} onChange={(prioridade) => onChange({ ...f, prioridade })} />
+      <CamposProjetos ids={f.projetos ?? []} onChange={(projetos) => onChange({ ...f, projetos })} projetos={projetos} />
     </>
   )
 }
@@ -109,9 +121,10 @@ export function TarefaTela({ id, chave }: { id: string | null; chave: string }) 
   const tarefa = useTarefa(id ?? '')
   const tarefas = useTarefas()
   const habitos = useHabitos()
+  const projetos = useProjetos()
   const [rascunho, setRascunho] = useRascunho<Formulario | null>(chave, 'tarefa', null)
   const [tentou, setTentou] = useState(false)
-  if ((id && tarefa === undefined) || !tarefas || !habitos) return null
+  if ((id && tarefa === undefined) || !tarefas || !habitos || !projetos) return null
   if (id && !tarefa) return <Cabecalho titulo="Tarefa" />
 
   const hoje = diaLocal(new Date())
@@ -168,6 +181,7 @@ export function TarefaTela({ id, chave }: { id: string | null; chave: string }) 
             tentou={tentou}
             tarefas={opcoesTarefas}
             habitos={habitos}
+            projetos={projetos}
           />
           <Marcavel texto="Fixar no topo" marcado={f.fixada ?? false} onChange={(fixada) => setRascunho({ ...f, fixada })} />
           <Marcavel texto="Próximo passo" marcado={f.temProximo} onChange={(temProximo) => setRascunho({ ...f, temProximo })} />
@@ -180,6 +194,7 @@ export function TarefaTela({ id, chave }: { id: string | null; chave: string }) 
                 tentou={tentou}
                 tarefas={opcoesTarefas}
                 habitos={habitos}
+                projetos={projetos}
               />
             </div>
           )}
