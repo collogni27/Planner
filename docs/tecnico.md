@@ -21,11 +21,11 @@ O Android fecha apps em segundo plano para liberar memória. Isso **vai acontece
 - **Navegação** (`src/app/navegacao.tsx`): cada aba tem uma pilha de telas, salva no aparelho. O botão voltar do Android fecha a tela de cima; na tela principal de uma aba, volta ao Início; no Início, minimiza o app.
 - **Rascunhos** (`useRascunho`): o que é digitado num formulário fica salvo, ligado àquela tela aberta; sobrevive ao fechamento pelo sistema e é descartado quando o usuário sai da tela pelo "voltar".
 - A sincronização envia a fila em lotes de até 200 registros e baixa em páginas de 1000.
-- **Modo Desenvolvedor** (Mais → Modo Desenvolvedor, com senha): mostra um botão na barra do mascote, entre a saudação e o botão de recolher, com ferramentas de teste (nomes em inglês, a pedido do usuário; 2026-11-22):
+- **Modo Desenvolvedor** (Mais → Modo Desenvolvedor, com senha): mostra um botão na barra do mascote, entre a saudação e o botão de recolher, com ferramentas de teste (nomes em inglês, a pedido do usuário; 2026-11-22), nesta ordem (2026-11-24): Day, Day Max, Revision, Revision Max, Routine, Routine Max, All Max:
   - **Revision Reset:** desfaz as revisões de hoje (cada card volta ao estado de antes).
   - **Day Reset:** limpa sono, peso e sol de hoje, esquece a abertura do dia e fecha o app (testar a tela diária/Bom dia como na primeira abertura).
-  - **Routine Reset:** apaga todos os hábitos e as tarefas em aberto (o histórico fica).
-  - **Routine Max Reset:** apaga hábitos, tarefas e todo o histórico deles.
+  - **Routine Reset:** apaga todos os projetos, hábitos e as tarefas em aberto (o histórico fica).
+  - **Routine Max Reset:** apaga projetos, hábitos, tarefas e todo o histórico deles.
   - **Revision Max Reset:** apaga todo o Estudos (objetivos, baralhos, conteúdos, cards, check-ins e histórico de revisões).
   - **Day Max Reset:** apaga todo o histórico de sono e fecha o app como antes da primeira abertura do dia.
   - **All Max Reset:** apaga todos os dados da conta e as preferências do aparelho e fecha o app, como no primeiro uso (o login continua).

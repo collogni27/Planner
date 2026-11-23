@@ -68,3 +68,8 @@ Para avisos que não posso ignorar, **deslizar para o lado não resolve**: o avi
 - Gatilhos (concluir tarefa / marcar hábito): aviso na hora, ids 50000+ (não são cancelados ao reagendar). Lógica em `rotina/rotina.ts`.
 - Tocar abre o hábito ou a tarefa.
 - 0.6.0: gatilho só no dia do item ligado; tarefa de outro dia ligada a uma tarefa já concluída avisa no **horário de acordar** do dia dela (agendado com os outros, ids 40000+); apagar um item avisa na hora o que estava ligado a ele ("Está sem gatilho vinculado agora").
+
+## 0.6.1
+- **Avisos ligados um a um** (Notificações → Avisos): Horário de acordar (o "Bom dia"), Tomar sol 30 min após acordar, Tomar sol 60 min após acordar, 60 min antes de dormir, 30 min antes de dormir, Hora de dormir. A configuração antiga (sol/dormir) é convertida sozinha.
+- **Volume do Bom dia:** a base passa a ser o **volume de notificação**. Com as barras de notificação e alarme iguais, o alarme toca a ~40% da força do volume de alarme (um pouco mais alto que um aviso comum); começa em 40% disso e sobe até o volume escolhido em 20 s. Com a notificação zerada, usa 40% do volume de alarme. Ajustável em `BomDiaServico.java` (`PROPORCAO`).
+- Permissões: orientações da Xiaomi e da Samsung atrás do **"?"** do bloco.
