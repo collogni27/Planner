@@ -47,8 +47,17 @@ export function avisosComuns(
   rotina?: DadosRotina,
 ): Aviso[] {
   return [
-    ...(avisos.dormir ? avisosDormir(sono, agora) : []),
-    ...(avisos.sol ? avisosSol(hoje?.bom_dia_em ?? null, hoje?.sol_em ?? null, agora) : []),
+    ...avisosDormir(
+      sono,
+      agora,
+      [avisos.dormir60 && 60, avisos.dormir30 && 30, avisos.dormir0 && 0].filter((v) => v !== false),
+    ),
+    ...avisosSol(
+      hoje?.bom_dia_em ?? null,
+      hoje?.sol_em ?? null,
+      agora,
+      [avisos.sol30 && 30, avisos.sol60 && 60].filter((v) => v !== false),
+    ),
     ...(rotina ? avisosRotina(rotina.habitos, rotina.feitos, rotina.tarefas, agora, sono) : []),
   ]
 }

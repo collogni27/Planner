@@ -3,13 +3,37 @@ import type { ConfigSono, Habito, HabitoFeito, Tarefa } from '../dados/banco'
 import { feitoNoDia, habitoValeNoDia } from '../rotina/rotina'
 import { diaLocal } from '../util/data'
 
+/** Cada aviso pode ser ligado ou desligado em Notificações → Avisos. */
 export interface ConfigAvisos {
   bomDia: boolean
-  sol: boolean
-  dormir: boolean
+  sol30: boolean
+  sol60: boolean
+  dormir60: boolean
+  dormir30: boolean
+  dormir0: boolean
 }
 
-export const AVISOS_PADRAO: ConfigAvisos = { bomDia: true, sol: true, dormir: true }
+export const AVISOS_PADRAO: ConfigAvisos = {
+  bomDia: true,
+  sol30: true,
+  sol60: true,
+  dormir60: true,
+  dormir30: true,
+  dormir0: true,
+}
+
+/** Configuração salva (inclusive a antiga, com só "sol" e "dormir") → a atual. */
+export function lerAvisos(salvo: (Partial<ConfigAvisos> & { sol?: boolean; dormir?: boolean }) | undefined): ConfigAvisos {
+  const s = salvo ?? {}
+  return {
+    bomDia: s.bomDia ?? true,
+    sol30: s.sol30 ?? s.sol ?? true,
+    sol60: s.sol60 ?? s.sol ?? true,
+    dormir60: s.dormir60 ?? s.dormir ?? true,
+    dormir30: s.dormir30 ?? s.dormir ?? true,
+    dormir0: s.dormir0 ?? s.dormir ?? true,
+  }
+}
 
 /** Quantos dias à frente ficam agendados (reagendados a cada abertura do app). */
 export const DIAS_AGENDADOS = 7
@@ -50,7 +74,7 @@ export function horariosBomDia(sono: ConfigSono, agora: Date): Date[] {
 }
 
 /** Avisos de hora de dormir (60 min antes, 30 min antes e na hora) dos próximos dias. */
-export function avisosDormir(sono: ConfigSono, agora: Date): Aviso[] {
+export function avisosDormir(sono: ConfigSono, agora: Date, ligados: number[] = ANTES_DE_DORMIR): Aviso[] {
   const hoje = diaLocal(agora)
   const r: Aviso[] = []
   for (let i = 0; i < DIAS_AGENDADOS; i++) {
@@ -58,7 +82,7 @@ export function avisosDormir(sono: ConfigSono, agora: Date): Aviso[] {
     const alvo = emSaoPaulo(dia, sono.horarios[diaDaSemana(dia)].dormir)
     ANTES_DE_DORMIR.forEach((antes, k) => {
       const quando = new Date(alvo.getTime() - antes * 60_000)
-      if (quando <= agora) return
+      if (quando <= agora || !ligados.includes(antes)) return
       r.push({
         id: 20_000 + i * 10 + k,
         quando,
@@ -76,7 +100,12 @@ export function avisosDormir(sono: ConfigSono, agora: Date): Aviso[] {
  * Avisos de sol: +30 e +60 min depois de abrir o "Bom dia" de hoje, só se ainda não
  * marcou "tomei sol". Sem abrir o Bom dia, não há aviso de sol.
  */
-export function avisosSol(bomDiaEm: string | null, solEm: string | null, agora: Date): Aviso[] {
+export function avisosSol(
+  bomDiaEm: string | null,
+  solEm: string | null,
+  agora: Date,
+  ligados: number[] = DEPOIS_DO_BOM_DIA,
+): Aviso[] {
   if (!bomDiaEm || solEm) return []
   if (diaLocal(new Date(bomDiaEm)) !== diaLocal(agora)) return []
   return DEPOIS_DO_BOM_DIA.map((depois, k) => ({
@@ -85,7 +114,7 @@ export function avisosSol(bomDiaEm: string | null, solEm: string | null, agora: 
     titulo: 'Hora de tomar sol',
     texto: 'Alguns minutos de luz agora ajudam o resto do dia.',
     destino: 'sono' as const,
-  })).filter((a) => a.quando > agora)
+  })).filter((a, k) => a.quando > agora && ligados.includes(DEPOIS_DO_BOM_DIA[k]))
 }
 
 /** Avisos de hábitos e tarefas com horário: 15 min antes e na hora. */

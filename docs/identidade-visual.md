@@ -50,6 +50,9 @@ Tokens secundários (borda de checkbox, medidor vazio, navegação inferior, bot
   - **Modo Visual Fixo:** claro, escuro ou foco.
   - **Modo Visual Variável:** cada modo tem um horário de início ("HH:MM"); um modo vale até o próximo começar "por cima" (de madrugada, continua o último do dia anterior). Pode desligar no máximo 1 dos 3 (usar só 2). Escolher um modo fixo desliga o variável.
 
+## Tela Mais (2026-11-24)
+- Cada item num bloco próprio, com ícone pixel: Sono (lua), Configurações (engrenagem), Notificações (sino), Modo Visual (meio cheio, meio vazio: claro/escuro) e Modo Desenvolvedor (coroa).
+
 ## Mascote
 - Pixel art, corpo retangular com braços e pernas, olhos água-marinha. **Versão azul por padrão:** corpo `#0A7A73` no modo claro e `#13958C` nos modos escuro e foco, olhos `#5FE9DE`.
 - **Fonte de verdade: `docs/mascote/mascote.json`**: grade de pixels (25×19), paletas por modo, quadros (`padrao`, `piscar`, `oi`) e animações. O app gera o mascote a partir dele. Nunca desenhar o mascote "à mão" nem a partir de imagens.

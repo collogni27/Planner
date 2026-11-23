@@ -4,7 +4,7 @@ import { novoId, type Habito } from '../../dados/banco'
 import { useRascunho } from '../../estado/preferencias'
 import { Acoes, Cabecalho, Rotulo, Secao } from '../../ui/componentes'
 import { useDialogos } from '../../ui/dialogos'
-import { apagarHabito, salvarHabito, useFeitosDoHabito, useHabito, useHabitos, useTarefas } from '../dados'
+import { apagarHabito, salvarHabito, useFeitosDoHabito, useHabito, useHabitos, useProjetos, useTarefas } from '../dados'
 import { Calendario } from './Calendario'
 import { diaLocal } from '../../util/data'
 import {
@@ -17,7 +17,7 @@ import {
   tipoDosDias,
   type TipoDias,
 } from '../rotina'
-import { Campo, CamposQuando, Fichas, lerQuando, quandoParaForm, type FormQuando } from './partes'
+import { Campo, CamposProjetos, CamposQuando, Fichas, lerQuando, quandoParaForm, type FormQuando } from './partes'
 
 interface Formulario {
   nome: string
@@ -25,6 +25,7 @@ interface Formulario {
   tipoDias: TipoDias
   dias: number[]
   quando: FormQuando
+  projetos: string[]
 }
 
 const DIAS_DO_TIPO: Record<Exclude<TipoDias, 'personalizado'>, number[]> = {
@@ -40,12 +41,14 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
   const habito = useHabito(id ?? '')
   const tarefas = useTarefas()
   const habitos = useHabitos()
+  const projetos = useProjetos()
   const [rascunho, setRascunho] = useRascunho<Formulario | null>(chave, 'habito', null)
   const [tentou, setTentou] = useState(false)
-  if ((id && habito === undefined) || !tarefas || !habitos) return null
+  if ((id && habito === undefined) || !tarefas || !habitos || !projetos) return null
   if (id && !habito) return <Cabecalho titulo="Hábito" />
 
   const f: Formulario = rascunho ?? {
+    projetos: habito?.projeto_ids ?? [],
     nome: habito?.nome ?? '',
     descricao: habito?.descricao ?? '',
     tipoDias: habito ? tipoDosDias(habito.dias) : 'diariamente',
@@ -54,6 +57,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
       ? quandoParaForm(habito)
       : quandoParaForm({ horario: null, avisar: true, gatilho_texto: null, gatilho_tarefa_id: null, gatilho_habito_id: null }),
   }
+  const projetosForm = f.projetos ?? []
   const mudar = (campos: Partial<Formulario>) => setRascunho({ ...f, ...campos })
 
   const dias = f.tipoDias === 'personalizado' ? f.dias : DIAS_DO_TIPO[f.tipoDias]
@@ -78,6 +82,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
       gatilho_texto: quando!.gatilho_texto,
       gatilho_tarefa_id: quando!.gatilho_tarefa_id,
       gatilho_habito_id: quando!.gatilho_habito_id,
+      projeto_ids: projetosForm,
       updated_at: '',
     }
     await salvarHabito(novo)
@@ -155,6 +160,7 @@ export function HabitoTela({ id, chave }: { id: string | null; chave: string }) 
             habitos={opcoesHabitos}
             erro={tentou && !quando ? 'Complete o horário ou o gatilho.' : null}
           />
+          <CamposProjetos ids={projetosForm} onChange={(projetos) => mudar({ projetos })} projetos={projetos} />
           <button className="botao-principal botao-grande" type="submit">
             Salvar
           </button>

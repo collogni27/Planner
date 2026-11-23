@@ -9,6 +9,7 @@ import {
   type Habito,
   type HabitoFeito,
   type Nota,
+  type Projeto,
   type Tarefa,
 } from '../dados/banco'
 import { sincronizador } from '../nuvem/supabase'
@@ -26,6 +27,7 @@ import {
   idDaNota,
   idDoFeito,
   ordenarHabitos,
+  ordenarProjetos,
   vinculosVencidos,
   type ConfigAgenda,
 } from './rotina'
@@ -177,7 +179,7 @@ export async function salvarTarefa(
  */
 export async function salvarNaoPlanejada(
   id: string | null,
-  campos: { nome: string; descricao: string | null; realizadaEm: string },
+  campos: { nome: string; descricao: string | null; realizadaEm: string; projeto_ids: string[] },
   proximo: DadosTarefa | null,
 ) {
   const atual = id ? await banco.tarefas.get(id) : undefined
@@ -197,6 +199,7 @@ export async function salvarNaoPlanejada(
     ...base,
     nome: campos.nome,
     descricao: campos.descricao,
+    projeto_ids: campos.projeto_ids,
     data: diaLocal(new Date(campos.realizadaEm)),
     concluida_em: campos.realizadaEm,
     proximo,
@@ -219,6 +222,7 @@ const tarefaSimples = (): DadosTarefa => ({
   gatilho_tarefa_id: null,
   gatilho_habito_id: null,
   prioridade: 1,
+  projeto_ids: [],
 })
 
 export const apagarTarefa = (t: Tarefa) => apagarComVinculos({ tarefas: [{ ...t, deleted_at: agoraISO() }] }, t.id)
@@ -250,4 +254,41 @@ export async function concluirTarefa(t: Tarefa, concluida: boolean) {
     lerTarefas(),
   ])
   void avisarAgora(gatilhosDaTarefa(t, habitos, feitos.filter(ativo), tarefas, diaLocal(agora)))
+}
+
+// ---------- Projetos ----------
+
+export const useProjetos = () => useLiveQuery(async () => ordenarProjetos((await banco.projetos.toArray()).filter(ativo)))
+
+export const useProjeto = (id: string) =>
+  useLiveQuery(async () => {
+    const p = await banco.projetos.get(id)
+    return ativo(p) ? p : null
+  }, [id])
+
+export async function salvarProjeto(
+  id: string | null,
+  campos: { nome: string; descricao: string | null; encerramento: string | null },
+) {
+  const atual = id ? await banco.projetos.get(id) : undefined
+  const p: Projeto = {
+    ...(ativo(atual) ? atual : {}),
+    ...campos,
+    id: id ?? novoId(),
+    created_at: atual?.created_at ?? agoraISO(),
+    updated_at: '',
+  }
+  await sincronizador.registrar('projetos', p)
+  enviar()
+  return p.id
+}
+
+/** Apaga o projeto e tira o vínculo das tarefas e hábitos ligados a ele. */
+export async function apagarProjeto(p: Projeto) {
+  const sem = <T extends { projeto_ids: string[] }>(lista: T[]) =>
+    lista.filter((x) => x.projeto_ids.includes(p.id)).map((x) => ({ ...x, projeto_ids: x.projeto_ids.filter((i) => i !== p.id) }))
+  await sincronizador.registrar('projetos', { ...p, deleted_at: agoraISO() })
+  await sincronizador.registrarVarios('tarefas', sem(await lerTarefas()))
+  await sincronizador.registrarVarios('habitos', sem(await lerHabitos()))
+  enviar()
 }

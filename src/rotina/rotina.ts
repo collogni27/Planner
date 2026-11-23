@@ -1,5 +1,5 @@
 // Lógica da Rotina (docs/modulos/rotina.md), sem banco nem tela. Testada em rotina.test.ts.
-import type { DadosTarefa, Habito, HabitoFeito, Tarefa } from '../dados/banco'
+import type { DadosTarefa, Habito, HabitoFeito, Projeto, Tarefa } from '../dados/banco'
 import { idFixo } from '../dados/ids'
 import { horarioEmMinutos } from '../sono/sono'
 import { diaLocal } from '../util/data'
@@ -114,6 +114,7 @@ export const tarefaVazia = (): DadosTarefa => ({
   gatilho_tarefa_id: null,
   gatilho_habito_id: null,
   prioridade: 1,
+  projeto_ids: [],
 })
 
 /** Importante/urgente → nível 1 a 4 (matriz de Eisenhower). */
@@ -127,9 +128,14 @@ export const completarTarefa = (t: Tarefa): Tarefa => ({
   prioridade: t.prioridade ?? 1,
   fixada: t.fixada ?? false,
   nao_planejada: t.nao_planejada ?? false,
-  proximo: t.proximo ? { ...t.proximo, prioridade: t.proximo.prioridade ?? 1 } : null,
+  projeto_ids: t.projeto_ids ?? [],
+  proximo: t.proximo ? { ...t.proximo, prioridade: t.proximo.prioridade ?? 1, projeto_ids: t.proximo.projeto_ids ?? [] } : null,
 })
-export const completarHabito = (h: Habito): Habito => ({ ...h, gatilho_habito_id: h.gatilho_habito_id ?? null })
+export const completarHabito = (h: Habito): Habito => ({
+  ...h,
+  gatilho_habito_id: h.gatilho_habito_id ?? null,
+  projeto_ids: h.projeto_ids ?? [],
+})
 
 /**
  * Amarela: não concluída e já passou do horário (com data e horário) ou já passou do
@@ -247,6 +253,7 @@ export function criarProximoPasso(t: Tarefa, id: string, agora: Date): Tarefa | 
     data: p.data && p.data < hoje ? hoje : p.data,
     gatilho_tarefa_id: p.gatilho_tarefa_id === t.id ? null : p.gatilho_tarefa_id,
     prioridade: p.prioridade ?? 1,
+    projeto_ids: p.projeto_ids ?? [],
     fixada: false,
     nao_planejada: false,
     proximo: null,
@@ -356,4 +363,28 @@ export function vinculosVencidos(habitos: Habito[], tarefas: Tarefa[], hoje: str
       return !!t && (!!t.deleted_at || (!!t.concluida_em && diaLocal(new Date(t.concluida_em)) < hoje))
     })
     .map((h) => ({ ...h, ...semVinculo }))
+}
+
+// ---------- Projetos ----------
+
+/** Ordem: encerramento previsto mais próximo primeiro; sem data no fim (por nome). */
+export function ordenarProjetos(projetos: Projeto[]): Projeto[] {
+  return [...projetos].sort(
+    (a, b) =>
+      comVaziosNoFim(a.encerramento, b.encerramento, 1) ||
+      (a.created_at ?? '').localeCompare(b.created_at ?? '') ||
+      a.nome.localeCompare(b.nome),
+  )
+}
+
+export const tarefasDoProjeto = (id: string, tarefas: Tarefa[]) =>
+  tarefas.filter((t) => !t.deleted_at && (t.projeto_ids ?? []).includes(id))
+export const habitosDoProjeto = (id: string, habitos: Habito[]) =>
+  habitos.filter((h) => !h.deleted_at && (h.projeto_ids ?? []).includes(id))
+
+/** Porcentagem concluída (para cima, sem casas). Sem tarefas ligadas ou todas concluídas: 100%. */
+export function progressoDoProjeto(id: string, tarefas: Tarefa[]): number {
+  const lista = tarefasDoProjeto(id, tarefas)
+  if (lista.length === 0) return 100
+  return Math.ceil((lista.filter((t) => t.concluida_em).length / lista.length) * 100)
 }

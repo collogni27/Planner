@@ -5,6 +5,7 @@ import Dexie, { type Table } from 'dexie'
 import { idFixo } from './ids'
 import type { ConfigModoVisual } from '../visual/modoVisual'
 import type { ConfigAgenda } from '../rotina/rotina'
+import type { ConfigAvisos } from '../notificacoes/agenda'
 
 export { idFixo }
 
@@ -21,7 +22,7 @@ export interface Configuracoes extends Registro {
   dados: {
     modo?: 'claro' | 'escuro' | 'foco'
     sono?: ConfigSono
-    avisos?: { bomDia: boolean; sol: boolean; dormir: boolean }
+    avisos?: Partial<ConfigAvisos> & { sol?: boolean; dormir?: boolean }
     modoVisual?: ConfigModoVisual
     agenda?: ConfigAgenda
   }
@@ -66,6 +67,7 @@ export interface Habito extends Registro {
   gatilho_texto: string | null
   gatilho_tarefa_id: string | null
   gatilho_habito_id: string | null
+  projeto_ids: string[]
   ordem: number | null // null = ordem padrão
   created_at?: string
 }
@@ -90,6 +92,15 @@ export interface DadosTarefa {
   gatilho_habito_id: string | null
   /** 1 = nem importante nem urgente, 2 = urgente, 3 = importante, 4 = importante e urgente. */
   prioridade: number
+  projeto_ids: string[]
+}
+
+/** Projeto: as tarefas ligadas a ele dão a porcentagem de conclusão. */
+export interface Projeto extends Registro {
+  id: string
+  nome: string
+  descricao: string | null
+  encerramento: string | null // "2026-12-20" (previsto)
 }
 
 export interface Tarefa extends Registro, DadosTarefa {
@@ -228,6 +239,7 @@ export const TABELAS = {
   habitos: 'id',
   habitos_feitos: 'id',
   tarefas: 'id',
+  projetos: 'id',
 } as const
 
 export type NomeTabela = keyof typeof TABELAS
@@ -248,6 +260,7 @@ export class BancoPlanner extends Dexie {
   habitos!: Table<Habito, string>
   habitos_feitos!: Table<HabitoFeito, string>
   tarefas!: Table<Tarefa, string>
+  projetos!: Table<Projeto, string>
   fila!: Table<ItemFila, number>
   meta!: Table<Meta, string>
 
@@ -303,6 +316,8 @@ export class BancoPlanner extends Dexie {
     this.version(4).stores({ dias: 'id, dia' })
     // Versão 5 (2026-11-22): Rotina (hábitos, agenda) e nota diária. Só acrescenta.
     this.version(5).stores({ notas: 'id, dia', habitos: 'id', habitos_feitos: 'id, habito_id, dia', tarefas: 'id, data' })
+    // Versão 6 (2026-11-24): projetos. Só acrescenta.
+    this.version(6).stores({ projetos: 'id' })
   }
 }
 

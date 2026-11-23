@@ -26,11 +26,18 @@ export function Mais() {
         <Item titulo="Sono" icone="lua" onClick={() => abrir({ tela: 'sono' })} />
       </Secao>
       <Secao>
-        <Item titulo="Configurações" onClick={() => abrir({ tela: 'configuracoes' })} />
-        <Item titulo="Notificações" onClick={() => abrir({ tela: 'notificacoes' })} />
-        <Item titulo="Modo Visual" onClick={() => abrir({ tela: 'modo-visual' })} />
+        <Item titulo="Configurações" icone="engrenagem" onClick={() => abrir({ tela: 'configuracoes' })} />
+      </Secao>
+      <Secao>
+        <Item titulo="Notificações" icone="sino" onClick={() => abrir({ tela: 'notificacoes' })} />
+      </Secao>
+      <Secao>
+        <Item titulo="Modo Visual" icone="contraste" onClick={() => abrir({ tela: 'modo-visual' })} />
+      </Secao>
+      <Secao>
         <Item
           titulo="Modo Desenvolvedor"
+          icone="coroa"
           detalhe={modoDev ? 'Ativo' : (aviso ?? undefined)}
           onClick={modoDev ? undefined : () => void entrarModoDev()}
         />

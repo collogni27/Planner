@@ -29,3 +29,10 @@ Definido em 2026-11-22. **"Rotina" é uma aba principal** (ícone de calendário
 - **Ordem** (vale na Agenda e no bloco, guardada nas configurações): por **Ocorrência** (dia e horário mais próximos; empate → maior prioridade antes) ou por **Prioridade** (lista única, com o dia no detalhe; empate → horário mais próximo antes), em **Crescente** ou **Decrescente**.
 - **Tarefa não planejada:** nome, descrição (opcional), data e hora em que foi feita (padrão: agora; não pode ser no futuro) e próximo passo opcional, criado na hora na Agenda. Vai direto para as Concluídas (marcada "Não planejada").
 - O módulo **Tarefas** (`tarefas.md`) passou a ser esta Agenda.
+
+## Projetos (0.6.1)
+- Bloco **Projetos** na Rotina (abaixo do botão "Tarefa não planejada"): os **6 primeiros** e **"Mais"** (todos + **Novo projeto**).
+- Projeto: **nome**, **descrição** (opcional) e **encerramento previsto** (opcional). Ordem: encerramento mais próximo primeiro; sem data no fim.
+- **Tarefas** (inclusive próximo passo e não planejadas) e **hábitos** podem ser ligados a **um ou mais** projetos, no formulário de cada um.
+- **Porcentagem** = tarefas ligadas concluídas ÷ tarefas ligadas, arredondada para cima, sem casas. Sem tarefas ligadas (ou todas concluídas): 100%. Hábitos não contam, só ficam registrados.
+- Tela do projeto: progresso (número + medidor), edição, tarefas ligadas (com check) e hábitos ligados; excluir o projeto só tira o vínculo das tarefas e hábitos.

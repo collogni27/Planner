@@ -5,9 +5,9 @@ import { Icone } from '../../icones/Icone'
 import { useFeitos, useHabitos, useTarefas } from '../../rotina/dados'
 import { useDia } from '../../sono/dados'
 import { CONFIG_SONO_PADRAO } from '../../sono/sono'
-import { Cabecalho, Secao, Vazio, dataCurta } from '../../ui/componentes'
+import { Cabecalho, Recolhivel, Secao, Vazio, dataCurta } from '../../ui/componentes'
 import { diaLocal, horaMinuto } from '../../util/data'
-import { AVISOS_PADRAO, horariosBomDia, type ConfigAvisos } from '../agenda'
+import { horariosBomDia, lerAvisos, type ConfigAvisos } from '../agenda'
 import { Alarmes } from '../alarmes'
 import { avisosComuns, avisosDisponiveis, testarAvisoComum } from '../avisos'
 
@@ -18,7 +18,14 @@ interface Permissoes {
   fabricante: string
 }
 
-const NOMES: Record<keyof ConfigAvisos, string> = { bomDia: 'Bom dia', sol: 'Tomar sol', dormir: 'Hora de dormir' }
+const NOMES: Record<keyof ConfigAvisos, string> = {
+  bomDia: 'Horário de acordar',
+  sol30: 'Tomar sol 30 min após acordar',
+  sol60: 'Tomar sol 60 min após acordar',
+  dormir60: '60 min antes de dormir',
+  dormir30: '30 min antes de dormir',
+  dormir0: 'Hora de dormir',
+}
 
 /** Configurações → Notificações: avisos ligados, permissões, testes e próximos avisos. */
 export function NotificacoesTela() {
@@ -29,6 +36,7 @@ export function NotificacoesTela() {
   const tarefas = useTarefas()
   const [permissoes, setPermissoes] = useState<Permissoes | null>(null)
   const [mensagem, setMensagem] = useState<string | null>(null)
+  const [ajudaAberta, setAjudaAberta] = useState(false)
 
   const lerPermissoes = useCallback(async () => {
     if (!avisosDisponiveis()) return
@@ -56,14 +64,14 @@ export function NotificacoesTela() {
   }
   if (!config || hoje === undefined || !habitos || !feitos || !tarefas) return null
 
-  const avisos = config.avisos ?? AVISOS_PADRAO
+  const avisos = lerAvisos(config.avisos)
   const sono = config.sono ?? CONFIG_SONO_PADRAO
   const agora = new Date()
   const proximos = [
     ...(avisos.bomDia
       ? horariosBomDia(sono, agora)
           .slice(0, 1)
-          .map((q) => ({ titulo: 'Bom dia', quando: q }))
+          .map((q) => ({ titulo: 'Horário de acordar', quando: q }))
       : []),
     ...avisosComuns(sono, avisos, hoje ?? null, agora, { habitos, feitos, tarefas }).map((a) => ({
       titulo: a.titulo,
@@ -107,7 +115,39 @@ export function NotificacoesTela() {
       </Secao>
 
       {permissoes && (
-        <Secao titulo="Permissões">
+        <Secao
+          titulo="Permissões"
+          acao={
+            <button
+              className="botao-ajuda"
+              aria-label="Como liberar"
+              aria-expanded={ajudaAberta}
+              onClick={() => setAjudaAberta((a) => !a)}
+            >
+              ?
+            </button>
+          }
+        >
+          <Recolhivel aberto={ajudaAberta}>
+            <div className="ajuda-permissoes">
+              <span className="campo-rotulo">Xiaomi (Redmi, Poco)</span>
+              <ol className="passos">
+                <li>Em "Início automático", ligue o Planner.</li>
+                <li>Em "Som e vibração dos avisos", abra "Avisos" e ative Som, Vibração e Notificações flutuantes.</li>
+                <li>Deixe "Sem economia de bateria" como ok.</li>
+              </ol>
+              <span className="campo-rotulo">Samsung</span>
+              <ol className="passos">
+                <li>Configurações → Aplicativos → Planner → Bateria: escolha "Sem restrições".</li>
+                <li>
+                  Configurações → Assistência do aparelho e bateria → Bateria → Limites de uso em segundo plano: tire o Planner de
+                  "Apps em suspensão" e coloque em "Apps nunca suspensos".
+                </li>
+                <li>Configurações → Aplicativos → Planner → Notificações: deixe ligadas, com som, para "Avisos".</li>
+                <li>Configurações → Aplicativos → Planner → "Alarmes e lembretes": permitido.</li>
+              </ol>
+            </div>
+          </Recolhivel>
           {linhaPermissao('Notificações', permissoes.notificacoes, async () => {
             const r = await LocalNotifications.requestPermissions()
             if (r.display !== 'granted') await Alarmes.abrirAjusteNotificacoes()
@@ -122,18 +162,12 @@ export function NotificacoesTela() {
             </button>
           </div>
           {/xiaomi|redmi|poco/i.test(permissoes.fabricante) && (
-            <>
-              <div className="linha-info">
-                <span className="texto-secundario">Início automático</span>
-                <button className="botao-texto" onClick={() => void Alarmes.abrirInicioAutomatico()}>
-                  Abrir
-                </button>
-              </div>
-              <p className="texto-secundario nota-rodape">
-                Na Xiaomi, ligue o Início automático do Planner e, em "Som e vibração dos avisos", ative Som, Vibração e
-                Notificações flutuantes em "Avisos".
-              </p>
-            </>
+            <div className="linha-info">
+              <span className="texto-secundario">Início automático</span>
+              <button className="botao-texto" onClick={() => void Alarmes.abrirInicioAutomatico()}>
+                Abrir
+              </button>
+            </div>
           )}
         </Secao>
       )}
@@ -142,9 +176,9 @@ export function NotificacoesTela() {
         <div className="botoes-linha">
           <button
             className="botao-secundario"
-            onClick={() => void Alarmes.testarBomDia({ segundos: 10 }).then(() => setMensagem('O Bom dia toca em 10 segundos.'))}
+            onClick={() => void Alarmes.testarBomDia({ segundos: 10 }).then(() => setMensagem('O alarme toca em 10 segundos.'))}
           >
-            Bom dia
+            Horário de acordar
           </button>
           <button
             className="botao-secundario"

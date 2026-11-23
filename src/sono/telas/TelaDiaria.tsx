@@ -10,7 +10,6 @@ import { formatarPeso, lerInteiro, lerPeso } from '../sono'
 interface Formulario {
   horas: string
   minutos: string
-  qualidade: string
   peso: string
   dormiu: boolean | null
   acordou: boolean | null
@@ -37,7 +36,7 @@ function SimNao({ valor, onChange, rotulo }: { valor: boolean | null; onChange: 
 }
 
 /**
- * Tela diária (manhã): tempo de sono, qualidade, peso e se dormiu/acordou no horário.
+ * Tela diária (manhã): tempo de sono, peso e se dormiu/acordou no horário.
  * Feita para responder logo ao acordar: poucos campos, botões grandes.
  */
 export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
@@ -51,7 +50,6 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
   const inicial: Formulario = {
     horas: registro?.sono_minutos != null ? String(Math.floor(registro.sono_minutos / 60)) : '',
     minutos: registro?.sono_minutos != null ? String(registro.sono_minutos % 60) : '',
-    qualidade: registro?.qualidade != null ? String(registro.qualidade) : '',
     peso: registro?.peso_kg != null ? formatarPeso(registro.peso_kg) : '',
     dormiu: registro?.dormiu_no_horario ?? null,
     acordou: registro?.acordou_no_horario ?? null,
@@ -61,17 +59,15 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
 
   const horas = lerInteiro(f.horas, 0, 23)
   const minutos = lerInteiro(f.minutos, 0, 59)
-  const qualidade = lerInteiro(f.qualidade, 0, 99)
   const peso = lerPeso(f.peso)
   const erroSono = horas === undefined || minutos === undefined
-  const valido = !erroSono && qualidade !== undefined && peso !== undefined
+  const valido = !erroSono && peso !== undefined
 
   async function salvar() {
     if (!valido) return
     const temSono = horas !== null || minutos !== null
     await salvarDia(dia, {
       sono_minutos: temSono ? (horas ?? 0) * 60 + (minutos ?? 0) : null,
-      qualidade: qualidade ?? null,
       peso_kg: peso ?? null,
       dormiu_no_horario: f.dormiu,
       acordou_no_horario: f.acordou,
@@ -119,16 +115,6 @@ export function TelaDiaria({ chave, dia }: { chave: string; dia: string }) {
             </div>
           </Rotulo>
           {erroSono && <p className="aviso-campo">Tempo inválido.</p>}
-
-          <Rotulo texto="Qualidade (00 a 99)">
-            <input
-              className="campo-entrada campo-numero"
-              inputMode="numeric"
-              value={f.qualidade}
-              onChange={(e) => mudar('qualidade', e.target.value)}
-            />
-          </Rotulo>
-          {qualidade === undefined && <p className="aviso-campo">Use um número de 0 a 99.</p>}
 
           <Rotulo texto="Peso (kg)">
             <input

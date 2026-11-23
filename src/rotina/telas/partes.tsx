@@ -1,7 +1,7 @@
 import type React from 'react'
 // Peças compartilhadas das telas da Rotina: linhas com check e campos de "quando" e data.
 import type { Rota } from '../../app/navegacao'
-import type { DadosTarefa, Habito, Tarefa } from '../../dados/banco'
+import type { DadosTarefa, Habito, Projeto, Tarefa } from '../../dados/banco'
 import { Icone } from '../../icones/Icone'
 import { lerHorario } from '../../sono/sono'
 import { Rotulo } from '../../ui/componentes'
@@ -306,6 +306,37 @@ export function CamposPrioridade({ nivel, onChange }: { nivel: number; onChange:
   )
 }
 
+// ---------- Projetos (vários) ----------
+
+export function CamposProjetos({
+  ids,
+  onChange,
+  projetos,
+}: {
+  ids: string[]
+  onChange: (ids: string[]) => void
+  projetos: Projeto[]
+}) {
+  if (projetos.length === 0) return null
+  return (
+    <Campo texto="Projetos">
+      <div className="fichas">
+        {projetos.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            className="ficha"
+            aria-pressed={ids.includes(p.id)}
+            onClick={() => onChange(ids.includes(p.id) ? ids.filter((i) => i !== p.id) : [...ids, p.id])}
+          >
+            {p.nome}
+          </button>
+        ))}
+      </div>
+    </Campo>
+  )
+}
+
 // ---------- Data da tarefa ----------
 
 export interface FormData {
@@ -329,11 +360,21 @@ export function lerFormData(f: FormData): string | null | undefined {
   return lerData(f.texto, hoje) ?? undefined
 }
 
-export function CamposData({ f, onChange, erro }: { f: FormData; onChange: (f: FormData) => void; erro?: boolean }) {
+export function CamposData({
+  f,
+  onChange,
+  erro,
+  rotulo = 'Data',
+}: {
+  f: FormData
+  onChange: (f: FormData) => void
+  erro?: boolean
+  rotulo?: string
+}) {
   return (
-    <Campo texto="Data">
+    <Campo texto={rotulo}>
       <Fichas
-        rotulo="Data"
+        rotulo={rotulo}
         valor={f.tipo}
         onChange={(tipo) => onChange({ ...f, tipo })}
         opcoes={[

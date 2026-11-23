@@ -1360,3 +1360,35 @@ span.calendario-dia {
   justify-content: space-between;
   font-size: 12px;
 }
+
+/* ---------- Evolução do Peso ---------- */
+
+.grafico-peso svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.grafico-numero {
+  font-family: var(--fonte-texto);
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--texto);
+}
+
+.grafico-rotulos {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  text-align: center;
+  font-size: 10px;
+  color: var(--texto-secundario);
+}
+
+.ajuda-permissoes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding-bottom: var(--espaco-2);
+  font-size: 12px;
+}
