@@ -9,7 +9,7 @@ import { salvarDia, useDia } from '../sono/dados'
 import { CONFIG_SONO_PADRAO, idDoDia } from '../sono/sono'
 import { soltarVinculosVencidos, useFeitos, useHabitos, useTarefas } from '../rotina/dados'
 import { diaLocal } from '../util/data'
-import { AVISOS_PADRAO } from './agenda'
+import { lerAvisos } from './agenda'
 import { Alarmes } from './alarmes'
 import { avisosDisponiveis, prepararAvisos, reagendar } from './avisos'
 
@@ -32,7 +32,7 @@ export function useAvisosAutomaticos(abrir: (r: Rota) => void) {
   const feitos = useFeitos(dia)
   const tarefas = useTarefas()
   const sono = config?.sono ?? CONFIG_SONO_PADRAO
-  const avisos = config?.avisos ?? AVISOS_PADRAO
+  const avisos = lerAvisos(config?.avisos)
 
   // Reagenda sempre que horários, avisos ligados, Bom dia aberto ou sol mudarem.
   // Também: hábitos e tarefas com horário (o que muda o aviso deles).
