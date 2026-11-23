@@ -11,7 +11,14 @@ const PIXEL = {
   mais: 'M3 7h2v2h-2z M7 7h2v2h-2z M11 7h2v2h-2z',
   terminal: 'M2 4h2v2h-2z M4 6h2v2h-2z M6 8h2v2h-2z M4 10h2v2h-2z M2 12h2v2h-2z M9 12h5v2h-5z',
   livro: 'M1 3h6v10h-6z M9 3h6v10h-6z M7 12h2v2h-2z',
-  calendario: 'M1 3h14v3h-14z M1 6h2v9h-2z M13 6h2v9h-2z M3 13h10v2h-10z M4 1h2v3h-2z M10 1h2v3h-2z M5 8h2v2h-2z M9 8h2v2h-2z M5 11h2v1h-2z M9 11h2v1h-2z',
+  engrenagem:
+    'M3 3h10v3h-10z M3 10h10v3h-10z M3 6h3v4h-3z M10 6h3v4h-3z M6 0h4v3h-4z M6 13h4v3h-4z M0 6h3v4h-3z M13 6h3v4h-3z M1 1h3v3h-3z M12 1h3v3h-3z M1 12h3v3h-3z M12 12h3v3h-3z',
+  sino: 'M7 1h2v2h-2z M5 3h6v2h-6z M4 5h8v5h-8z M2 10h12v2h-12z M7 13h2v2h-2z',
+  contraste:
+    'M5 1h6v2h-6z M3 3h2v2h-2z M11 3h2v2h-2z M1 5h2v6h-2z M13 5h2v6h-2z M3 11h2v2h-2z M11 11h2v2h-2z M5 13h6v2h-6z M3 5h5v6h-5z M5 3h3v2h-3z M5 11h3v2h-3z',
+  coroa: 'M1 3h2v8h-2z M13 3h2v8h-2z M7 2h2v5h-2z M3 7h2v2h-2z M11 7h2v2h-2z M5 8h2v2h-2z M9 8h2v2h-2z M1 11h14v3h-14z',
+  calendario:
+    'M1 3h14v3h-14z M1 6h2v9h-2z M13 6h2v9h-2z M3 13h10v2h-10z M4 1h2v3h-2z M10 1h2v3h-2z M5 8h2v2h-2z M9 8h2v2h-2z M5 11h2v1h-2z M9 11h2v1h-2z',
 } as const
 
 // Setas e "check" da referência (traço, não pixel).
