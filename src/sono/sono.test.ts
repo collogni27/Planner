@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { diaPreenchido, diaVazio, dormirValido, dormiuMeta, idDoDia, lerHorario, lerInteiro, lerPeso, resumirSono, textoDuracao } from './sono'
+import {
+  diaPreenchido,
+  diaVazio,
+  dormirValido,
+  dormiuMeta,
+  idDoDia,
+  lerHorario,
+  lerInteiro,
+  lerPeso,
+  resumirSono,
+  inicioDas4Semanas,
+  pesoPorSemana,
+  textoDuracao,
+} from './sono'
 
 describe('sono', () => {
   it('lê horários em vários formatos', () => {
@@ -49,6 +62,43 @@ describe('sono', () => {
       480,
       '2026-11-20',
     )
-    expect(r).toMatchObject({ diasComRegistro: 2, mediaMinutos: 460, metaAtingida: 1, comTempo: 2, mediaQualidade: 70, dormiuNoHorario: 1, respondeuDormir: 2, acordouNoHorario: 0, respondeuAcordar: 1, sol: 1 })
+    expect(r).toMatchObject({
+      diasComRegistro: 2,
+      mediaMinutos: 460,
+      metaAtingida: 1,
+      comTempo: 2,
+      dormiuNoHorario: 1,
+      respondeuDormir: 2,
+      acordouNoHorario: 0,
+      respondeuAcordar: 1,
+      sol: 1,
+    })
+  })
+
+  it('4 semanas estritas (domingo a sábado): a semana mais antiga sai inteira', () => {
+    // 2026-11-20 é sexta: a semana atual começa no domingo 15; as 4 semanas, em 25/10.
+    expect(inicioDas4Semanas('2026-11-20')).toBe('2026-10-25')
+    // Domingo 22/11 começa a 5ª semana: a de 25/10 sai.
+    expect(inicioDas4Semanas('2026-11-22')).toBe('2026-11-01')
+    const r = resumirSono([{ ...diaVazio('2026-10-31'), sono_minutos: 400 }], 480, '2026-11-22')
+    expect(r.comTempo).toBe(0)
+  })
+
+  it('peso por semana: média da semana, para cima com uma casa', () => {
+    const p = pesoPorSemana(
+      [
+        { ...diaVazio('2026-11-16'), peso_kg: 80.1 },
+        { ...diaVazio('2026-11-18'), peso_kg: 80.4 }, // média 80,25 → 80,3
+        { ...diaVazio('2026-11-02'), peso_kg: 81 },
+        { ...diaVazio('2026-10-24'), peso_kg: 90 }, // fora (5ª semana)
+      ],
+      '2026-11-20',
+    )
+    expect(p.map((s) => [s.rotulo, s.media])).toEqual([
+      ['Há 3 semanas', null],
+      ['Há 2 semanas', 81],
+      ['Há 1 semana', null],
+      ['Semana atual', 80.3],
+    ])
   })
 })

@@ -45,7 +45,7 @@ export function SonoConfigTela({ chave }: { chave: string }) {
 
   return (
     <>
-      <Cabecalho titulo="Horários e meta" />
+      <Cabecalho titulo="Metas de sono" />
       <Secao titulo="Horários">
         <div className="tabela-horarios">
           <span />
